@@ -1,0 +1,23 @@
+.FormsEffectLc
+input{font-size:1.3em;font-family:Arial;color:#5b5b5b}.FormsEffectLc
+label{font-size:1.3em;font-family:Arial;display:block;width:auto;text-align:left}.FormsEffectLc
+ul{margin:0;padding:0;float:left;width:100%}.FormsEffectLc
+.fieldLine{list-style-type:none;margin:0;padding:12px
+0;width:270px;float:left;position:relative}.FormsEffectLc .txtField,.selCont,.textAreaField{float:left;width:100%;height:auto;padding:0;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;background:none;}.FormsEffectLc .txtField .fS-Bd, .FormsEffectLc .selCont .fS-Bd{padding:6px
+5px;background:#FFF;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;overflow:hidden;border-left:1px solid #e7e7e7;border-top:1px solid #e7e7e7;border-right:1px solid transparent;border-bottom:1px solid transparent}.FormsEffectLc .txtField .fS-Bd input, .FormsEffectLc .selCont .fS-Bd select, .FormsEffectLc .textAreaField
+textarea{height:auto;display:inline;background:none;-webkit-appearance:caret;float:left;width:100%;border:none;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;padding:0;margin:0}.FormsEffectLc .selCont .fS-Bd{float:left;overflow:inherit;padding:0}.FormsEffectLc .FE-Label{font-weight:normal;left:0;line-height:1em;padding:8px
+6px;position:absolute;top:0;color:#7C7C7C}.hideL .FE-Label{display:none !important}.FormsEffectLc .FE-Label.none{display:none !important}.FormsEffectLc .focus
+.selCont{border:1px
+solid #0093d0}.FormsEffectLc .error
+.selCont{border:1px
+solid #f00}.FormsEffectLc
+.txtField{border:1px
+solid #f1efdd}.FormsEffectLc .error
+.txtField{border:1px
+solid #f00}.FormsEffectLc .focus
+.txtField{border:1px
+solid #0093d0}.FormsEffectLc .txtField
+input{color:#191919;box-shadow:none}.FormsEffectLc .label .txtField
+input{color:#7c7c7c}.FormsEffectLc .tip .txtField
+input{color:#d6d5d5}.FormsEffectLc .wrong .txtField
+input{}
