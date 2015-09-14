@@ -56,12 +56,12 @@ class AdminGetresponseController extends ModuleAdminController
         $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/form.css'));
         $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/style.css'));
 
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/app.src-verified.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/fullSelect.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/lightbox.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/growler.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/getresponse-custom-field.src-verified.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . 'views/js/gr_main.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/app.src-verified.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/fullSelect.src-verified.async.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/lightbox.src-verified.async.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/growler.src-verified.async.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/getresponse-custom-field.src-verified.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr_main.js');
 
         return parent::setMedia();
     }
