@@ -5,7 +5,7 @@
  * @license	http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-APP.core.define('lightbox',function(box){"use strict";var win=window,doc=win.document,create,style,templateBuilder,darkLayer,lightBoxElementPrototype,lightBox,isIE8=!!(doc.selection&&!win.getSelection&&!(/opera/i.test(win.navigator.userAgent))),isIE9=!!(doc.selection&&win.getSelection&&!(/opera/i.test(win.navigator.userAgent))),players,api,galleryProto,imageDir='../modules/getresponse/img/',$=box.dom||win.jQuery||win.IX.element,toArray,parseConfig;toArray=function(){var i,ln=this.length,arr=[];for(i=0;i<ln;i+=1){arr[i]=this[i];}
+APP.core.define('lightbox',function(box){"use strict";var win=window,doc=win.document,create,style,templateBuilder,darkLayer,lightBoxElementPrototype,lightBox,isIE8=!!(doc.selection&&!win.getSelection&&!(/opera/i.test(win.navigator.userAgent))),isIE9=!!(doc.selection&&win.getSelection&&!(/opera/i.test(win.navigator.userAgent))),players,api,galleryProto,imageDir='../modules/getresponse/views/img/',$=box.dom||win.jQuery||win.IX.element,toArray,parseConfig;toArray=function(){var i,ln=this.length,arr=[];for(i=0;i<ln;i+=1){arr[i]=this[i];}
 return arr;};parseConfig=function(configString){var activator=this;configString=configString.trim();if(-1===configString.indexOf(':')){return{selector:configString};}
 return eval('('+configString+')');};function getBodyScrollPosition(){var documentElement=doc.documentElement,documentBody=self.document.body,position={left:0,top:0};if(documentBody&&documentBody.scrollTop){position.left=documentBody.scrollLeft;position.top=documentBody.scrollTop;}
 if(win.pageYOffset){position.left=win.pageXOffset;position.top=win.pageYOffset;}

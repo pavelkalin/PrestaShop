@@ -51,10 +51,10 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->controller->addJquery();
 
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/normalize.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/grid.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/form.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/css/style.css'));
+        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/normalize.css'));
+        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/grid.css'));
+        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/form.css'));
+        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/style.css'));
 
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/app.src-verified.js');
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/fullSelect.src-verified.async.js');
