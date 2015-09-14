@@ -4,27 +4,23 @@
 * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<div id="add_campaign" style="display:none;" class="gr-wrapper lightboxHtmlContent">
+<div id="add_campaign" style="display:none;" class="gr-wrapper">
 	<div class="highslide-body">
-		<h3 class="cnt">{l s='Create new campaign' mod='getresponse'}</h3>
 		<div class="form-horizontal" action="">
 
-			<div class="control-group" id="campaignDiv">
+			<fieldset class="control-group" id="campaignDiv">
 				<label for="webformId" class="control-label">{l s='Campaign name' mod='getresponse'}:</label>
 				<div class="controls">
-					<input name="campaign_name" type="text" id="campaignName" placeholder="Campaign Name">
-					<a class="gr-tooltip">
-						<span class="gr-tip">
-							<h5>{l s='Campaign name' mod='getresponse'}</h5>
-							<p>
-								{l s='Campaign name must be between 3-64 characters, only a-z (lower case), numbers and "_"' mod='getresponse'}
-							</p>
+					<div class="input-tip">
+						<input name="campaign_name" type="text" id="campaignName" placeholder="Campaign Name">
+						<span>
+							<abbr title='{l s='Campaign name' mod='getresponse'}|{l s='Campaign name must be between 3-64 characters, only a-z (lower case), numbers and "_"' mod='getresponse'}' rel="tooltip"></abbr>
 						</span>
-					</a>
+					</div>
 				</div>
-			</div>
+			</fieldset>
 
-			<div class="control-group" id="fromFieldDiv">
+			<fieldset class="control-group" id="fromFieldDiv">
 				<label for="from" class="control-label">{l s='From' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="from_field" id="fromField" class="gr_select hiddenselect">
@@ -35,9 +31,9 @@
 						{/if}
 					</select>
 				</div>
-			</div>
+			</fieldset>
 
-			<div class="control-group" id="replyToDiv">
+			<fieldset class="control-group" id="replyToDiv">
 				<label for="replyTo" class="control-label">{l s='Reply to' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="reply_to_field" id="replyTo" class="gr_select hiddenselect">
@@ -48,13 +44,41 @@
 						{/if}
 					</select>
 				</div>
-			</div>
+			</fieldset>
 
-			<div class="control-group" id="saveDiv">
-				<div class="controls">
-					<a class="button" type="button" onClick="addCampaign();false;"><strong>{l s='Create' mod='getresponse'}</strong></a>
+			<fieldset class="control-group" id="confirmationSubjectDiv">
+				<label for="confirmationSubject" class="control-label">{l s='Confirmation subject' mod='getresponse'}</label>
+				<div class="controls select-wide">
+					<select name="confirmation_subject" id="confirmationSubject" class="gr_select hiddenselect">
+						{if isset($confirmationSubjects)}
+							{foreach $confirmationSubjects as $confirmationSubject}
+								<option value="{$confirmationSubject['id']|escape:'htmlall':'UTF-8'}">({$confirmationSubject['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationSubject['content']|escape:'htmlall':'UTF-8'}</option>
+							{/foreach}
+						{/if}
+					</select>
 				</div>
-			</div>
+			</fieldset>
+
+			<fieldset class="control-group" id="confirmationBodyDiv">
+				<label for="confirmationBody" class="control-label">{l s='Confirmation body' mod='getresponse'}</label>
+				<div class="controls select-wide">
+					<select name="confirmation_body" id="confirmationBody" class="gr_select hiddenselect">
+						{if isset($confirmationBodies)}
+							{foreach $confirmationBodies as $confirmationBody}
+								<option value="{$confirmationBody['id']|escape:'htmlall':'UTF-8'}">({$confirmationBody['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationBody['plain']|escape:'htmlall':'UTF-8'|trim:128}</option>
+							{/foreach}
+						{/if}
+					</select>
+				</div>
+			</fieldset>
+
+			<fieldset class="control-group" id="saveDiv">
+				<div class="controls">
+					<div class="btns">
+						<a class="button" type="button" onClick="addCampaign();false;">{l s='Create' mod='getresponse'}</a>
+					</div>
+				</div>
+			</fieldset>
 
 			<div id="MessageAjax"></div>
 
@@ -64,11 +88,13 @@
 		<script>
 			function addCampaign()
 			{
-				$.post('{/literal}{$action_url}{literal}+&ajax&action=addcampaign', {
+				$.post('{/literal}{$action_url|escape:'htmlall':'UTF-8'}{literal}+&ajax&action=addcampaign', {
 					add_contact: 1,
 					from_field: $('#fromField').val(),
 					campaign_name: $('#campaignName').val(),
 					reply_to_field: $('#replyTo').val(),
+                    confirmation_subject: $('#confirmationSubject').val(),
+                    confirmation_body: $('#confirmationBody').val(),
 					token: '{/literal}{$token|escape:'htmlall':'UTF-8'}{literal}'
 				}, function(json) {
 					if (json != null) {

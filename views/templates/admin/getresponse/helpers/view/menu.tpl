@@ -17,9 +17,9 @@
 	</li>
 	<li class="{if $selected_tab == 'viapage'}current-menu-item{/if}">
 		{if $api_key}
-			<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=viapage" class="gr-viapage" title="viapage">{l s='Subscription via %s registration page' mod='getresponse'}</a>
+			<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=viapage" class="gr-viapage" title="viapage">{l s='Subscription via registration page' mod='getresponse'}</a>
 		{else}
-			<a class="inactive gr-viapage" title="viapage">{l s='Subscription via %s registration page' mod='getresponse'}</a>
+			<a class="inactive gr-viapage" title="viapage">{l s='Subscription via registration page' mod='getresponse'}</a>
 		{/if}
 	</li>
 	<li class="{if $selected_tab == 'viawebform'}current-menu-item{/if}">

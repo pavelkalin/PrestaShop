@@ -4,8 +4,8 @@
 * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<div id="triggerAddToCycleContainer"></div>
-<script type="text/javascript" src="{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/js/AddToCycle.src-verified.async.js"></script>
+<fieldset id="triggerAddToCycleContainer"></fieldset>
+<script type="text/javascript" src="{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/AddToCycle.src-verified.async.js"></script>
 {literal}
 <script type="text/javascript">
     $(function () {
@@ -14,7 +14,7 @@
             APP.publish('triggerAddToCycle.setConfig', {
                 container: '#triggerAddToCycleContainer',
                 translations: {
-                    translateDontAddToTheCycleOnDay: {/literal}"{l s='Add to autoresponder sequence:' mod='getresponse'}"{literal},
+                    translateDontAddToTheCycleOnDay: {/literal}" <span>{l s='Add to autoresponder sequence:' mod='getresponse'}</span>"{literal},
                     translateMore: {/literal}'more'{literal},
                     translateDay: {/literal}'{l s='Day' mod='getresponse'}'{literal},
                     translateMessages: '{{/literal}{l s='messages' mod='getresponse'}{literal}|{/literal}{l s='message' mod='getresponse'}{literal}|{/literal}{l s='messages' mod='getresponse'}{literal}}',
@@ -22,7 +22,7 @@
                 },
                 names: {day: 'cycle_day'},
                 storageName: 'manageContactsAutoresponderData',
-                url: '{/literal}{$action_url}{literal}&ajax&action=getmessages',
+                url: '{/literal}{$action_url|escape:'htmlall':'UTF-8'}{literal}&ajax&action=getmessages',
                 api_key: "{/literal}{$api_key|escape:'htmlall':'UTF-8'}{literal}",
                 api_url: "{/literal}{$api_url|escape:'htmlall':'UTF-8'}{literal}"
             });
