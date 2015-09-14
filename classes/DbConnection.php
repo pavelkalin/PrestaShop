@@ -228,7 +228,7 @@ class DbConnection
 
     public function getContacts($email = null, $newsletter_guests = null)
     {
-        $where =!empty( $email ) ? " AND cu.email = '" . $email . "'" : null;
+        $where = !empty( $email ) ? " AND cu.email = '" . $email . "'" : null;
 
         if (!empty( $newsletter_guests )) {
             $blocknewsletter = $this->checkModuleStatus('blocknewsletter');
@@ -336,7 +336,7 @@ class DbConnection
 
     public function getCustoms($default = null)
     {
-        $where =!empty( $default ) ? " AND `default` = '" . $default . "'" : null;
+        $where = !empty( $default ) ? " AND `default` = '" . $default . "'" : null;
 
         $sql = 'SELECT
                     *
@@ -352,7 +352,7 @@ class DbConnection
 
     public function getAutomationSettings($status = null)
     {
-        $where_status =!empty( $status ) ? " AND `active` = 'yes'" : null;
+        $where_status = !empty( $status ) ? " AND `active` = 'yes'" : null;
 
         $sql = 'SELECT
                     *
@@ -434,8 +434,12 @@ class DbConnection
 
     public function updateCustoms($customs)
     {
+        $settings_customs = $this->getCustoms();
+        if (empty($settings_customs)) {
+            return false;
+        }
+
         if (!empty( $customs )) {
-            $settings_customs = $this->getCustoms();
             $allowed          = array();
             foreach ($settings_customs as $sc) {
                 $allowed[$sc['custom_value']] = $sc;
@@ -467,6 +471,21 @@ class DbConnection
 
                         $this->db->Execute($sql);
                     }
+                }
+            }
+        } else {
+            foreach ($settings_customs as $sc) {
+                if ($sc['default'] === 'no') {
+                    $sql = 'UPDATE
+                                ' . $this->prefix_customs . '
+                            SET
+                                active_custom = "no"
+                            WHERE
+                                id_shop = "' . $this->id_shop . '"
+                            AND
+                                custom_value = "' . pSQL($sc['custom_value']) . '"';
+
+                    $this->db->Execute($sql);
                 }
             }
         }

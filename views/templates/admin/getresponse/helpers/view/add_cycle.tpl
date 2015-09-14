@@ -22,7 +22,7 @@
                 },
                 names: {day: 'cycle_day'},
                 storageName: 'manageContactsAutoresponderData',
-                url: '{/literal}{$action_url|escape:'htmlall':'UTF-8'}{literal}&ajax&action=getmessages',
+                url: '{/literal}{$action_url|escape:'UTF-8'}{literal}&ajax&action=getmessages',
                 api_key: "{/literal}{$api_key|escape:'htmlall':'UTF-8'}{literal}",
                 api_url: "{/literal}{$api_url|escape:'htmlall':'UTF-8'}{literal}"
             });

@@ -430,12 +430,12 @@ class AdminGetresponseController extends ModuleAdminController
             $posted_customs = Tools::getValue('custom_field');
 
             // check subscription settings
-            if (!empty( $campaign[0] ) && $campaign[0] != '0' &&!empty( $status )) {
+            if (!empty( $campaign[0] ) && $campaign[0] != '0' && !empty( $status )) {
                 $update_address = empty( $update_address ) ? 'no' : $update_address;
-                $cycle_day      =!empty( $add_to_cycle ) ? $cycle_day[0] : null;
+                $cycle_day      = !empty( $add_to_cycle ) ? $cycle_day[0] : null;
 
                 $validation = $this->validateCustoms($posted_customs);
-                if (is_array($validation) &&!empty( $validation['form_status'] )) {
+                if (is_array($validation) && !empty( $validation['form_status'] )) {
                     $this->context->smarty->assign($validation);
                 } else {
                     $this->db->updateSettings($status, $campaign[0], $update_address, $cycle_day);
