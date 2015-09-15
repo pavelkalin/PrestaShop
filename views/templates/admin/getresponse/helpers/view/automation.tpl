@@ -13,7 +13,7 @@
 				{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns once they purchase in a particular Prestashop product category. To do this, click “Create new” button and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option. ' mod='getresponse'}
 
 				<div class="btns">
-					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new campaign" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
+					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new automation" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
 				</div>
 				{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_automation.tpl"}
 			</p>
@@ -23,7 +23,7 @@
 			{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns once they purchase in a particular Prestashop product category. To do this, click “Create new” button and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option. ' mod='getresponse'}
 
 			<div class="btns">
-				<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new campaign" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
+				<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new automation" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
 			</div>
 			{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_automation.tpl"}
 		</p>
