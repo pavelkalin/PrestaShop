@@ -545,7 +545,7 @@ class DbConnection
 
     public function deleteAutomationSettings($automation_id)
     {
-        $sql = 'DELETE FROM `' . $this->prefix_automation . ' WHERE `id` = ' . (int) $automation_id;
+        $sql = 'DELETE FROM `' . $this->prefix_automation . '` WHERE `id` = ' . (int) $automation_id;
 
         return (bool) $this->db->execute($sql);
     }

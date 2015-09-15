@@ -6,7 +6,7 @@
 
 <div id="add_automation" style="display: none;" class="gr-wrapper">
 	<div class="highslide-body">
-		<form class="form-horizontal" target="_top" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation" method="post" OnSubmit="return CheckForm()">
+		<form class="form-horizontal" target="_top" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation" method="post">
 
 			{if $d_categories}
 				<fieldset class="control-group">
