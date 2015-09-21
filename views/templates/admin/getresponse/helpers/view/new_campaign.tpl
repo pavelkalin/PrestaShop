@@ -52,7 +52,7 @@
 					<select name="confirmation_subject" id="confirmationSubject" class="gr_select hiddenselect">
 						{if isset($confirmationSubjects)}
 							{foreach $confirmationSubjects as $confirmationSubject}
-								<option value="{$confirmationSubject['id']|escape:'htmlall':'UTF-8'}">({$confirmationSubject['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationSubject['content']|escape:'htmlall':'UTF-8'}</option>
+								<option value="{$confirmationSubject['id']|escape:'htmlall':'UTF-8'}" {if $confirmationSubject['id'] == $default_c_subject}selected="selected"{/if}>({$confirmationSubject['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationSubject['content']|escape:'htmlall':'UTF-8'}</option>
 							{/foreach}
 						{/if}
 					</select>
@@ -65,7 +65,7 @@
 					<select name="confirmation_body" id="confirmationBody" class="gr_select hiddenselect">
 						{if isset($confirmationBodies)}
 							{foreach $confirmationBodies as $confirmationBody}
-								<option value="{$confirmationBody['id']|escape:'htmlall':'UTF-8'}">({$confirmationBody['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationBody['plain']|escape:'htmlall':'UTF-8'|trim:128}</option>
+								<option value="{$confirmationBody['id']|escape:'htmlall':'UTF-8'}" {if $confirmationBody['id'] == $default_c_body}selected="selected"{/if}>({$confirmationBody['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationBody['plain']|escape:'htmlall':'UTF-8'|trim:128}</option>
 							{/foreach}
 						{/if}
 					</select>

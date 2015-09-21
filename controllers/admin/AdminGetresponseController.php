@@ -34,6 +34,9 @@ class AdminGetresponseController extends ModuleAdminController
             'gr' => 'http://api2.getresponse.com'
         );
 
+        $this->default_confirmation_subject = 'TfUp';
+        $this->default_confirmation_body = 'TfNl';
+
         $instance = Db::getInstance();
         $this->db = new DbConnection($instance);
 
@@ -265,11 +268,13 @@ class AdminGetresponseController extends ModuleAdminController
         $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
         if (!empty( $confirmationSubjects )) {
             $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
+            $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
         }
 
         $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
         if (!empty( $confirmationBodies )) {
             $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
+            $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
         }
 
         $cycle_days = $this->db->getCycleDay($this->apikey, $this->api_url);
@@ -383,11 +388,13 @@ class AdminGetresponseController extends ModuleAdminController
         $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
         if (!empty( $confirmationSubjects )) {
             $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
+            $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
         }
 
         $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
         if (!empty( $confirmationBodies )) {
             $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
+            $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
         }
 
         // ajax - update subscription
