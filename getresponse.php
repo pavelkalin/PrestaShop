@@ -32,7 +32,7 @@ class Getresponse extends Module
 
         // API urls
         $this->api_urls = array(
-            'gr' => 'http://api2.getresponse.com'
+            'gr' => 'https://api.getresponse.com/v3'
         );
 
         parent::__construct();

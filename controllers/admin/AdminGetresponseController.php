@@ -9,7 +9,8 @@
  */
 
 include_once( _PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php' );
-require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
+//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
+//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php' );
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -20,18 +21,18 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->bootstrap  = true;
         $this->display    = 'view';
-        $this->meta_title = $this->l('GetResponse Intagration');
+        $this->meta_title = $this->l('GetResponse Integration');
 
         $this->apikey      = null;
         $this->crypto      = null;
         $this->identifier  = 'api_key';
-        $this->api_url     = 'http://api2.getresponse.com';
+        $this->api_url     = 'https://api.getresponse.com/v3';
         $this->gr_tpl_path = _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/';
         $this->gr_css_path = _PS_MODULE_DIR_ . 'getresponse/views/css/';
 
         // API urls
         $this->api_urls = array(
-            'gr' => 'http://api2.getresponse.com'
+            'gr' => 'https://api.getresponse.com/v3'
         );
 
         $this->default_confirmation_subject = 'TfUp';
@@ -265,19 +266,19 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
-        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
+//        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
         if (!empty( $confirmationSubjects )) {
             $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
             $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
         }
 
-        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
+//        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
         if (!empty( $confirmationBodies )) {
             $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
             $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
         }
 
-        $cycle_days = $this->db->getCycleDay($this->apikey, $this->api_url);
+        $cycle_days = $this->db->getCycleDay($this->apikey);
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         $custom_fields = $this->db->getCustoms();
@@ -385,13 +386,13 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
-        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
+//        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
         if (!empty( $confirmationSubjects )) {
             $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
             $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
         }
 
-        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
+//        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
         if (!empty( $confirmationBodies )) {
             $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
             $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
@@ -406,7 +407,7 @@ class AdminGetresponseController extends ModuleAdminController
         $campaigns = $this->db->getCampaigns($this->apikey, $this->api_url);
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $cycle_days = $this->db->getCycleDay($this->apikey, $this->api_url);
+        $cycle_days = $this->db->getCycleDay($this->apikey);
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         $custom_fields = $this->db->getCustoms();
@@ -555,10 +556,10 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('categories' => $categories));
         }
 
-        $campaigns = $this->db->getCampaigns($this->apikey, $this->api_url);
+        $campaigns = $this->db->getCampaigns($this->apikey);
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $cycle_days = $this->db->getCycleDay($this->apikey, $this->api_url);
+        $cycle_days = $this->db->getCycleDay($this->apikey);
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         // add new automation
@@ -792,7 +793,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-            $client = new JsonRpcClient($this->api_url);
+            $client = new GetResponseAPI3($this->api_url);
 
             $params = array(
                 'campaigns' => array($campaign_id),
@@ -941,7 +942,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-            $client = new JsonRpcClient($this->api_url);
+            $client = new GetResponseAPI3($this->api_url);
 
             $params = array(
                 'name'                 => $campaign_name,

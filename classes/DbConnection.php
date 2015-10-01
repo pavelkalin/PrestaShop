@@ -8,7 +8,8 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
+//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
+require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php' );
 
 /**
  * Class is used to calls to the PrestaShop Database
@@ -68,19 +69,19 @@ class DbConnection
         }
     }
 
-    public function getCampaigns($api_key, $api_url)
+    public function getCampaigns($api_key)
     {
         if (empty( $api_key )) {
             return array();
         }
 
         try {
-            $client  = new JsonRpcClient($api_url);
-            $results = $client->get_campaigns($api_key);
+            $client  = new GetResponseAPI3($api_key);
+            $results = $client->getCampaigns();
             if (!empty( $results )) {
                 $campaigns = array();
                 foreach ($results as $id => $info) {
-                    $name             = isset( $info['name'] ) ? $info['name'] : $info['description'];
+                    $name             = isset( $info->name ) ? $info->name : $info->description;
                     $campaigns[$name] = array(
                         'id'   => $id,
                         'name' => $name,
@@ -97,15 +98,15 @@ class DbConnection
         }
     }
 
-    public function getWebforms($api_key, $api_url)
+    public function getWebforms($api_key)
     {
         if (empty( $api_key )) {
             return array();
         }
 
         try {
-            $client  = new JsonRpcClient($api_url);
-            $results = $client->get_webforms($api_key, array('campaign' => array()));
+            $client  = new GetResponseAPI3($api_key);
+            $results = $client->get_webforms(array('campaign' => array()));
             if (!empty( $results )) {
                 $webforms = array();
                 foreach ($results as $id => $info) {
@@ -121,7 +122,7 @@ class DbConnection
         }
     }
 
-    public function getFromFields($api_key, $api_url)
+    public function getFromFields($api_key)
     {
         if (empty( $api_key )) {
             return false;
@@ -130,14 +131,14 @@ class DbConnection
         $fromfields = array();
 
         try {
-            $client  = new JsonRpcClient($api_url);
-            $results = $client->get_account_from_fields($api_key);
+            $client  = new GetResponseAPI3($api_key);
+            $results = $client->getAccountFromFields();
             if (!empty( $results )) {
                 foreach ($results as $id => $info) {
                     $fromfields[] = array(
                         'id'    => $id,
-                        'name'  => $info['name'],
-                        'email' => $info['email'],
+                        'name'  => $info->name,
+                        'email' => $info->email,
                     );
                 }
             }
@@ -148,7 +149,7 @@ class DbConnection
         }
     }
 
-    public function getConfirmationSubjects($api_key, $api_url)
+    public function getConfirmationSubjects($api_key)
     {
         if (empty( $api_key )) {
             return false;
@@ -157,8 +158,9 @@ class DbConnection
         $subjects = array();
 
         try {
-            $client  = new JsonRpcClient($api_url);
-            $results = $client->get_confirmation_subjects($api_key);
+            $client  = new GetResponseAPI3($api_key);
+            $results = $client->getConfirmationSubjects();
+            var_dump($results);die;
             if (!empty( $results )) {
                 foreach ($results as $id => $info) {
                     $subjects[] = array(
@@ -184,7 +186,7 @@ class DbConnection
         $bodies = array();
 
         try {
-            $client  = new JsonRpcClient($api_url);
+            $client  = new GetResponseAPI3($api_url);
             $results = $client->get_confirmation_bodies($api_key);
             if (!empty( $results )) {
                 foreach ($results as $id => $info) {
@@ -366,15 +368,15 @@ class DbConnection
         }
     }
 
-    public function getCycleDay($api_key, $api_url)
+    public function getCycleDay($api_key)
     {
         if (empty( $api_key )) {
             return array();
         }
 
         try {
-            $client  = new JsonRpcClient($api_url);
-            $results = $client->get_messages($api_key, array('type' => 'autoresponder'));
+            $client  = new GetResponseAPI3($api_key);
+            $results = $client->getAutoresponders();
 
             return $results;
         } catch (Exception $e) {
@@ -805,7 +807,7 @@ class DbConnection
         }
 
         try {
-            $client = new JsonRpcClient($api_url);
+            $client = new GetResponseAPI3($api_url);
 
             $name = (!empty($first_name) || !empty($last_name)) ? $first_name . ' ' . $last_name : 'Friend';
 
@@ -847,7 +849,7 @@ class DbConnection
         if (!empty( $contact_id ) && is_array($contact_id)) {
             foreach (array_keys($contact_id) as $k) {
                 try {
-                    $client = new JsonRpcClient($api_url);
+                    $client = new GetResponseAPI3($api_url);
                     $params = array(
                         'contact'  => $k,
                         'campaign' => $new_campaign_id
@@ -871,7 +873,7 @@ class DbConnection
         }
 
         try {
-            $client = new JsonRpcClient($api_url);
+            $client = new GetResponseAPI3($api_url);
 
             $result = $client->get_contacts(
                 $api_key,
@@ -902,7 +904,7 @@ class DbConnection
         }
 
         try {
-            $client = new JsonRpcClient($api_url);
+            $client = new GetResponseAPI3($api_url);
 
             $result = $client->set_contact_customs(
                 $api_key,
