@@ -42,7 +42,7 @@
 									<option value="">Select Web Form</option>
 								{/if}
 								{foreach $webforms as $wid => $webform}
-									<option value="{$wid|escape:'htmlall':'UTF-8'}" {if $webform_id == $wid}selected{/if}>{$webform['name']|escape:'htmlall':'UTF-8'} ({$campaigns[$webform['campaign']]|escape:'htmlall':'UTF-8'})</option>
+									<option value="{$wid|escape:'htmlall':'UTF-8'}" {if $webform_id == $wid}selected{/if}>{$webform->name|escape:'htmlall':'UTF-8'} ({$webform->campaign->name|escape:'htmlall':'UTF-8'})</option>
 								{/foreach}
 							</select>
 						{else}

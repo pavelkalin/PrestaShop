@@ -9,8 +9,6 @@
  */
 
 include_once( _PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php' );
-//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
-//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php' );
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -34,9 +32,6 @@ class AdminGetresponseController extends ModuleAdminController
         $this->api_urls = array(
             'gr' => 'https://api.getresponse.com/v3'
         );
-
-        $this->default_confirmation_subject = 'TfUp';
-        $this->default_confirmation_body = 'TfNl';
 
         $instance = Db::getInstance();
         $this->db = new DbConnection($instance);
@@ -258,24 +253,12 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'exportcustomers'));
 
-        $campaigns = $this->db->getCampaigns($this->apikey, $this->api_url);
+        $campaigns = $this->db->getCampaigns($this->apikey);
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $fromfields = $this->db->getFromFields($this->apikey, $this->api_url);
+        $fromfields = $this->db->getFromFields($this->apikey);
         if (!empty( $fromfields )) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
-        }
-
-//        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
-        if (!empty( $confirmationSubjects )) {
-            $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
-            $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
-        }
-
-//        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
-        if (!empty( $confirmationBodies )) {
-            $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
-            $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
         }
 
         $cycle_days = $this->db->getCycleDay($this->apikey);
@@ -381,21 +364,9 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'viapage'));
 
-        $fromfields = $this->db->getFromFields($this->apikey, $this->api_url);
+        $fromfields = $this->db->getFromFields($this->apikey);
         if (!empty( $fromfields )) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
-        }
-
-//        $confirmationSubjects = $this->db->getConfirmationSubjects($this->apikey, $this->api_url);
-        if (!empty( $confirmationSubjects )) {
-            $this->context->smarty->assign(array('confirmationSubjects' => $confirmationSubjects));
-            $this->context->smarty->assign(array('default_c_subject' => $this->default_confirmation_subject));
-        }
-
-//        $confirmationBodies = $this->db->getConfirmationBodies($this->apikey, $this->api_url);
-        if (!empty( $confirmationBodies )) {
-            $this->context->smarty->assign(array('confirmationBodies' => $confirmationBodies));
-            $this->context->smarty->assign(array('default_c_body' => $this->default_confirmation_body));
         }
 
         // ajax - update subscription
@@ -404,7 +375,7 @@ class AdminGetresponseController extends ModuleAdminController
             $this->db->updateSettingsSubscription($subscription);
         }
 
-        $campaigns = $this->db->getCampaigns($this->apikey, $this->api_url);
+        $campaigns = $this->db->getCampaigns($this->apikey);
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
         $cycle_days = $this->db->getCycleDay($this->apikey);
@@ -480,7 +451,7 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'viawebform'));
 
-        $campaigns = $this->db->getCampaigns($this->apikey, $this->api_url);
+        $campaigns = $this->db->getCampaigns($this->apikey);
         if (!empty( $campaigns )) {
             $campaign_id = array();
             foreach ($campaigns as $campaign) {
@@ -490,7 +461,7 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('campaigns' => $campaign_id));
         }
 
-        $webforms = $this->db->getWebforms($this->apikey, $this->api_url);
+        $webforms = $this->db->getWebforms($this->apikey);
         if (!empty( $webforms )) {
             $this->context->smarty->assign(array('webforms' => $webforms));
         }
@@ -509,7 +480,7 @@ class AdminGetresponseController extends ModuleAdminController
             $webform_style   = Tools::getValue('webform_style');
             $webform_status  = Tools::getValue('webform_status');
 
-            if (is_array($webform_id) && empty( $webform_id[0] )) {
+            if (is_array($webform_id) && !isset($webform_id[0])) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Web Form can not be empty')
@@ -521,7 +492,7 @@ class AdminGetresponseController extends ModuleAdminController
                     $webform_status,
                     $webform_sidebar[0],
                     $webform_style[0],
-                    $webforms[$webform_id[0]]['url']
+                    $webforms[$webform_id[0]]->scriptUrl
                 );
                 $this->context->smarty->assign(array(
                     'form_status' => 'success',
@@ -756,16 +727,16 @@ class AdminGetresponseController extends ModuleAdminController
 
         $table   = array();
         $counter = 1;
-        if (is_array($messages)) {
+        if (is_object($messages)) {
             foreach ($messages as $id => $message) {
                 $message_info                          = array();
-                $message_info['id']                    = $counter;
-                $message_info['on_day']                = $message['day_of_cycle'];
-                $message_info['triggers_name']         = $message['name'];
-                $message_info['messages_id']           = $id;
-                $message_info['messages_name']         = $message['name'];
-                $message_info['messages_subject']      = $message['subject'];
-                $message_info['messages_campaigns_id'] = $message['campaign'];
+                $message_info['id']                    = $message->autoresponderId;
+                $message_info['on_day']                = $message->triggerSettings->dayOfCycle;
+                $message_info['triggers_name']         = $message->name;
+                $message_info['messages_id']           = $message->autoresponderId;
+                $message_info['messages_name']         = $message->name;
+                $message_info['messages_subject']      = $message->subject;
+                $message_info['messages_campaigns_id'] = $message->triggerSettings->selectedCampaigns;
                 $message_info['status']                = 'active';
                 $message_info['campaigns_name']        = $campaign_name;
 
@@ -788,19 +759,19 @@ class AdminGetresponseController extends ModuleAdminController
     private function getMessagesFromGr($campaign_id)
     {
         // required params
-        if (empty( $this->apikey ) || empty( $this->api_url )) {
+        if (empty( $this->apikey )) {
             return false;
         }
 
         try {
-            $client = new GetResponseAPI3($this->api_url);
+            $client = new GetResponseAPI3($this->apikey);
 
             $params = array(
                 'campaigns' => array($campaign_id),
                 'type'      => 'autoresponder'
             );
 
-            $result = $client->get_messages($this->apikey, $params);
+            $result = $client->getAutoresponders($params);
 
             return $result;
         } catch (Exception $e) {
@@ -821,8 +792,6 @@ class AdminGetresponseController extends ModuleAdminController
         $campaign_name        = Tools::getValue('campaign_name');
         $from_field           = Tools::getValue('from_field');
         $reply_to_field       = Tools::getValue('reply_to_field');
-        $confirmation_subject = Tools::getValue('confirmation_subject');
-        $confirmation_body    = Tools::getValue('confirmation_body');
 
         if (empty( $campaign_name )) {
             die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name can\'t be empty.')) );
@@ -836,14 +805,6 @@ class AdminGetresponseController extends ModuleAdminController
             die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Reply field can\'t be empty.')) );
         }
 
-        if (empty( $confirmation_subject )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation subject can\'t be empty.')) );
-        }
-
-        if (empty( $confirmation_body )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation body can\'t be empty.')) );
-        }
-
         $campaign_name = Tools::strtolower($campaign_name);
 
         if (preg_match('/^[\w\-]+$/', $campaign_name) == false) {
@@ -854,69 +815,21 @@ class AdminGetresponseController extends ModuleAdminController
         $add = $this->addCampaignToGR(
             $campaign_name,
             $from_field,
-            $reply_to_field,
-            $confirmation_subject,
-            $confirmation_body
+            $reply_to_field
         );
 
         // show notice
-        if (is_array($add) && isset( $add['added'] ) && $add['added'] == 1) {
+        if (is_object($add) && isset($add->campaignId)) {
             die( Tools::jsonEncode(array(
                 'type' => 'success',
                 'msg'  => 'Campaign "' . $campaign_name . '" sucessfully created.',
                 'c'    => $campaign_name
             )) );
         } else {
-            $error_message = 'Campaign "' . $campaign_name . '" has not been added ';
-
-            if (preg_match('[Name already taken]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Name already taken.')
-                )) );
-            }
-            if (preg_match('[Total limit of campaigns exceeded]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Total limit of campaigns exceeded.')
-                )) );
-            }
-            if (preg_match('[Invalid email syntax]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Invalid email syntax.')
-                )) );
-            }
-            if (preg_match('[Missing From field]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Missing From field.')
-                )) );
-            }
-            if (preg_match('[Missing Reply-To field]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Missing Reply-To field.')
-                )) );
-            }
-            if (preg_match('[Missing confirmation subject]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Missing confirmation subject')
-                )) );
-            }
-            if (preg_match('[Missing confirmation body]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Missing confirmation body.')
-                )) );
-            }
-            if (preg_match('[Invalid language code]', $add)) {
-                die( Tools::jsonEncode(array(
-                    'type' => 'error',
-                    'msg'  => $error_message . $this->l(' - Total limit of campaigns exceeded.')
-                )) );
-            }
+            die( Tools::jsonEncode(array(
+                'type' => 'error',
+                'msg'  => 'Campaign "' . $campaign_name . '" has not been added ' . ' - ' . $add->message
+            )) );
         }
     }
 
@@ -932,9 +845,7 @@ class AdminGetresponseController extends ModuleAdminController
     private function addCampaignToGR(
         $campaign_name,
         $from_field,
-        $reply_to_field,
-        $confirmation_subject,
-        $confirmation_body
+        $reply_to_field
     ) {
         // required params
         if (empty( $this->apikey ) || empty( $this->api_url )) {
@@ -942,17 +853,15 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-            $client = new GetResponseAPI3($this->api_url);
+            $client = new GetResponseAPI3($this->apikey);
 
             $params = array(
                 'name'                 => $campaign_name,
                 'from_field'           => $from_field,
-                'reply_to_field'       => $reply_to_field,
-                'confirmation_subject' => $confirmation_subject,
-                'confirmation_body'    => $confirmation_body,
+                'reply_to_field'       => $reply_to_field
             );
 
-            $result = $client->add_campaign($this->apikey, $params);
+            $result = $client->createCampaign($params);
 
             return $result;
         } catch (Exception $e) {

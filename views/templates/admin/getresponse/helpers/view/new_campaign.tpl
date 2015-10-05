@@ -46,32 +46,6 @@
 				</div>
 			</fieldset>
 
-			<fieldset class="control-group" id="confirmationSubjectDiv">
-				<label for="confirmationSubject" class="control-label">{l s='Confirmation subject' mod='getresponse'}</label>
-				<div class="controls select-wide">
-					<select name="confirmation_subject" id="confirmationSubject" class="gr_select hiddenselect">
-						{if isset($confirmationSubjects)}
-							{foreach $confirmationSubjects as $confirmationSubject}
-								<option value="{$confirmationSubject['id']|escape:'htmlall':'UTF-8'}" {if $confirmationSubject['id'] == $default_c_subject}selected="selected"{/if}>({$confirmationSubject['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationSubject['content']|escape:'htmlall':'UTF-8'}</option>
-							{/foreach}
-						{/if}
-					</select>
-				</div>
-			</fieldset>
-
-			<fieldset class="control-group" id="confirmationBodyDiv">
-				<label for="confirmationBody" class="control-label">{l s='Confirmation body' mod='getresponse'}</label>
-				<div class="controls select-wide">
-					<select name="confirmation_body" id="confirmationBody" class="gr_select hiddenselect">
-						{if isset($confirmationBodies)}
-							{foreach $confirmationBodies as $confirmationBody}
-								<option value="{$confirmationBody['id']|escape:'htmlall':'UTF-8'}" {if $confirmationBody['id'] == $default_c_body}selected="selected"{/if}>({$confirmationBody['language_code']|escape:'htmlall':'UTF-8'}) {$confirmationBody['plain']|escape:'htmlall':'UTF-8'|trim:128}</option>
-							{/foreach}
-						{/if}
-					</select>
-				</div>
-			</fieldset>
-
 			<fieldset class="control-group" id="saveDiv">
 				<div class="controls">
 					<div class="btns">
@@ -93,8 +67,6 @@
 					from_field: $('#fromField').val(),
 					campaign_name: $('#campaignName').val(),
 					reply_to_field: $('#replyTo').val(),
-                    confirmation_subject: $('#confirmationSubject').val(),
-                    confirmation_body: $('#confirmationBody').val(),
 					token: '{/literal}{$token|escape:'htmlall':'UTF-8'}{literal}'
 				}, function(json) {
 					if (json != null) {

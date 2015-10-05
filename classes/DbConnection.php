@@ -8,7 +8,6 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-//require_once( _PS_MODULE_DIR_ . '/getresponse/classes/jsonRPCClient.php' );
 require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php' );
 
 /**
@@ -83,8 +82,8 @@ class DbConnection
                 foreach ($results as $id => $info) {
                     $name             = isset( $info->name ) ? $info->name : $info->description;
                     $campaigns[$name] = array(
-                        'id'   => $id,
-                        'name' => $name,
+                        'id'   => $info->campaignId,
+                        'name' => $info->name,
                     );
                 }
                 ksort($campaigns);
@@ -106,13 +105,12 @@ class DbConnection
 
         try {
             $client  = new GetResponseAPI3($api_key);
-            $results = $client->get_webforms(array('campaign' => array()));
+            $results = $client->getWebforms();
             if (!empty( $results )) {
                 $webforms = array();
                 foreach ($results as $id => $info) {
                     $webforms[$id] = $info;
                 }
-
                 return $webforms;
             }
 
@@ -136,7 +134,7 @@ class DbConnection
             if (!empty( $results )) {
                 foreach ($results as $id => $info) {
                     $fromfields[] = array(
-                        'id'    => $id,
+                        'id'    => $info->fromFieldId,
                         'name'  => $info->name,
                         'email' => $info->email,
                     );
@@ -144,62 +142,6 @@ class DbConnection
             }
 
             return $fromfields;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    public function getConfirmationSubjects($api_key)
-    {
-        if (empty( $api_key )) {
-            return false;
-        }
-
-        $subjects = array();
-
-        try {
-            $client  = new GetResponseAPI3($api_key);
-            $results = $client->getConfirmationSubjects();
-            var_dump($results);die;
-            if (!empty( $results )) {
-                foreach ($results as $id => $info) {
-                    $subjects[] = array(
-                        'id'            => $id,
-                        'content'       => $info['content'],
-                        'language_code' => $info['language_code'],
-                    );
-                }
-            }
-
-            return $subjects;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    public function getConfirmationBodies($api_key, $api_url)
-    {
-        if (empty( $api_key )) {
-            return false;
-        }
-
-        $bodies = array();
-
-        try {
-            $client  = new GetResponseAPI3($api_url);
-            $results = $client->get_confirmation_bodies($api_key);
-            if (!empty( $results )) {
-                foreach ($results as $id => $info) {
-                    $bodies[] = array(
-                        'id'            => $id,
-                        'plain'         => $info['plain'],
-                        'html'          => $info['html'],
-                        'language_code' => $info['language_code'],
-                    );
-                }
-            }
-
-            return $bodies;
         } catch (Exception $e) {
             return false;
         }
@@ -574,8 +516,6 @@ class DbConnection
 
                 // add contact to GR via API
                 $r = $this->addContactToGR(
-                    $api_key,
-                    $api_url,
                     $campaign_id,
                     $customer['firstname'],
                     $customer['lastname'],
@@ -793,7 +733,6 @@ class DbConnection
 
     public function addContactToGR(
         $api_key,
-        $api_url,
         $campaign_id,
         $first_name,
         $last_name,
@@ -807,7 +746,7 @@ class DbConnection
         }
 
         try {
-            $client = new GetResponseAPI3($api_url);
+            $client = new GetResponseAPI3($api_key);
 
             $name = (!empty($first_name) || !empty($last_name)) ? $first_name . ' ' . $last_name : 'Friend';
 
@@ -823,39 +762,39 @@ class DbConnection
                 $params['cycle_day'] = $cycle_day;
             }
 
-            $result = $client->add_contact($api_key, $params);
+            $result = $client->addContact($params);
 
             return $result;
         } catch (Exception $e) {
             // if contact is already added to target campaign - update cutom fields
             if (preg_match('[Contact already added to target campaign]', $e->getMessage())) {
-                $contact_id = $this->getContactFromGr($api_key, $api_url, $email, $campaign_id);
-                $this->updateGrContact($api_key, $api_url, $contact_id, $customs);
+                $contact_id = $this->getContactFromGr($email, $campaign_id);
+                $this->updateGrContact($contact_id, $customs);
             } else {
                 return array('contact_error' => 'true', 'contact_message' => $e->getMessage());
             }
         }
     }
 
-    public function moveContactToGr($api_key, $api_url, $current_campaign_id, $new_campaign_id, $email)
+    public function moveContactToGr($api_key, $current_campaign_id, $new_campaign_id, $email)
     {
         // required params
-        if (empty( $api_key ) || empty( $api_url )) {
+        if (empty( $api_key )) {
             return false;
         }
 
-        $contact_id = $this->getContactFromGr($api_key, $api_url, $email, $current_campaign_id);
+        $contact_id = $this->getContactFromGr($api_key, $email, $current_campaign_id);
 
         if (!empty( $contact_id ) && is_array($contact_id)) {
             foreach (array_keys($contact_id) as $k) {
                 try {
-                    $client = new GetResponseAPI3($api_url);
+                    $client = new GetResponseAPI3($api_key);
                     $params = array(
                         'contact'  => $k,
                         'campaign' => $new_campaign_id
                     );
 
-                    $result = $client->move_contact($api_key, $params);
+                    $result = $client->moveContact($params);
 
                     return $result;
                 } catch (Exception $e) {
@@ -865,18 +804,17 @@ class DbConnection
         }
     }
 
-    public function getContactFromGr($api_key, $api_url, $contact_email, $campaign_id)
+    public function getContactFromGr($api_key, $contact_email, $campaign_id)
     {
         // required params
-        if (empty( $api_key ) || empty( $api_url )) {
+        if (empty( $api_key )) {
             return false;
         }
 
         try {
-            $client = new GetResponseAPI3($api_url);
+            $client = new GetResponseAPI3($api_key);
 
             $result = $client->get_contacts(
-                $api_key,
                 array(
                     'email'     => array('EQUALS' => $contact_email),
                     'campaigns' => array($campaign_id),
@@ -889,10 +827,10 @@ class DbConnection
         }
     }
 
-    public function updateGrContact($api_key, $api_url, $contact_id, $customs)
+    public function updateGrContact($api_key, $contact_id, $customs)
     {
         // required params
-        if (empty( $api_key ) || empty( $api_url )) {
+        if (empty( $api_key )) {
             return false;
         }
 
@@ -904,10 +842,9 @@ class DbConnection
         }
 
         try {
-            $client = new GetResponseAPI3($api_url);
+            $client = new GetResponseAPI3($api_key);
 
             $result = $client->set_contact_customs(
-                $api_key,
                 array(
                     'contact' => $contact_id,
                     'customs' => $customs
