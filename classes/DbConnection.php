@@ -566,6 +566,11 @@ class DbConnection
             }
         }
 
+        if (is_object($customer))
+        {
+            $customer = get_object_vars($customer);
+        }
+
         // default reference custom
         $customs[] = array(
             'name'    => 'ref',
