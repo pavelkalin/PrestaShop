@@ -358,7 +358,7 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'viapage'));
 
-        $fromfields = $this->db->getFromFields($this->apikey);
+        $fromfields = $this->db->getFromFields();
         if (!empty( $fromfields )) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
@@ -369,10 +369,10 @@ class AdminGetresponseController extends ModuleAdminController
             $this->db->updateSettingsSubscription($subscription);
         }
 
-        $campaigns = $this->db->getCampaigns($this->apikey);
+        $campaigns = $this->db->getCampaigns();
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $cycle_days = $this->db->getCycleDay($this->apikey);
+        $cycle_days = $this->db->getCycleDay();
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         $custom_fields = $this->db->getCustoms();
@@ -445,7 +445,7 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'viawebform'));
 
-        $campaigns = $this->db->getCampaigns($this->apikey);
+        $campaigns = $this->db->getCampaigns();
         if (!empty( $campaigns )) {
             $campaign_id = array();
             foreach ($campaigns as $campaign) {
@@ -534,10 +534,10 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('categories' => $categories));
         }
 
-        $campaigns = $this->db->getCampaigns($this->apikey);
+        $campaigns = $this->db->getCampaigns();
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $cycle_days = $this->db->getCycleDay($this->apikey);
+        $cycle_days = $this->db->getCycleDay();
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         // add new automation
@@ -730,7 +730,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         // add new campaign to GR
-        $messages = $this->getMessagesFromGr($campaign_id);
+        $messages = $this->getMessagesFromGr();
 
         $table   = array();
         $counter = 1;
@@ -763,7 +763,7 @@ class AdminGetresponseController extends ModuleAdminController
      *
      * @return string
      */
-    private function getMessagesFromGr($campaign_id)
+    private function getMessagesFromGr()
     {
         // required params
         if (empty( $this->apikey )) {
@@ -771,14 +771,6 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-//            $client = new GetResponseAPI3($this->apikey);
-//
-//            $params = array(
-//                'campaigns' => array($campaign_id),
-//                'type'      => 'autoresponder'
-//            );
-//
-//            $result = $client->getAutoresponders($params);
             $result = $this->db->grApiInstance->getAutoresponders();
 
             return $result;
