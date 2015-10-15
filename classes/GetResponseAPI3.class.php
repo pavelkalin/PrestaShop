@@ -172,6 +172,16 @@ class GetResponseAPI3 {
 	}
 
 	/**
+	 * retrieve single custom field
+	 *
+	 * @param string $cs_id obtained by API
+	 * @return mixed
+	 */
+	public function addCustomField($params = array()) {
+		return $this->call('custom-fields', 'POST', $params);
+	}
+
+	/**
 	 * retrieve account from fields
 	 * @param array $params
 	 *

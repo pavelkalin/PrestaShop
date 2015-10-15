@@ -36,22 +36,24 @@
 				<fieldset class="control-group" id="webformIdDiv">
 					<label for="webformId" class="control-label">{l s='Web Form' mod='getresponse'}:</label>
 					<div class="controls">
-						{if $webforms}
-							<select name="webform_id" id="webformSidebar" class="gr_select fullselect">
-								{if !$webform_id}
-									<option value="">Select Web Form</option>
-								{/if}
+						<select name="webform_id" id="webformSidebar" class="gr_select fullselect">
+							{if $webforms}
+								<option value="" disabled>Old Webforms:</option>
 								{foreach $webforms as $wid => $webform}
-									<option value="{$wid|escape:'htmlall':'UTF-8'}" {if $webform_id == $wid}selected{/if}>{$webform->name|escape:'htmlall':'UTF-8'} ({$webform->campaign->name|escape:'htmlall':'UTF-8'})</option>
+									<option value="{$webform->webformId|escape:'htmlall':'UTF-8'}" {if $webform_id == $webform->webformId}selected{/if}>{$webform->name|escape:'htmlall':'UTF-8'} ({$webform->campaign->name|escape:'htmlall':'UTF-8'}) {if $webform->status != 'enabled'}(DISABLED IN GR){/if}</option>
 								{/foreach}
-							</select>
-						{else}
-							<div class="warning">
-								<h5>
-									{l s='No webforms' mod='getresponse'}
-								</h5>
-							</div>
-						{/if}
+							{else}
+								<option value="" disabled>{l s='No old webforms' mod='getresponse'}</option>
+							{/if}
+							{if $forms}
+								<option value="" disabled>New Forms:</option>
+								{foreach $forms as $wid => $form}
+									<option value="{$form->webformId|escape:'htmlall':'UTF-8'}" {if $webform_id == $form->webformId}selected{/if}>{$form->name|escape:'htmlall':'UTF-8'} ({$form->campaign->name|escape:'htmlall':'UTF-8'}) {if $form->status != 'published'}(DISABLED IN GR){/if}</option>
+								{/foreach}
+							{else}
+								<option value="" disabled>{l s='No new forms' mod='getresponse'}</option>
+							{/if}
+						</select>
 					</div>
 				</fieldset>
 

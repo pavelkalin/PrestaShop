@@ -3,6 +3,7 @@
  * This module integrate GetResponse and PrestaShop Allows subscribe via checkout page and export your contacts.
  *
  *  @author    Grzegorz Struczynski <gstruczynski@getresponse.com>
+ *  @author    Michal Zubrzycki     <mzubrzycki@getresponse.com>
  *  @copyright GetResponse
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
@@ -18,11 +19,15 @@ require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php'
  */
 class DbConnection
 {
+    var $grApiInstance;
+    var $all_custom_fields;
 
     public function __construct($database)
     {
         $this->db  = $database;
         $this->obj = 1;
+        $this->api_key = null;
+        $this->settings = null;
 
         $context       = Context::getContext();
         $this->id_shop = $context->shop->id;
@@ -32,6 +37,42 @@ class DbConnection
         $this->prefix_webform    = _DB_PREFIX_ . 'getresponse_webform';
         $this->prefix_automation = _DB_PREFIX_ . 'getresponse_automation';
         $this->prefix_customs    = _DB_PREFIX_ . 'getresponse_customs';
+
+        if (Module::isInstalled('getresponse')) {
+            $this->settings = $this->getSettings();
+        }
+        $this->grApiInstance = $this->getApiInstance();
+    }
+
+    public function getApiInstance()
+    {
+        if (empty($this->api_key)) {
+            return array();
+        }
+
+        try {
+            $apiInstance = new GetResponseAPI3($this->api_key);
+
+            return $apiInstance;
+        } catch (Exception $e) {
+            return array('message' => $e->getMessage());
+        }
+    }
+
+    public function ping($api_key)
+    {
+        if (empty($api_key)) {
+            return false;
+        }
+
+        $api = new GetResponseAPI3($api_key);
+        $ping = $api->ping();
+
+        if (isset($ping->accountId)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /******************************************************************/
@@ -49,6 +90,7 @@ class DbConnection
                 ';
 
         if ($results = $this->db->ExecuteS($sql)) {
+            $this->api_key = $results[0]['api_key'];
             return $results[0];
         }
     }
@@ -68,22 +110,21 @@ class DbConnection
         }
     }
 
-    public function getCampaigns($api_key)
+    public function getCampaigns()
     {
-        if (empty( $api_key )) {
+        if (empty( $this->api_key )) {
             return array();
         }
 
         try {
-            $client  = new GetResponseAPI3($api_key);
-            $results = $client->getCampaigns();
+            $results = $this->grApiInstance->getCampaigns();
+
             if (!empty( $results )) {
                 $campaigns = array();
                 foreach ($results as $id => $info) {
-                    $name             = isset( $info->name ) ? $info->name : $info->description;
-                    $campaigns[$name] = array(
+                    $campaigns[$info->name] = array(
                         'id'   => $info->campaignId,
-                        'name' => $info->name,
+                        'name' => $info->name
                     );
                 }
                 ksort($campaigns);
@@ -97,15 +138,15 @@ class DbConnection
         }
     }
 
-    public function getWebforms($api_key)
+    public function getWebforms()
     {
-        if (empty( $api_key )) {
+        if (empty( $this->api_key )) {
             return array();
         }
 
         try {
-            $client  = new GetResponseAPI3($api_key);
-            $results = $client->getWebforms();
+            $results = $this->grApiInstance->getWebForms();
+
             if (!empty( $results )) {
                 $webforms = array();
                 foreach ($results as $id => $info) {
@@ -120,17 +161,39 @@ class DbConnection
         }
     }
 
-    public function getFromFields($api_key)
+    public function getForms()
     {
-        if (empty( $api_key )) {
+        if (empty( $this->api_key )) {
+            return array();
+        }
+
+        try {
+            $results = $this->grApiInstance->getForms();
+
+            if (!empty( $results )) {
+                $forms = array();
+                foreach ($results as $id => $info) {
+                    $forms[$id] = $info;
+                }
+                return $forms;
+            }
+
+            return array();
+        } catch (Exception $e) {
+            return array();
+        }
+    }
+
+    public function getFromFields()
+    {
+        if (empty( $this->api_key )) {
             return false;
         }
 
         $fromfields = array();
 
         try {
-            $client  = new GetResponseAPI3($api_key);
-            $results = $client->getAccountFromFields();
+            $results = $this->grApiInstance->getAccountFromFields();
             if (!empty( $results )) {
                 foreach ($results as $id => $info) {
                     $fromfields[] = array(
@@ -224,8 +287,6 @@ class DbConnection
                     cu.newsletter = 1' . $where . '
                 AND
                     cu.id_shop = ' . $this->id_shop . '
-                AND
-                    ad.active = 1
                 ' . $ng_where . '
                 ';
 
@@ -310,15 +371,14 @@ class DbConnection
         }
     }
 
-    public function getCycleDay($api_key)
+    public function getCycleDay()
     {
-        if (empty( $api_key )) {
+        if (empty( $this->api_key )) {
             return array();
         }
 
         try {
-            $client  = new GetResponseAPI3($api_key);
-            $results = $client->getAutoresponders();
+            $results = $this->grApiInstance->getAutoresponders();
 
             return $results;
         } catch (Exception $e) {
@@ -498,15 +558,26 @@ class DbConnection
     /** API Methods *****************************&*********************/
     /******************************************************************/
 
-    public function exportSubscriber($api_key, $api_url, $campaign_id, $customers, $cycle_day)
+    /**
+     * Export newsletter subscribers from Prestashop to GR campaign
+     *
+     * @param       $campaign_id
+     * @param array $customers
+     * @param int   $cycle_day
+     *
+     * @return mixed
+     */
+    public function exportSubscriber($campaign_id, $customers, $cycle_day)
     {
         if (empty( $_POST )) {
             return array('status' => '0', 'message' => 'Request error');
         }
 
+        $response = array();
         if (!empty( $customers )) {
             foreach ($customers as $customer) {
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
+
                 if (!empty( $customs['custom_error'] ) && $customs['custom_error'] == true) {
                     return array(
                         'status'  => '0',
@@ -515,25 +586,19 @@ class DbConnection
                 }
 
                 // add contact to GR via API
-                $r = $this->addContactToGR(
+                $r = $this->addContact(
                     $campaign_id,
                     $customer['firstname'],
                     $customer['lastname'],
                     $customer['email'],
-                    $customs,
-                    $cycle_day
+                    $cycle_day,
+                    $customs
                 );
 
-                if (!empty( $r['contact_error'] ) && $r['contact_error'] == true) {
-                    if (preg_match('[Invalid email syntax]', $r['contact_message'])) {
-                        return array('status' => '0', 'message' => 'Error - Invalid email syntax');
-                    }
-                    if (preg_match('[Missing campaign]', $r['contact_message'])) {
-                        return array('status' => '0', 'message' => 'Error - Missing campaign');
-                    }
-                    if (preg_match('[Invalid param]', $r['contact_message'])) {
-                        return array('status' => '0', 'message' => 'Error - Invalid param');
-                    }
+                // TODO: Tutaj trzeba zrobic obsluge nowych bledow
+                // TODO: M.in blad braku prefixu w polach mobile lub phone
+                if (!empty($r->message) && $r->message != 'Contact in queue') {
+                    return array('status' => '0', 'message' => $r);
                 }
             }
         }
@@ -541,6 +606,15 @@ class DbConnection
         return array('status' => '1', 'message' => 'Export completed.');
     }
 
+    /**
+     * Map custom fields from DB and $_POST
+     *
+     * @param       $customer
+     * @param       $customer_post
+     * @param       $type
+     *
+     * @return mixed
+     */
     private function mapCustoms($customer, $customer_post, $type)
     {
         $fields  = array();
@@ -572,10 +646,7 @@ class DbConnection
         }
 
         // default reference custom
-        $customs[] = array(
-            'name'    => 'ref',
-            'content' => 'prestashop'
-        );
+        $customs['ref'] = 'prestashop';
 
         // for fields from DB
         if (!empty( $fields )) {
@@ -605,18 +676,12 @@ class DbConnection
                     }
 
                     // compose address value address+address2
-                    if ($fv == 'address1' && !empty($address_name)) {
+                    if ($fv == $address_name) {
                         $address2 = !empty( $customer['address2'] ) ? ' ' . $customer['address2'] : '';
 
-                        $customs[] = array(
-                            'name'    => $address_name,
-                            'content' => $customer['address1'] . $address2
-                        );
+                        $customs[$address_name] = $customer['address1'] . $address2;
                     } else {
-                        $customs[] = array(
-                            'name'    => $field_value,
-                            'content' => $customer[$field_key]
-                        );
+                        $customs[$field_value] = $customer[$field_key];
                     }
                 }
             }
@@ -625,6 +690,19 @@ class DbConnection
         return $customs;
     }
 
+    /**
+     * Add (or update) contact to gr campaign depending on action and apply automation rules
+     *
+     * @param array $params
+     * @param       $apikey
+     * @param       $api_url
+     * @param       $campaign_id
+     * @param       $action
+     * @param int   $cycle_day
+     *
+     * @return mixed
+     */
+    // TODO: implementacja uzytkownikow GR360 - wtedy bedzie trzeba przekazywac apikey i api_url
     public function addSubscriber($params, $apikey, $api_url, $campaign_id, $action, $cycle_day)
     {
         $allowed = array('order', 'create');
@@ -636,15 +714,13 @@ class DbConnection
             $customs = $this->mapCustoms($params[$prefix], null, 'create');
 
             if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
-                $this->addContactToGR(
-                    $apikey,
-                    $api_url,
+                $this->addContact(
                     $campaign_id,
                     $params[$prefix]->firstname,
                     $params[$prefix]->lastname,
                     $params[$prefix]->email,
-                    $customs,
-                    $cycle_day
+                    $cycle_day,
+                    $customs
                 );
             }
         } else {
@@ -662,27 +738,26 @@ class DbConnection
                 $automations = $this->getAutomationSettings('active');
                 if (!empty( $automations )) {
                     $default = false;
-                    foreach ($automations as $autmation) {
-                        if (in_array($autmation['category_id'], $categories)) {
+                    foreach ($automations as $automation) {
+                        if (in_array($automation['category_id'], $categories)) {
                             // do automation
-                            if ($autmation['action'] == 'move') {
+                            if ($automation['action'] == 'move') {
                                 $this->moveContactToGr(
-                                    $apikey,
-                                    $api_url,
-                                    $campaign_id,
-                                    $autmation['campaign_id'],
-                                    $params[$prefix]->email
-                                );
-                            } elseif ($autmation['action'] == 'copy') {
-                                $this->addContactToGR(
-                                    $apikey,
-                                    $api_url,
-                                    $campaign_id,
+                                    $automation['campaign_id'],
                                     $params[$prefix]->firstname,
                                     $params[$prefix]->lastname,
                                     $params[$prefix]->email,
-                                    $customs,
-                                    $cycle_day
+                                    $cycle_day,
+                                    $customs
+                                );
+                            } elseif ($automation['action'] == 'copy') {
+                                $this->addContact(
+                                    $automation['campaign_id'],
+                                    $params[$prefix]->firstname,
+                                    $params[$prefix]->lastname,
+                                    $params[$prefix]->email,
+                                    $cycle_day,
+                                    $customs
                                 );
                             }
                         } else {
@@ -692,42 +767,36 @@ class DbConnection
 
                     if ($default === true && isset( $params[$prefix]->newsletter ) &&
                         $params[$prefix]->newsletter == 1) {
-                        $this->addContactToGR(
-                            $apikey,
-                            $api_url,
+                        $this->addContact(
                             $campaign_id,
                             $params[$prefix]->firstname,
                             $params[$prefix]->lastname,
                             $params[$prefix]->email,
-                            $customs,
-                            $cycle_day
+                            $cycle_day,
+                            $customs
                         );
                     }
                 } else {
                     if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
-                        $this->addContactToGR(
-                            $apikey,
-                            $api_url,
+                        $this->addContact(
                             $campaign_id,
                             $params[$prefix]->firstname,
                             $params[$prefix]->lastname,
                             $params[$prefix]->email,
-                            $customs,
-                            $cycle_day
+                            $cycle_day,
+                            $customs
                         );
                     }
                 }
             } else {
                 if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
-                    $this->addContactToGR(
-                        $apikey,
-                        $api_url,
+                    $this->addContact(
                         $campaign_id,
                         $params[$prefix]->firstname,
                         $params[$prefix]->lastname,
                         $params[$prefix]->email,
-                        $customs,
-                        $cycle_day
+                        $cycle_day,
+                        $customs
                     );
                 }
             }
@@ -736,129 +805,197 @@ class DbConnection
         return true;
     }
 
-    public function addContactToGR(
-        $api_key,
-        $campaign_id,
-        $first_name,
-        $last_name,
-        $email,
-        $customs,
-        $cycle_day
-    ) {
-        // required params
-        if (empty( $campaign_id ) || empty( $email )) {
-            return false;
-        }
-
-        try {
-            $client = new GetResponseAPI3($api_key);
-
-            $name = (!empty($first_name) || !empty($last_name)) ? $first_name . ' ' . $last_name : 'Friend';
-
-            $params = array(
-                'campaign'     => $campaign_id,
-                'name'         => trim($name),
-                'email'        => $email,
-                'consumer_key' => 'nKNAoE', // do not change
-                'customs'      => $customs
-            );
-
-            if (!empty( $cycle_day )) {
-                $params['cycle_day'] = $cycle_day;
-            }
-
-            $result = $client->addContact($params);
-
-            return $result;
-        } catch (Exception $e) {
-            // if contact is already added to target campaign - update cutom fields
-            if (preg_match('[Contact already added to target campaign]', $e->getMessage())) {
-                $contact_id = $this->getContactFromGr($email, $campaign_id);
-                $this->updateGrContact($contact_id, $customs);
-            } else {
-                return array('contact_error' => 'true', 'contact_message' => $e->getMessage());
-            }
-        }
-    }
-
-    public function moveContactToGr($api_key, $current_campaign_id, $new_campaign_id, $email)
+    /**
+     * first delete contact from all campaigns then move contact to new one
+     *
+     * @param       $new_campaign
+     * @param       $firstname
+     * @param       $lastname
+     * @param       $email
+     * @param int   $cycle_day
+     * @param array $user_customs
+     *
+     * @return mixed
+     */
+    public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $cycle_day = 0, $customs)
     {
         // required params
-        if (empty( $api_key )) {
+        if (empty( $this->api_key )) {
             return false;
         }
 
-        $contact_id = $this->getContactFromGr($api_key, $email, $current_campaign_id);
+        $contacts_id = (array) $this->grApiInstance->getContacts(array(
+            'query' => array(
+                'email' => $email
+            )
+        ));
 
-        if (!empty( $contact_id ) && is_array($contact_id)) {
-            foreach (array_keys($contact_id) as $k) {
+        if (!empty($contacts_id) && isset($contacts_id[0]->contactId)) {
+            foreach ($contacts_id as $k => $contact) {
                 try {
-                    $client = new GetResponseAPI3($api_key);
-                    $params = array(
-                        'contact'  => $k,
-                        'campaign' => $new_campaign_id
-                    );
-
-                    $result = $client->moveContact($params);
-
-                    return $result;
+                    $this->grApiInstance->deleteContact($contact->contactId);
                 } catch (Exception $e) {
                     return true;
                 }
             }
+
+            return $this->addContact($new_campaign_id, $firstname, $lastname, $email, $cycle_day, $customs);
         }
     }
 
-    public function getContactFromGr($api_key, $contact_email, $campaign_id)
+    /**
+     * Add (or update) contact to gr campaign
+     *
+     * @param       $campaign
+     * @param       $firstname
+     * @param       $lastname
+     * @param       $email
+     * @param int   $cycle_day
+     * @param array $user_customs
+     *
+     * @return mixed
+     */
+    public function addContact($campaign, $firstname, $lastname, $email, $cycle_day = 0, $user_customs = array())
     {
-        // required params
-        if (empty( $api_key )) {
-            return false;
+        $name = trim($firstname) . ' ' . trim($lastname);
+
+        $params = array(
+            'name'       => $name,
+            'email'      => $email,
+            'dayOfCycle' => (int) $cycle_day,
+            'campaign'   => array('campaignId' => $campaign),
+            'ipAddress'  => $_SERVER['REMOTE_ADDR'],
+            'consumer_key' => 'nKNAoE'
+        );
+
+        $this->all_custom_fields = $this->getCustomFields();
+
+        $results = (array) $this->grApiInstance->getContacts(array(
+            'query' => array(
+                'email'      => $email,
+                'campaignId' => $campaign
+            )
+        ));
+
+        $contact = array_pop($results);
+
+        // if contact already exists in gr account
+        if ( !empty($contact) && isset($contact->contactId))
+        {
+            $results = $this->grApiInstance->getContact($contact->contactId);
+            if ( !empty($results->customFieldValues))
+            {
+                $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $user_customs);
+            }
+            return $this->grApiInstance->updateContact($contact->contactId, $params);
         }
-
-        try {
-            $client = new GetResponseAPI3($api_key);
-
-            $result = $client->get_contacts(
-                array(
-                    'email'     => array('EQUALS' => $contact_email),
-                    'campaigns' => array($campaign_id),
-                )
-            );
-
-            return $result;
-        } catch (Exception $e) {
-            return $e->getMessage();
+        else
+        {
+            $params['customFieldValues'] = $this->setCustoms($user_customs);
+            return $this->grApiInstance->addContact($params);
         }
     }
 
-    public function updateGrContact($api_key, $contact_id, $customs)
+    /**
+     * Merge user custom fields selected on WP admin site with those from gr account
+     * @param $results
+     * @param $user_customs
+     *
+     * @return array
+     */
+    function mergeUserCustoms($results, $user_customs)
     {
-        // required params
-        if (empty( $api_key )) {
-            return false;
+        $custom_fields = array();
+
+        if (is_array($results))
+        {
+            foreach ($results as $customs)
+            {
+                $value = $customs->value;
+                if (in_array($customs->name, array_keys($user_customs)))
+                {
+                    $value = array($user_customs[$customs->name]);
+                    unset($user_customs[$customs->name]);
+                }
+
+                $custom_fields[] = array(
+                    'customFieldId' => $customs->customFieldId,
+                    'value'         => $value
+                );
+            }
         }
 
-        $contat_key = array_keys($contact_id);
-        $contact_id = array_pop($contat_key);
-
-        if (empty( $contact_id )) {
-            return false;
-        }
-
-        try {
-            $client = new GetResponseAPI3($api_key);
-
-            $result = $client->set_contact_customs(
-                array(
-                    'contact' => $contact_id,
-                    'customs' => $customs
-                )
-            );
-
-            return $result;
-        } catch (Exception $e) {
-            return $e->getMessage();
-        }
+        return array_merge($custom_fields, $this->setCustoms($user_customs));
     }
+
+    /**
+     * Set user custom fields
+     * @param $user_customs
+     *
+     * @return array
+     */
+    function setCustoms($user_customs)
+    {
+        $custom_fields = array();
+
+        if (empty($user_customs))
+        {
+            return $custom_fields;
+        }
+
+        foreach ($user_customs as $name => $value)
+        {
+            // if custom field is already created on gr account set new value
+            if (in_array($name, array_keys($this->all_custom_fields)))
+            {
+                $custom_fields[] = array(
+                    'customFieldId' => $this->all_custom_fields[$name],
+                    'value'         => array($value)
+                );
+            }
+            // create new custom field
+            else
+            {
+                $custom = $this->grApiInstance->addCustomField(array(
+                    'name'   => $name,
+                    'type'   => "text",
+                    'hidden' => "false",
+                    'values' => array($value),
+                ));
+
+                if ( !empty($custom) && !empty($custom->customFieldId))
+                {
+                    $custom_fields[] = array(
+                        'customFieldId' => $custom->customFieldId,
+                        'value'         => array($value)
+                    );
+                }
+            }
+        }
+
+        return $custom_fields;
+    }
+
+    /**
+     * Get all user custom fields from gr account
+     * @return array
+     */
+    function getCustomFields()
+    {
+        $all_customs = array();
+        $results     = $this->grApiInstance->getCustomFields();
+        if ( !empty($results))
+        {
+            foreach ($results as $ac)
+            {
+                if (isset($ac->name) && isset($ac->customFieldId)) {
+                    $all_customs[$ac->name] = $ac->customFieldId;
+                }
+            }
+        }
+
+        return $all_customs;
+    }
+
+
 }

@@ -36,6 +36,8 @@
 			</div>
 		</fieldset>
 
+		{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/add_cycle.tpl"}
+
 		<fieldset class="control-group">
 			<label for="crypto" class="control-label"></label>
 			<div class="controls">
@@ -66,8 +68,6 @@
 				</select>
 			</div>
 		</fieldset>
-
-		{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/add_cycle.tpl"}
 
 		<fieldset class="control-group">
 			<div class="controls">

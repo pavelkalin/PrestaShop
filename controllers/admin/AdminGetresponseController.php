@@ -207,10 +207,10 @@ class AdminGetresponseController extends ModuleAdminController
                     $this->api_url = $this->api_urls[$account_type[0]] . '/' . $api_crypto;
 
                     // check if api key is correct
-                    $campaigns = $this->db->getCampaigns($api_key, $this->api_url);
+                    $response = $this->db->ping($api_key);
 
                     // set api key and api url to DB if are correct
-                    if (!empty( $campaigns )) {
+                    if ($response === true) {
                         $this->db->updateApiSettings($api_key, $account_type[0], $api_crypto);
                         $this->context->smarty->assign(array(
                             'form_status' => 'success',
@@ -253,15 +253,15 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->context->smarty->assign(array('selected_tab' => 'exportcustomers'));
 
-        $campaigns = $this->db->getCampaigns($this->apikey);
+        $campaigns = $this->db->getCampaigns();
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
-        $fromfields = $this->db->getFromFields($this->apikey);
+        $fromfields = $this->db->getFromFields();
         if (!empty( $fromfields )) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
-        $cycle_days = $this->db->getCycleDay($this->apikey);
+        $cycle_days = $this->db->getCycleDay();
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
         $custom_fields = $this->db->getCustoms();
@@ -300,17 +300,13 @@ class AdminGetresponseController extends ModuleAdminController
                 $ng        = Tools::getValue('newsletter_guests');
                 $cycle_day = Tools::getValue('cycle_day');
 
-                if (empty( $cycle_day )) {
-                    $cycle_day = null;
-                }
-
                 if (!empty( $ng )) {
                     $newsletter_guests = true;
                 }
 
                 $posted_customs = Tools::getValue('custom_field');
                 $validation     = $this->validateCustoms($posted_customs);
-                if (is_array($validation) &&!empty( $validation['form_status'] )) {
+                if (is_array($validation) && !empty( $validation['form_status'] )) {
                     $this->context->smarty->assign($validation);
                 } else {
                     // get contacts
@@ -322,11 +318,9 @@ class AdminGetresponseController extends ModuleAdminController
                         ));
                     } else {
                         $add_to_cycle = Tools::getValue('add_to_cycle');
-                        $cycle_day    =!empty( $add_to_cycle ) ? $cycle_day[0] : null;
+                        $cycle_day    = !is_null( $add_to_cycle ) ? $cycle_day : null;
                         // export contacts to GR campaign
                         $add = $this->db->exportSubscriber(
-                            $this->apikey,
-                            $this->api_url,
                             $campaign[0],
                             $contacts,
                             $cycle_day
@@ -411,7 +405,7 @@ class AdminGetresponseController extends ModuleAdminController
             // check subscription settings
             if (!empty( $campaign[0] ) && $campaign[0] != '0' && !empty( $status )) {
                 $update_address = empty( $update_address ) ? 'no' : $update_address;
-                $cycle_day      = !empty( $add_to_cycle ) ? $cycle_day[0] : null;
+                $cycle_day      = !is_null( $add_to_cycle ) ? $cycle_day : null;
 
                 $validation = $this->validateCustoms($posted_customs);
                 if (is_array($validation) && !empty( $validation['form_status'] )) {
@@ -461,9 +455,16 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('campaigns' => $campaign_id));
         }
 
-        $webforms = $this->db->getWebforms($this->apikey);
+        // get old webforms
+        $webforms = $this->db->getWebforms();
         if (!empty( $webforms )) {
             $this->context->smarty->assign(array('webforms' => $webforms));
+        }
+
+        // get new forms
+        $forms = $this->db->getForms();
+        if (!empty( $forms )) {
+            $this->context->smarty->assign(array('forms' => $forms));
         }
 
         // ajax - update subscription
@@ -480,19 +481,25 @@ class AdminGetresponseController extends ModuleAdminController
             $webform_style   = Tools::getValue('webform_style');
             $webform_status  = Tools::getValue('webform_status');
 
-            if (is_array($webform_id) && !isset($webform_id[0])) {
+            if (is_array($webform_id) && empty($webform_id[0])) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
-                    'status_text' => $this->l('Web Form can not be empty')
+                    'status_text' => $this->l('You have to select a webform')
                 ));
             } else {
+                $webforms_all = array_merge($webforms, $forms);
+                $webforms_merged = array();
+                foreach($webforms_all as $form) {
+                    $webforms_merged[$form->webformId] = $form->scriptUrl;
+                }
+
                 // set web form info to DB
                 $this->db->updateWebformSettings(
                     $webform_id[0],
                     $webform_status,
                     $webform_sidebar[0],
                     $webform_style[0],
-                    $webforms[$webform_id[0]]->scriptUrl
+                    $webforms_merged[$webform_id[0]]
                 );
                 $this->context->smarty->assign(array(
                     'form_status' => 'success',
@@ -764,14 +771,15 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-            $client = new GetResponseAPI3($this->apikey);
-
-            $params = array(
-                'campaigns' => array($campaign_id),
-                'type'      => 'autoresponder'
-            );
-
-            $result = $client->getAutoresponders($params);
+//            $client = new GetResponseAPI3($this->apikey);
+//
+//            $params = array(
+//                'campaigns' => array($campaign_id),
+//                'type'      => 'autoresponder'
+//            );
+//
+//            $result = $client->getAutoresponders($params);
+            $result = $this->db->grApiInstance->getAutoresponders();
 
             return $result;
         } catch (Exception $e) {
@@ -853,15 +861,14 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         try {
-            $client = new GetResponseAPI3($this->apikey);
-
             $params = array(
                 'name'                 => $campaign_name,
-                'from_field'           => $from_field,
-                'reply_to_field'       => $reply_to_field
-            );
+                'confirmation'         => array(
+                    'fromField' => array('fromFieldId' => $from_field),
+                    'replyTo'   => array('fromFieldId' => $reply_to_field)
+            ));
 
-            $result = $client->createCampaign($params);
+            $result = $this->db->grApiInstance->createCampaign($params);
 
             return $result;
         } catch (Exception $e) {

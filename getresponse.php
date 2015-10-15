@@ -20,7 +20,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '3.0.0';
+        $this->version                = '4.0.0';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
@@ -313,7 +313,7 @@ class Getresponse extends Module
 
     private function addSubscriber($params, $action)
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->db->settings;
 
         if (!empty( $settings['api_key'] )) {
             $api_crypto = null;
@@ -359,8 +359,14 @@ class Getresponse extends Module
         return $this->displayWebform('top');
     }
 
-    public function hookDisplayFooter()
+    public function hookDisplayFooter($params)
     {
+        if (Tools::isSubmit('submitNewsletter'))
+        {
+            // W tym miejscu mozna dodac kontakt do kampanii w GRze z dodatku 'blocknewsletter' od Presty (domyslnie instalowanego).
+            // Tylko w jaki sposob? Czy jako oddzielny modul, mozliwosc customowych ustawien jak w przypadku exportu? Czy inaczej?
+            // Informacje z bloku newsletter przekazywane sa w tablicy $_POST - i w ten sposob sa w oryginalnym module przechwytywane.
+        }
         return $this->displayWebform('footer');
     }
 
