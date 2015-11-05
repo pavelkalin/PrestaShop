@@ -3,7 +3,6 @@
  * This module integrate GetResponse and PrestaShop Allows subscribe via checkout page and export your contacts.
  *
  *  @author    Grzegorz Struczynski <gstruczynski@getresponse.com>
- *  @author    Michal Zubrzycki     <mzubrzycki@getresponse.com>
  *  @copyright GetResponse
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
@@ -19,8 +18,8 @@ require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php'
  */
 class DbConnection
 {
-    var $grApiInstance;
-    var $all_custom_fields;
+    public $grApiInstance;
+    public $all_custom_fields;
 
     public function __construct($database)
     {
@@ -573,7 +572,6 @@ class DbConnection
             return array('status' => '0', 'message' => 'Request error');
         }
 
-        $response = array();
         if (!empty( $customers )) {
             foreach ($customers as $customer) {
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
@@ -640,8 +638,7 @@ class DbConnection
             }
         }
 
-        if (is_object($customer))
-        {
+        if (is_object($customer)) {
             $customer = get_object_vars($customer);
         }
 
@@ -694,8 +691,6 @@ class DbConnection
      * Add (or update) contact to gr campaign depending on action and apply automation rules
      *
      * @param array $params
-     * @param       $apikey
-     * @param       $api_url
      * @param       $campaign_id
      * @param       $action
      * @param int   $cycle_day
@@ -703,7 +698,7 @@ class DbConnection
      * @return mixed
      */
     // TODO: implementacja uzytkownikow GR360 - wtedy bedzie trzeba przekazywac apikey i api_url
-    public function addSubscriber($params, $apikey, $api_url, $campaign_id, $action, $cycle_day)
+    public function addSubscriber($params, $campaign_id, $action, $cycle_day)
     {
         $allowed = array('order', 'create');
         $prefix  = 'customer';
@@ -747,8 +742,8 @@ class DbConnection
                                     $params[$prefix]->firstname,
                                     $params[$prefix]->lastname,
                                     $params[$prefix]->email,
-                                    $cycle_day,
-                                    $customs
+                                    $customs,
+                                    $cycle_day
                                 );
                             } elseif ($automation['action'] == 'copy') {
                                 $this->addContact(
@@ -817,7 +812,7 @@ class DbConnection
      *
      * @return mixed
      */
-    public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $cycle_day = 0, $customs)
+    public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $customs, $cycle_day = 0)
     {
         // required params
         if (empty( $this->api_key )) {
@@ -880,17 +875,13 @@ class DbConnection
         $contact = array_pop($results);
 
         // if contact already exists in gr account
-        if ( !empty($contact) && isset($contact->contactId))
-        {
+        if (!empty($contact) && isset($contact->contactId)) {
             $results = $this->grApiInstance->getContact($contact->contactId);
-            if ( !empty($results->customFieldValues))
-            {
+            if (!empty($results->customFieldValues)) {
                 $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $user_customs);
             }
             return $this->grApiInstance->updateContact($contact->contactId, $params);
-        }
-        else
-        {
+        } else {
             $params['customFieldValues'] = $this->setCustoms($user_customs);
             return $this->grApiInstance->addContact($params);
         }
@@ -903,17 +894,14 @@ class DbConnection
      *
      * @return array
      */
-    function mergeUserCustoms($results, $user_customs)
+    public function mergeUserCustoms($results, $user_customs)
     {
         $custom_fields = array();
 
-        if (is_array($results))
-        {
-            foreach ($results as $customs)
-            {
+        if (is_array($results)) {
+            foreach ($results as $customs) {
                 $value = $customs->value;
-                if (in_array($customs->name, array_keys($user_customs)))
-                {
+                if (in_array($customs->name, array_keys($user_customs))) {
                     $value = array($user_customs[$customs->name]);
                     unset($user_customs[$customs->name]);
                 }
@@ -934,28 +922,22 @@ class DbConnection
      *
      * @return array
      */
-    function setCustoms($user_customs)
+    public function setCustoms($user_customs)
     {
         $custom_fields = array();
 
-        if (empty($user_customs))
-        {
+        if (empty($user_customs)) {
             return $custom_fields;
         }
 
-        foreach ($user_customs as $name => $value)
-        {
+        foreach ($user_customs as $name => $value) {
             // if custom field is already created on gr account set new value
-            if (in_array($name, array_keys($this->all_custom_fields)))
-            {
+            if (in_array($name, array_keys($this->all_custom_fields))) {
                 $custom_fields[] = array(
                     'customFieldId' => $this->all_custom_fields[$name],
                     'value'         => array($value)
                 );
-            }
-            // create new custom field
-            else
-            {
+            } else {
                 $custom = $this->grApiInstance->addCustomField(array(
                     'name'   => $name,
                     'type'   => "text",
@@ -963,8 +945,7 @@ class DbConnection
                     'values' => array($value),
                 ));
 
-                if ( !empty($custom) && !empty($custom->customFieldId))
-                {
+                if (!empty($custom) && !empty($custom->customFieldId)) {
                     $custom_fields[] = array(
                         'customFieldId' => $custom->customFieldId,
                         'value'         => array($value)
@@ -980,14 +961,12 @@ class DbConnection
      * Get all user custom fields from gr account
      * @return array
      */
-    function getCustomFields()
+    public function getCustomFields()
     {
         $all_customs = array();
         $results     = $this->grApiInstance->getCustomFields();
-        if ( !empty($results))
-        {
-            foreach ($results as $ac)
-            {
+        if (!empty($results)) {
+            foreach ($results as $ac) {
                 if (isset($ac->name) && isset($ac->customFieldId)) {
                     $all_customs[$ac->name] = $ac->customFieldId;
                 }
@@ -996,6 +975,4 @@ class DbConnection
 
         return $all_customs;
     }
-
-
 }

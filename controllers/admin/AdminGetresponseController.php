@@ -318,7 +318,7 @@ class AdminGetresponseController extends ModuleAdminController
                         ));
                     } else {
                         $add_to_cycle = Tools::getValue('add_to_cycle');
-                        $cycle_day    = !is_null( $add_to_cycle ) ? $cycle_day : null;
+                        $cycle_day    = !is_null($add_to_cycle) ? $cycle_day : null;
                         // export contacts to GR campaign
                         $add = $this->db->exportSubscriber(
                             $campaign[0],
@@ -403,12 +403,12 @@ class AdminGetresponseController extends ModuleAdminController
             $posted_customs = Tools::getValue('custom_field');
 
             // check subscription settings
-            if (!empty( $campaign[0] ) && $campaign[0] != '0' && !empty( $status )) {
-                $update_address = empty( $update_address ) ? 'no' : $update_address;
-                $cycle_day      = !is_null( $add_to_cycle ) ? $cycle_day : null;
+            if (!empty($campaign[0]) && $campaign[0] != '0' && !empty( $status )) {
+                $update_address = empty($update_address) ? 'no' : $update_address;
+                $cycle_day      = !is_null($add_to_cycle) ? $cycle_day : null;
 
                 $validation = $this->validateCustoms($posted_customs);
-                if (is_array($validation) && !empty( $validation['form_status'] )) {
+                if (is_array($validation) && !empty($validation['form_status'])) {
                     $this->context->smarty->assign($validation);
                 } else {
                     $this->db->updateSettings($status, $campaign[0], $update_address, $cycle_day);
@@ -418,7 +418,7 @@ class AdminGetresponseController extends ModuleAdminController
                         'status_text' => $this->l('Settings update successful')
                     ));
                 }
-            } elseif (!empty( $campaign[0] ) && $campaign[0] == '0') {
+            } elseif (!empty($campaign[0]) && $campaign[0] == '0') {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('No campaign selected')
@@ -489,7 +489,7 @@ class AdminGetresponseController extends ModuleAdminController
             } else {
                 $webforms_all = array_merge($webforms, $forms);
                 $webforms_merged = array();
-                foreach($webforms_all as $form) {
+                foreach ($webforms_all as $form) {
                     $webforms_merged[$form->webformId] = $form->scriptUrl;
                 }
 
