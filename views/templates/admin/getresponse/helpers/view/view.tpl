@@ -16,6 +16,7 @@
 </script>
 
 <div id="getresponse" class="gr-wrapper">
+	{$message}
 	<div id="module">
 		<div class="row">
 			<div class="col-md-3">

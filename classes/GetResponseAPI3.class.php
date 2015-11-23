@@ -31,16 +31,6 @@ class GetResponseAPI3
     }
 
     /**
-     * We can modify internal settings
-     * @param $key
-     * @param $value
-     */
-    private function __set($key, $value)
-    {
-        $this->{$key} = $value;
-    }
-
-    /**
      * get account details
      *
      * @return mixed
