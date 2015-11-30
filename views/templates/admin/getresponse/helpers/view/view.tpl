@@ -16,7 +16,14 @@
 </script>
 
 <div id="getresponse" class="gr-wrapper">
-	{$message}
+	{if $message}
+		<div class="bootstrap">
+			<div class="module_confirmation conf confirm alert alert-success">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{$message|escape:'htmlall':'UTF-8'}
+			</div>
+		</div>
+	{/if}
 	<div id="module">
 		<div class="row">
 			<div class="col-md-3">

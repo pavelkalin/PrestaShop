@@ -37,11 +37,11 @@
 					</div>
 				</div>
 				<div class="col-lg-7">
-					<div class="content-in">
+					<div class="content-in" style="cursor:pointer;" onclick="window.open('http://app.getresponse.com/track_customer.html?tid=42501', '_blank')">
 						<h3>
 							{l s='If you’re new to GetResponse' mod='getresponse'}
 						</h3>
-						<p>{l s='If you’re new to GetResponse please' mod='getresponse'} <strong>{l s='click the link below' mod='getresponse'}</strong> {l s='to check out how GetResponse email marketing tools can boost your business and Prestashop conversions.' mod='getresponse'}</p>
+						<p>{l s='If you’re new to GetResponse please' mod='getresponse'} <a href="http://app.getresponse.com/track_customer.html?tid=42501" title="{l s='Try It Free' mod='getresponse'}" target="_blank"><strong>{l s='click here to start your free trial' mod='getresponse'}</strong></a> {l s='and check out how GetResponse email marketing tools can boost your business and Prestashop conversions.' mod='getresponse'}</p>
 						<ul>
 							<li>{l s='Email marketing returns $41 for every $1 spent.' mod='getresponse'}</li>
 							<li>{l s='60% of shoppers are more apt to buy after receiving an email.' mod='getresponse'}</li>

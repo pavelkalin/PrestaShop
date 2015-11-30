@@ -328,9 +328,8 @@ class AdminGetresponseController extends ModuleAdminController
 
                         // show notice
                         if (is_array($add) && isset( $add['status'] ) && $add['status'] == 1) {
-                            $message = $this->displayConfirmation($this->l('Export completed!'));
                             $this->context->smarty->assign(array(
-                                'message' => $message,
+                                'message' => 'Export completed!',
                                 'form_status' => 'success',
                                 'status_text' => $add['message']
                             ));
@@ -351,18 +350,6 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('account_type' => $settings['account_type']));
             $this->context->smarty->assign(array('crypto' => $settings['crypto']));
         }
-    }
-
-    public function displayConfirmation($string)
-    {
-        $output = '
-        <div class="bootstrap">
-        <div class="module_confirmation conf confirm alert alert-success">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            '.$string.'
-        </div>
-        </div>';
-        return $output;
     }
 
     /**
@@ -749,7 +736,7 @@ class AdminGetresponseController extends ModuleAdminController
         $table   = array();
         $counter = 1;
         if (is_object($messages)) {
-            foreach ($messages as $id => $message) {
+            foreach ($messages as $message) {
                 $message_info                          = array();
                 $message_info['id']                    = $message->autoresponderId;
                 $message_info['on_day']                = $message->triggerSettings->dayOfCycle;

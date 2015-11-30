@@ -83,9 +83,9 @@ class DbConnection
         $sql = 'SELECT
                     *
                 FROM
-                    ' . $this->prefix_settings . '
+                    ' . pSQL($this->prefix_settings) . '
                 WHERE
-                    id_shop = ' . $this->id_shop . '
+                    id_shop = ' . (int) $this->id_shop . '
                 ';
 
         if ($results = $this->db->ExecuteS($sql)) {
@@ -99,9 +99,9 @@ class DbConnection
         $sql = 'SELECT
                     webform_id, active_subscription, sidebar, style, url
                 FROM
-                    ' . $this->prefix_webform . '
+                    ' . pSQL($this->prefix_webform) . '
                 WHERE
-                    id_shop = ' . $this->id_shop . '
+                    id_shop = ' . (int) $this->id_shop . '
                 ';
 
         if ($results = $this->db->ExecuteS($sql)) {
@@ -120,7 +120,7 @@ class DbConnection
 
             if (!empty( $results )) {
                 $campaigns = array();
-                foreach ($results as $id => $info) {
+                foreach ($results as $info) {
                     $campaigns[$info->name] = array(
                         'id'   => $info->campaignId,
                         'name' => $info->name
@@ -194,7 +194,7 @@ class DbConnection
         try {
             $results = $this->grApiInstance->getAccountFromFields();
             if (!empty( $results )) {
-                foreach ($results as $id => $info) {
+                foreach ($results as $info) {
                     $fromfields[] = array(
                         'id'    => $info->fromFieldId,
                         'name'  => $info->name,
@@ -234,7 +234,7 @@ class DbConnection
 
     public function getContacts($email = null, $newsletter_guests = null)
     {
-        $where = !empty( $email ) ? " AND cu.email = '" . $email . "'" : null;
+        $where = !empty( $email ) ? " AND cu.email = '" . pSQL($email) . "'" : null;
 
         if (!empty( $newsletter_guests )) {
             $blocknewsletter = $this->checkModuleStatus('blocknewsletter');
@@ -258,7 +258,7 @@ class DbConnection
                     WHERE
                         n.active = 1
                     AND
-                        id_shop = ' . $this->id_shop . '
+                        id_shop = ' . (int) $this->id_shop . '
                 ';
             }
         }
@@ -285,7 +285,7 @@ class DbConnection
                 WHERE
                     cu.newsletter = 1' . $where . '
                 AND
-                    cu.id_shop = ' . $this->id_shop . '
+                    cu.id_shop = ' . (int) $this->id_shop . '
                 ' . $ng_where . '
                 ';
 
@@ -303,17 +303,17 @@ class DbConnection
             LEFT JOIN
                 ' . _DB_PREFIX_ . 'orders o ON o.id_customer = cu.id_customer
             LEFT JOIN
-                ' . _DB_PREFIX_ . 'order_detail od ON (od.id_order = o.id_order AND o.id_shop = ' . $this->id_shop . ')
+                ' . _DB_PREFIX_ . 'order_detail od ON (od.id_order = o.id_order AND o.id_shop = ' . (int) $this->id_shop . ')
             LEFT JOIN
                 ' . _DB_PREFIX_ . 'category_product cp ON (cp.id_product = od.product_id AND od.id_shop = ' .
-               $this->id_shop . ')
+            (int) $this->id_shop . ')
             LEFT JOIN
                 ' . _DB_PREFIX_ . 'category_lang cl ON (cl.id_category = cp.id_category AND cl.id_shop = ' .
-               $this->id_shop . ' AND cl.id_lang = cu.id_lang)
+            (int) $this->id_shop . ' AND cl.id_lang = cu.id_lang)
             WHERE
                     cu.newsletter = 1' . $where . '
                 AND
-                    cu.id_shop = ' . $this->id_shop . '
+                    cu.id_shop = ' . (int) $this->id_shop . '
             ';
 
         $addresses = $this->db->ExecuteS($sql);
@@ -340,14 +340,14 @@ class DbConnection
 
     public function getCustoms($default = null)
     {
-        $where = !empty( $default ) ? " AND `default` = '" . $default . "'" : null;
+        $where = !empty( $default ) ? " AND `default` = '" . pSQL($default) . "'" : null;
 
         $sql = 'SELECT
                     *
                 FROM
                     ' . $this->prefix_customs . '
                 WHERE
-                    id_shop = ' . $this->id_shop . $where;
+                    id_shop = ' . (int) $this->id_shop . $where;
 
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
@@ -361,9 +361,9 @@ class DbConnection
         $sql = 'SELECT
                     *
                 FROM
-                    ' . $this->prefix_automation . '
+                    ' . pSQL($this->prefix_automation) . '
                 WHERE
-                    id_shop = ' . $this->id_shop . $where_status;
+                    id_shop = ' . (int) $this->id_shop . $where_status;
 
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
@@ -406,14 +406,14 @@ class DbConnection
             'url'                 => pSQL($url)
         );
 
-        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . $this->id_shop);
+        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
     public function updateWebformSubscription($active_subscription)
     {
         $data = array('active_subscription' => pSQL($active_subscription));
 
-        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . $this->id_shop);
+        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
     public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day)
@@ -425,14 +425,14 @@ class DbConnection
             'cycle_day'           => pSQL($cycle_day)
         );
 
-        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . $this->id_shop);
+        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
     public function updateSettingsSubscription($active_subscription)
     {
         $data = array('active_subscription' => pSQL($active_subscription));
 
-        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . $this->id_shop);
+        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
     public function updateCustoms($customs)
@@ -452,23 +452,23 @@ class DbConnection
                 foreach (array_keys($allowed) as $a) {
                     if (in_array($a, array_keys($customs))) {
                         $sql = 'UPDATE
-                                    ' . $this->prefix_customs . '
+                                    ' . pSQL($this->prefix_customs) . '
                                 SET
                                     custom_name = "' . pSQL($customs[$a]) . '",
                                     active_custom = "yes"
                                 WHERE
-                                    id_shop = "' . $this->id_shop . '"
+                                    id_shop = "' . (int) $this->id_shop . '"
                                 AND
                                     custom_value = "' . pSQL($a) . '"';
 
                         $this->db->Execute($sql);
                     } elseif ($allowed[$a]['default'] != 'yes') {
                         $sql = 'UPDATE
-                                    ' . $this->prefix_customs . '
+                                    ' . pSQL($this->prefix_customs) . '
                                 SET
                                     active_custom = "no"
                                 WHERE
-                                    id_shop = "' . $this->id_shop . '"
+                                    id_shop = "' . (int) $this->id_shop . '"
                                 AND
                                     custom_value = "' . pSQL($a) . '"';
 
@@ -480,11 +480,11 @@ class DbConnection
             foreach ($settings_customs as $sc) {
                 if ($sc['default'] === 'no') {
                     $sql = 'UPDATE
-                                ' . $this->prefix_customs . '
+                                ' . pSQL($this->prefix_customs) . '
                             SET
                                 active_custom = "no"
                             WHERE
-                                id_shop = "' . $this->id_shop . '"
+                                id_shop = "' . (int) $this->id_shop . '"
                             AND
                                 custom_value = "' . pSQL($sc['custom_value']) . '"';
 
@@ -503,7 +503,7 @@ class DbConnection
             'cycle_day'   => pSQL($cycle_day)
         );
 
-        return (bool) $this->db->autoExecute($this->prefix_automation, $data, 'UPDATE', 'id = ' . $automation_to_edit);
+        return (bool) $this->db->autoExecute($this->prefix_automation, $data, 'UPDATE', 'id = ' . (int) $automation_to_edit);
     }
 
     public function updateAutomationStatus($status, $id)
@@ -511,10 +511,10 @@ class DbConnection
         $data = array('active' => pSQL($status));
 
         return (bool) $this->db->autoExecute(
-            $this->prefix_automation,
+            pSQL($this->prefix_automation),
             $data,
             'UPDATE',
-            'id_shop = ' . $this->id_shop . ' AND id = ' . $id
+            'id_shop = ' . (int) $this->id_shop . ' AND id = ' . (int) $id
         );
     }
 
@@ -529,7 +529,7 @@ class DbConnection
             'campaign_id' => pSQL($campaign_id),
             'action'      => pSQL($action),
             'cycle_day'   => pSQL($cycle_day),
-            'id_shop'     => $this->id_shop,
+            'id_shop'     => (int) $this->id_shop,
             'active'      => 'yes'
         );
 
@@ -548,7 +548,7 @@ class DbConnection
 
     public function deleteAutomationSettings($automation_id)
     {
-        $sql = 'DELETE FROM `' . $this->prefix_automation . '` WHERE `id` = ' . (int) $automation_id;
+        $sql = 'DELETE FROM `' . pSQL($this->prefix_automation) . '` WHERE `id` = ' . (int) $automation_id;
 
         return (bool) $this->db->execute($sql);
     }
@@ -826,7 +826,7 @@ class DbConnection
         ));
 
         if (!empty($contacts_id) && isset($contacts_id[0]->contactId)) {
-            foreach ($contacts_id as $k => $contact) {
+            foreach ($contacts_id as $contact) {
                 try {
                     $this->grApiInstance->deleteContact($contact->contactId);
                 } catch (Exception $e) {

@@ -311,7 +311,7 @@ class GetResponseAPI3
             );
         }
 
-        $params = json_encode($params);
+        $params = Tools::jsonEncode($params);
         $url = $this->api_url  . '/' .  $api_method;
 
         $options = array(
@@ -339,7 +339,7 @@ class GetResponseAPI3
         $curl = curl_init();
         curl_setopt_array($curl, $options);
 
-        $response = json_decode(curl_exec($curl));
+        $response = Tools::jsonDecode(curl_exec($curl));
 
         $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
