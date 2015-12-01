@@ -261,6 +261,16 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
+        $subscriptionConfirmationsSubject = $this->db->getSubscriptionConfirmationsSubject();
+        if (!empty($subscriptionConfirmationsSubject)) {
+            $this->context->smarty->assign(array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject));
+        }
+
+        $subscriptionConfirmationsBody = $this->db->getSubscriptionConfirmationsBody();
+        if (!empty($subscriptionConfirmationsBody)) {
+            $this->context->smarty->assign(array('subscriptionConfirmationsBody' => $subscriptionConfirmationsBody));
+        }
+
         $cycle_days = $this->db->getCycleDay();
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
 
@@ -372,6 +382,16 @@ class AdminGetresponseController extends ModuleAdminController
 
         $campaigns = $this->db->getCampaigns();
         $this->context->smarty->assign(array('campaigns' => $campaigns));
+
+        $subscriptionConfirmationsSubject = $this->db->getSubscriptionConfirmationsSubject();
+        if (!empty($subscriptionConfirmationsSubject)) {
+            $this->context->smarty->assign(array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject));
+        }
+
+        $subscriptionConfirmationsBody = $this->db->getSubscriptionConfirmationsBody();
+        if (!empty($subscriptionConfirmationsBody)) {
+            $this->context->smarty->assign(array('subscriptionConfirmationsBody' => $subscriptionConfirmationsBody));
+        }
 
         $cycle_days = $this->db->getCycleDay();
         $this->context->smarty->assign(array('cycle_days' => $cycle_days));
@@ -793,6 +813,8 @@ class AdminGetresponseController extends ModuleAdminController
         $campaign_name        = Tools::getValue('campaign_name');
         $from_field           = Tools::getValue('from_field');
         $reply_to_field       = Tools::getValue('reply_to_field');
+        $confirmation_subject = Tools::getValue('confirmation_subject');
+        $confirmation_body    = Tools::getValue('confirmation_body');
 
         if (empty( $campaign_name )) {
             die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name can\'t be empty.')) );
@@ -806,6 +828,14 @@ class AdminGetresponseController extends ModuleAdminController
             die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Reply field can\'t be empty.')) );
         }
 
+        if (empty( $confirmation_subject )) {
+            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation subject can\'t be empty.')) );
+        }
+
+        if (empty( $confirmation_body )) {
+            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation body can\'t be empty.')) );
+        }
+
         $campaign_name = Tools::strtolower($campaign_name);
 
         if (preg_match('/^[\w\-]+$/', $campaign_name) == false) {
@@ -816,7 +846,9 @@ class AdminGetresponseController extends ModuleAdminController
         $add = $this->addCampaignToGR(
             $campaign_name,
             $from_field,
-            $reply_to_field
+            $reply_to_field,
+            $confirmation_subject,
+            $confirmation_body
         );
 
         // show notice
@@ -840,13 +872,17 @@ class AdminGetresponseController extends ModuleAdminController
      * @param $campaign_name
      * @param $from_field
      * @param $reply_to_field
+     * @param $confirmation_subject
+     * @param $confirmation_body
      *
      * @return string
      */
     private function addCampaignToGR(
         $campaign_name,
         $from_field,
-        $reply_to_field
+        $reply_to_field,
+        $confirmation_subject,
+        $confirmation_body
     ) {
         // required params
         if (empty( $this->apikey ) || empty( $this->api_url )) {
@@ -857,9 +893,13 @@ class AdminGetresponseController extends ModuleAdminController
             $params = array(
                 'name'                 => $campaign_name,
                 'confirmation'         => array(
-                    'fromField' => array('fromFieldId' => $from_field),
-                    'replyTo'   => array('fromFieldId' => $reply_to_field)
-            ));
+                    'fromField' => array('fromFieldId'  => $from_field),
+                    'replyTo'   => array('fromFieldId'  => $reply_to_field),
+                    'subscriptionConfirmationBodyId'    => $confirmation_subject,
+                    'subscriptionConfirmationSubjectId' => $confirmation_body
+                    ),
+                'languageCode'         => 'EN'
+            );
 
             $result = $this->db->grApiInstance->createCampaign($params);
 

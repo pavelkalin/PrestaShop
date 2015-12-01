@@ -183,6 +183,59 @@ class DbConnection
         }
     }
 
+    public function getSubscriptionConfirmationsSubject($lang = 'EN')
+    {
+        if (empty($this->api_key)) {
+            return array();
+        }
+
+        try {
+            $results = $this->grApiInstance->getSubscriptionConfirmationsSubject($lang);
+
+            if (!empty($results)) {
+                $subjects = array();
+                foreach($results as $subject) {
+                    $subjects[] = array(
+                        'id'            => $subject->subscriptionConfirmationSubjectId,
+                        'name'          => $subject->subject
+                    );
+                }
+                return $subjects;
+            }
+
+            return array();
+        } catch (Exception $e) {
+            return array();
+        }
+    }
+
+    public function getSubscriptionConfirmationsBody($lang = 'EN')
+    {
+        if (empty($this->api_key)) {
+            return array();
+        }
+
+        try {
+            $results = $this->grApiInstance->getSubscriptionConfirmationsBody($lang);
+
+            if (!empty($results)) {
+                $bodies = array();
+                foreach($results as $body) {
+                    $bodies[] = array(
+                        'id'            => $body->subscriptionConfirmationBodyId,
+                        'name'          => $body->name,
+                        'contentPlain'  => $body->contentPlain
+                    );
+                }
+                return $bodies;
+            }
+
+            return array();
+        } catch (Exception $e) {
+            return array();
+        }
+    }
+
     public function getFromFields()
     {
         if (empty( $this->api_key )) {

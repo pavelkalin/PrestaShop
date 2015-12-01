@@ -46,6 +46,32 @@
 				</div>
 			</fieldset>
 
+			<fieldset class="control-group" id="confirmationSubjectDiv">
+				<label for="confirmationSubject" class="control-label">{l s='Confirmation subject' mod='getresponse'}</label>
+				<div class="controls select-wide">
+					<select name="confirmation_subject" id="confirmationSubject" class="gr_select hiddenselect">
+						{if isset($subscriptionConfirmationsSubject)}
+							{foreach $subscriptionConfirmationsSubject as $subject}
+								<option value="{$subject['id']|escape:'htmlall':'UTF-8'}">{$subject['name']|escape:'htmlall':'UTF-8'}</option>
+							{/foreach}
+						{/if}
+					</select>
+				</div>
+			</fieldset>
+
+			<fieldset class="control-group" id="confirmationBodyDiv">
+				<label for="confirmationSubject" class="control-label">{l s='Confirmation body' mod='getresponse'}</label>
+				<div class="controls select-wide">
+					<select name="confirmation_body" id="confirmationBody" class="gr_select hiddenselect">
+						{if isset($subscriptionConfirmationsBody)}
+							{foreach $subscriptionConfirmationsBody as $body}
+								<option value="{$body['id']|escape:'htmlall':'UTF-8'}">({$body['name']|escape:'htmlall':'UTF-8'}) {$body['contentPlain']|escape:'htmlall':'UTF-8'}</option>
+							{/foreach}
+						{/if}
+					</select>
+				</div>
+			</fieldset>
+
 			<fieldset class="control-group" id="saveDiv">
 				<div class="controls">
 					<div class="btns">
@@ -67,6 +93,8 @@
 					from_field: $('#fromField').val(),
 					campaign_name: $('#campaignName').val(),
 					reply_to_field: $('#replyTo').val(),
+					confirmation_subject : $('#confirmationSubject').val(),
+					confirmation_body: $('#confirmationBody').val(),
 					token: '{/literal}{$token|escape:'htmlall':'UTF-8'}{literal}'
 				}, function(json) {
 					if (json != null) {

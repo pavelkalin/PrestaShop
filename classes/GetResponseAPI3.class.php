@@ -11,7 +11,7 @@
 class GetResponseAPI3
 {
     private $api_key;
-    private $api_url = 'https://api.getresponse.com/v3';
+    private $api_url = 'https://feature3-api.getresponse.com/v3';
     private $timeout = 8;
     private $enterprise_domain = null;
     public $http_status;
@@ -84,6 +84,24 @@ class GetResponseAPI3
     public function getRSSNewsletters()
     {
         $this->call('rss-newsletters', 'GET', null);
+    }
+
+    /**
+     * get all subscription confirmation subjects
+     * @return mixed
+     */
+    public function getSubscriptionConfirmationsSubject($lang = 'EN')
+    {
+        return $this->call('subscription-confirmations/subject/' . $lang);
+    }
+
+    /**
+     * get all subscription confirmation bodies
+     * @return mixed
+     */
+    public function getSubscriptionConfirmationsBody($lang = 'EN')
+    {
+        return $this->call('subscription-confirmations/body/' . $lang);
     }
 
     /**
