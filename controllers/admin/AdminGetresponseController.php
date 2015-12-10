@@ -895,8 +895,8 @@ class AdminGetresponseController extends ModuleAdminController
                 'confirmation'         => array(
                     'fromField' => array('fromFieldId'  => $from_field),
                     'replyTo'   => array('fromFieldId'  => $reply_to_field),
-                    'subscriptionConfirmationBodyId'    => $confirmation_subject,
-                    'subscriptionConfirmationSubjectId' => $confirmation_body
+                    'subscriptionConfirmationBodyId'    => $confirmation_body,
+                    'subscriptionConfirmationSubjectId' => $confirmation_subject
                     ),
                 'languageCode'         => 'EN'
             );

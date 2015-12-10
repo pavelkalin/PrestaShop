@@ -11,7 +11,7 @@
 class GetResponseAPI3
 {
     private $api_key;
-    private $api_url = 'https://feature3-api.getresponse.com/v3';
+    private $api_url = 'https://api.getresponse.com/v3';
     private $timeout = 8;
     private $enterprise_domain = null;
     public $http_status;
