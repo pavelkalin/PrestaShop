@@ -194,7 +194,7 @@ class DbConnection
 
             if (!empty($results)) {
                 $subjects = array();
-                foreach($results as $subject) {
+                foreach ($results as $subject) {
                     $subjects[] = array(
                         'id'            => $subject->subscriptionConfirmationSubjectId,
                         'name'          => $subject->subject
@@ -220,7 +220,7 @@ class DbConnection
 
             if (!empty($results)) {
                 $bodies = array();
-                foreach($results as $body) {
+                foreach ($results as $body) {
                     $bodies[] = array(
                         'id'            => $body->subscriptionConfirmationBodyId,
                         'name'          => $body->name,
