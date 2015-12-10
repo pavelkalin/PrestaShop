@@ -16,7 +16,7 @@
 </script>
 
 <div id="getresponse" class="gr-wrapper">
-	{if $message}
+	{if isset($message)}
 		<div class="bootstrap">
 			<div class="module_confirmation conf confirm alert alert-success">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
