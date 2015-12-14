@@ -696,7 +696,7 @@ class DbConnection
         }
 
         // default reference custom
-        $customs['ref'] = 'prestashop';
+        $customs['ref'] = 'Prestashop - ' . Configuration::get('PS_SHOP_NAME');
 
         // for fields from DB
         if (!empty( $fields )) {
@@ -723,6 +723,10 @@ class DbConnection
                     // validation for custom field name
                     if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(( $fv )))) {
                         return array('custom_error' => 'true', 'custom_message' => $fv);
+                    }
+
+                    if ($field_key == 'birthday' && $customer['birthday'] == '0000-00-00') {
+                        continue;
                     }
 
                     // compose address value address+address2
@@ -780,7 +784,10 @@ class DbConnection
             if (!empty( $params['order']->product_list )) {
                 $categories = array();
                 foreach ($params['order']->product_list as $products) {
-                    $categories[] = $products['id_category_default'];
+                    $temp_categories = Product::getProductCategories($products['id_product']);
+                    foreach($temp_categories as $tmp) {
+                        $categories[$tmp] = $tmp;
+                    }
                 }
 
                 $automations = $this->getAutomationSettings('active');

@@ -17,7 +17,9 @@
 							<select name="category" id="filterCategory" class="gr_select hiddenselect">
 							{if $d_categories}
 								{foreach $d_categories as $category}
-									<option value="{$category['id_category']|escape:'htmlall':'UTF-8'}">{$category['name']|escape:'htmlall':'UTF-8'}</option>
+									{if $category['level_depth'] != 0}
+										<option value="{$category['id_category']|escape:'htmlall':'UTF-8'}">{$category['name']|escape:'htmlall':'UTF-8'}</option>
+									{/if}
 								{/foreach}
 							{/if}
 						</select>
