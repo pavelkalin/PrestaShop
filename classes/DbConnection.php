@@ -785,7 +785,7 @@ class DbConnection
                 $categories = array();
                 foreach ($params['order']->product_list as $products) {
                     $temp_categories = Product::getProductCategories($products['id_product']);
-                    foreach($temp_categories as $tmp) {
+                    foreach ($temp_categories as $tmp) {
                         $categories[$tmp] = $tmp;
                     }
                 }
