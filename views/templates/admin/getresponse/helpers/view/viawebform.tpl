@@ -73,11 +73,14 @@
 
 				<fieldset class="control-group" id="webformStyleDiv">
 					<label for="webformStyle" class="control-label">{l s='Select the style' mod='getresponse'}</label>
-					<div class="controls">
+					<div class="controls input-tip">
 						<select name="webform_style" id="webformStyle" class="gr_select fullselect">
 							<option value="webform" {if $webform_style == 'webform'}selected{/if}>Web Form</option>
 							<option value="prestashop" {if $webform_style == 'prestashop'}selected{/if}>Prestashop</option>
 						</select>
+						<span>
+							<abbr title='{l s='Prestashop style' mod='getresponse'}|{l s='Works only with old version of forms.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
+						</span>
 					</div>
 				</fieldset>
 				<fieldset class="control-group" id="saveDiv">
