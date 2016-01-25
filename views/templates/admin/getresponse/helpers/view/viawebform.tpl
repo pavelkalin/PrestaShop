@@ -79,7 +79,7 @@
 							<option value="prestashop" {if $webform_style == 'prestashop'}selected{/if}>Prestashop</option>
 						</select>
 						<span>
-							<abbr title='{l s='Prestashop style' mod='getresponse'}|{l s='Works only with old version of forms.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
+							<abbr title='{l s='Web form style' mod='getresponse'}|{l s='Works only with old version of forms.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
 						</span>
 					</div>
 				</fieldset>
