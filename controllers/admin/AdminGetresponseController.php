@@ -214,7 +214,7 @@ class AdminGetresponseController extends ModuleAdminController
                         $this->db->updateApiSettings($api_key, $account_type[0], $api_crypto);
                         $this->context->smarty->assign(array(
                             'form_status' => 'success',
-                            'status_text' => $this->l('API Key update successful')
+                            'status_text' => $this->l('API Key updated')
                         ));
                     } else {
                         if ($account_type[0] != 'gr') {
@@ -592,7 +592,7 @@ class AdminGetresponseController extends ModuleAdminController
                 $this->db->insertAutomationSettings($category[0], $campaign[0], $action[0], $cycle_day);
                 $this->context->smarty->assign(array(
                     'form_status' => 'success',
-                    'status_text' => $this->l('Automation created successful')
+                    'status_text' => $this->l('Automatic segmentation created')
                 ));
             }
         }
@@ -623,7 +623,7 @@ class AdminGetresponseController extends ModuleAdminController
                 $this->db->updateAutomationSettings($category, $automation_to_edit, $campaign, $action, $cycle_day);
                 $this->context->smarty->assign(array(
                     'form_status' => 'success',
-                    'status_text' => $this->l('Automation update successful')
+                    'status_text' => $this->l('Automatic segmentation updated')
                 ));
             }
         }
@@ -634,7 +634,7 @@ class AdminGetresponseController extends ModuleAdminController
             $this->db->deleteAutomationSettings($delete_id);
             $this->context->smarty->assign(array(
                 'form_status' => 'success',
-                'status_text' => $this->l('Automation deleted successful')
+                'status_text' => $this->l('Automatic segmentation removed')
             ));
         }
 

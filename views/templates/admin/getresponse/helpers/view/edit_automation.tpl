@@ -8,7 +8,7 @@
 	<div class="highslide-body">
 		<form class="form-horizontal" target="_top" action="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&update_id={$selected_id|escape:'htmlall':'UTF-8'}" method="post">
 			<fieldset class="control-group">
-				<label for="filterCategory" class="control-label">{l s='If purchased in the category' mod='getresponse'}</label>
+				<label for="filterCategory" class="control-label">{l s='If customers buy  in the category' mod='getresponse'}</label>
 				<div class="controls input-tip">
 					<select name="category" id="filterCategory" class="gr_select hiddenselect">
 						{if $categories}
@@ -26,11 +26,11 @@
 			</fieldset>
 
 			<fieldset class="control-group">
-				<label for="popAction" class="control-label">{l s='contact will be' mod='getresponse'}:</label>
+				<label for="popAction" class="control-label">{l s='they are' mod='getresponse'}:</label>
 				<div class="controls">
 					<select name="a_action" id="filterAction" class="hiddenselect">
-						<option value="move" {if $selected_action == 'move'}selected{/if}>{l s='Move' mod='getresponse'}</option>
-						<option value="copy" {if $selected_action == 'copy'}selected{/if}>{l s='Copy' mod='getresponse'}</option>
+						<option value="move" {if $selected_action == 'move'}selected{/if}>{l s='Moved' mod='getresponse'}</option>
+						<option value="copy" {if $selected_action == 'copy'}selected{/if}>{l s='Copied' mod='getresponse'}</option>
 					</select>
 				</div>
 			</fieldset>

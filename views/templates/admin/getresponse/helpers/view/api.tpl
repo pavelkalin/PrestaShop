@@ -4,7 +4,7 @@
 * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <div class="content">
-	<h3>{l s='Module settings' mod='getresponse'}</h3>
+	<h3>{l s='Connection settings' mod='getresponse'}</h3>
 	<span id="formAnchor"></span>
 	<section class="api-section">
 		<div class="container">
@@ -12,17 +12,17 @@
 				<div class="col-lg-5">
 					<div class="api content-in">
 						<h3>
-							{l s='If you already are a GetResponse customer' mod='getresponse'}
+							{l s='Already a GetResponse user?' mod='getresponse'}
 						</h3>
-						<p>{l s='If you already are a GetResponse customer, please' mod='getresponse'} <strong>{l s='enter your API' mod='getresponse'}</strong> {l s='key to enable the module and' mod='getresponse'} <strong>{l s='click "Save"' mod='getresponse'}</strong> {l s='to continue...' mod='getresponse'}</p>
+						<p>{l s='Enter  your GetResponse API key to connect. Click '} <strong>Save</strong> {l s='to import your forms, campaigns and enable turning customers into subscribers.'}</p>
 						<form accept-charset="utf-8" class="FormsEffectLc FormsValidateLc" action="{$action_url|escape:'htmlall':'UTF-8'}" method="post">
 							<fieldset>
 								<div class="fieldLine clearfix">
-									<label class="txtLabel">API key:</label>
+									<label class="txtLabel">API key</label>
 									<div class="input-tip">
 										<input autocomplete="off" type="text" title="API key" id="apiKey" name="api_key" class="jsFE-Input FE-Input" value="{$api_key|escape:'htmlall':'UTF-8'}">
 										<span>
-											<abbr title='{l s='API key' mod='getresponse'}|{l s='Enter your API key. You can find it on your GetResponse profile in Account Details -> GetResponse API.' mod='getresponse'}' rel="tooltip"></abbr>
+											<abbr title='{l s='API key' mod='getresponse'}|{l s='You can find your API key in the settings of your GetResponse account. Log in to GetResponse and go to <strong>My account > Account details > API & OAuth</strong> to find the key.' mod='getresponse'}' rel="tooltip"></abbr>
 										</span>
 									</div>
 									<span class="formErrorIco"></span>
@@ -39,9 +39,9 @@
 				<div class="col-lg-7">
 					<div class="content-in" style="cursor:pointer;" onclick="window.open('http://app.getresponse.com/track_customer.html?tid=42501', '_blank')">
 						<h3>
-							{l s='If you’re new to GetResponse' mod='getresponse'}
+							{l s='New to GetResponse?' mod='getresponse'}
 						</h3>
-						<p>{l s='If you’re new to GetResponse please' mod='getresponse'} <a href="http://app.getresponse.com/track_customer.html?tid=42501" title="{l s='Try It Free' mod='getresponse'}" target="_blank"><strong>{l s='click here to start your free trial' mod='getresponse'}</strong></a> {l s='and check out how GetResponse email marketing tools can boost your business and Prestashop conversions.' mod='getresponse'}</p>
+						<p><a href="http://app.getresponse.com/track_customer.html?tid=42501" title="{l s='Start your free trial' mod='getresponse'}" target="_blank"><strong>{l s='Start your free trial' mod='getresponse'}</strong></a> and check out how GetResponse email marketing tools can boost your business and PrestaShop conversions.</p>
 						<ul>
 							<li>{l s='Email marketing returns $41 for every $1 spent.' mod='getresponse'}</li>
 							<li>{l s='60% of shoppers are more apt to buy after receiving an email.' mod='getresponse'}</li>
@@ -56,7 +56,7 @@
 </div>
 
 <div class="content">
-	<h3>{l s='Still not convinced? Here are 10 reasons to do Email Marketing with GetResponse.' mod='getresponse'}</h3>
+	<h3>{l s='Still not convinced? Here are 10 reasons to do email marketing with GetResponse.' mod='getresponse'}</h3>
 	<section class="api-section">
 		<div class="container">
 			<div class="row">

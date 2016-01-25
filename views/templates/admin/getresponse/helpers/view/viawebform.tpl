@@ -5,13 +5,13 @@
 *}
 
 <div class="content">
-	<h3>{l s='GetResponse Web Form' mod='getresponse'}</h3>
+	<h3>{l s='GetResponse forms' mod='getresponse'}</h3>
 	<p>
-		{l s='You can now add your GetResponse web forms to your Prestashop store. Simply pick one of the web forms you’ve created at GetResponse and choose the location to insert the web form. The web form can be displayed in its original GetResponse style or the plain Prestashop style' mod='getresponse'}
+		{l s='Add your GetResponse forms to your PrestaShop store. Simply pick one of the forms you’ve created in GetResponse and choose the location to insert the form. You can display the form in its original GetResponse style or the plain PrestaShop style.' mod='getresponse'}
 	</p>
 	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&action=viawebform" method="post">
 		<div class="control-group" id="chckSubscriptoinDiv">
-			<label for="targetCampaign" class="control-label">{l s='Publish' mod='getresponse'}:</label>
+			<label for="targetCampaign" class="control-label">{l s='Publish' mod='getresponse'}</label>
 			<div class="controls">
 				<a title="Status" data-params="{ run: 'switch_webformpage' }" href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viawebform#iswitch" id="chckSubscriptionInput" class="switch {if $webform_status == 'yes'}enabled{else}disabled{/if}">
 					<span data-iswitch="" class="s-css3 {if $webform_status == 'yes'}enabled{else}disabled{/if}">
@@ -34,7 +34,7 @@
 		<div id="form-box" {if $webform_status == 'yes'} style="display:block"{else} style="display:none"{/if}>
 			<div class="highslide-body">
 				<fieldset class="control-group" id="webformIdDiv">
-					<label for="webformId" class="control-label">{l s='Web Form' mod='getresponse'}:</label>
+					<label for="webformId" class="control-label">{l s='Select a form' mod='getresponse'}</label>
 					<div class="controls">
 						<select name="webform_id" id="webformSidebar" class="gr_select fullselect">
 							{if $webforms}
@@ -58,7 +58,7 @@
 				</fieldset>
 
 				<fieldset class="control-group" id="webformSidebarDiv">
-					<label for="webformSidebar" class="control-label">{l s='Web Form position' mod='getresponse'}:</label>
+					<label for="webformSidebar" class="control-label">{l s='Select where to place the form' mod='getresponse'}</label>
 					<div class="controls">
 						<select name="webform_sidebar" id="webformSidebar" class="gr_select fullselect">
 							<option value="home" {if $webform_sidebar == 'home'}selected{/if}>{l s='Homepage' mod='getresponse'}</option>
@@ -72,7 +72,7 @@
 				</fieldset>
 
 				<fieldset class="control-group" id="webformStyleDiv">
-					<label for="webformStyle" class="control-label">{l s='Style' mod='getresponse'}:</label>
+					<label for="webformStyle" class="control-label">{l s='Select the style' mod='getresponse'}</label>
 					<div class="controls">
 						<select name="webform_style" id="webformStyle" class="gr_select fullselect">
 							<option value="webform" {if $webform_style == 'webform'}selected{/if}>Web Form</option>
