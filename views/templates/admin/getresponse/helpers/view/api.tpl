@@ -14,7 +14,7 @@
 						<h3>
 							{l s='Already a GetResponse user?' mod='getresponse'}
 						</h3>
-						<p>{l s='Enter  your GetResponse API key to connect. Click '} <strong>Save</strong> {l s='to import your forms, campaigns and enable turning customers into subscribers.'}</p>
+						<p>{l s='Enter your GetResponse API key to connect. Click' mod='getresponse'} <strong>Save</strong> {l s='to import your forms, campaigns and enable turning customers into subscribers.' mod='getresponse'}</p>
 						<form accept-charset="utf-8" class="FormsEffectLc FormsValidateLc" action="{$action_url|escape:'htmlall':'UTF-8'}" method="post">
 							<fieldset>
 								<div class="fieldLine clearfix">
