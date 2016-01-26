@@ -49,14 +49,14 @@
 									{/foreach}
 								{/if}
 								<div class="item-dropdown-menu">
-									<div class="menu">
-										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit">
+									<div class="menu" style="white-space:normal;">
+										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit" style="height:30px;">
 											<i></i><span>{l s='Edit' mod='getresponse'}</span>
 										</a>
-										<button class="trigger"></button>
+										<button class="trigger" style="height:30px;"></button>
 										<ul class="dropdown">
 											<li>
-												<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del">
+												<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del" onclick="return confirm('Do you want to remove this segment?');">
 													<i></i><span>{l s='Delete' mod='getresponse'}</span>
 												</a>
 											</li>

@@ -76,6 +76,9 @@
 					</div>
 				</fieldset>
 				<fieldset id="customNameFields" {if $update_address == 'yes'} style="display:block"{else} style="display:none"{/if}>
+					<label>
+						<span class="tooltip-label">Copy PrestaShop customer details to custom fields</span>
+					</label>
 					<div class="gr-custom-field">
 						<select class="jsNarrowSelect" name="custom_field" multiple="multiple">
 							{foreach $custom_fields as $custom_field}

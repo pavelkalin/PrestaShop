@@ -79,7 +79,7 @@
 							<option value="prestashop" {if $webform_style == 'prestashop'}selected{/if}>Prestashop</option>
 						</select>
 						<span>
-							<abbr title='{l s='Web form style' mod='getresponse'}|{l s='Works only with old version of forms.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
+							<abbr title='{l s='Web form style' mod='getresponse'}|{l s='Selecting style works only if you still have legacy web forms enabled. In this case you can make your web form match the PrestaShop design or use the style defined in GetResponse.<br /><br />This feature doesn’t apply to regular GetResponse forms.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
 						</span>
 					</div>
 				</fieldset>

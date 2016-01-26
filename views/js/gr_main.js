@@ -318,6 +318,11 @@ $(function () {
         });
     });
 });
+
+function cancel_automation_edit() {
+    $('#getresponse .item-dropdown-menu .edit.active').removeClass('active');
+    $('#edit_automation').hide('slow');
+}
 /*------------------------------------*\
     TOOLTIP
 \*------------------------------------*/

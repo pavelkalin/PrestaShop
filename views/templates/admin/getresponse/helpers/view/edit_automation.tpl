@@ -20,7 +20,7 @@
 						{/if}
 					</select>
 					<span>
-						<abbr title='{l s='Filter category' mod='getresponse'}|{l s='Choose one of your Prestashop product categories to copy or move the contact after a successful purchase in the selected category.' mod='getresponse'}' rel="tooltip"></abbr>
+						<abbr title='{l s='Category' mod='getresponse'}|{l s='Select a PrestaShop category that will be used to categorize customers. When someone makes a purchase in this category they can be automatically moved or copied to a specific campaign.' mod='getresponse'}' rel="tooltip"></abbr>
 					</span>
 				</div>
 			</fieldset>
@@ -59,6 +59,7 @@
 			<fieldset class="control-group">
 				<div class="controls">
 					<input type="submit" value="{l s='Save' mod='getresponse'}" name="EditAutomationConfiguration" class="button">
+					<div class="button edit_automation_cancel" onclick="cancel_automation_edit()">{l s='Cancel' mod='getresponse'}</div>
 				</div>
 			</fieldset>
 		</form>
