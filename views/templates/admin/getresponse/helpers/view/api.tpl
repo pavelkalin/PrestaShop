@@ -43,7 +43,7 @@
 						</h3>
 						<p><a href="http://app.getresponse.com/track_customer.html?tid=42501" title="{l s='Start your free trial' mod='getresponse'}" target="_blank"><strong>{l s='Start your free trial' mod='getresponse'}</strong></a> and check out how GetResponse email marketing tools can boost your business and PrestaShop conversions.</p>
 						<ul>
-							<li>{l s='Email marketing returns $41 for every $1 spent.' mod='getresponse'}</li>
+							<li>{l s='Email marketing returns $38 for every $1 spent.' mod='getresponse'}</li>
 							<li>{l s='60% of shoppers are more apt to buy after receiving an email.' mod='getresponse'}</li>
 							<li>{l s='78% of marketers confirm the effectiveness of email.' mod='getresponse'}</li>
 							<li>{l s='Email marketing is 20 times more cost-effective than direct mail.' mod='getresponse'}</li>
@@ -92,10 +92,10 @@
 									</div>
 									<div class="flex-grow">
 										<div class="reson r3 flex-col">
-											<h3><i>3</i><span>{l s='500+ pre-designed templates' mod='getresponse'}</span></h3>
+											<h3><i>3</i><span>{l s='500+ Pre-designed Templates' mod='getresponse'}</span></h3>
 											<div class="img flex-col"></div>
 											<div class="bxHover">
-											    <h5>{l s='500+ pre-designed templates' mod='getresponse'}</h5>
+											    <h5>{l s='500+ Pre-designed Templates' mod='getresponse'}</h5>
 											    <p>{l s='Professionally designed templates will make your messages stand out in every email inbox.' mod='getresponse'}</p>
 											    <div class="btn-wrap">
 											        <a href="http://app.getresponse.com/track_customer.html?tid=42501" class="bt" title="{l s='Try It Free' mod='getresponse'}" target="_blank">{l s='Try It Free' mod='getresponse'}</a>{l s='or' mod='getresponse'}<a target="_blank" href="http://app.getresponse.com/track_customer.html?tid=41701"> {l s='Learn more' mod='getresponse'}</a>
@@ -125,7 +125,7 @@
 									<h3><i>5</i><span>{l s='One-Click Inbox Preview' mod='getresponse'}</span></h3>
 									<div class="img flex-grow"></div>
 									<div class="bxHover">
-									    <h5>{l s='One-Click Inbox Preview' mod='getresponse'}</h5>
+									    <h5>{l s='One-click Inbox Preview' mod='getresponse'}</h5>
 									    <p>{l s='Simple rendering test: one click - many previews, includes mobile devices.' mod='getresponse'}</p>
 									    <div class="btn-wrap">
 									        <a href="http://app.getresponse.com/track_customer.html?tid=42501" class="bt" title="{l s='Try It Free' mod='getresponse'}" target="_blank">{l s='Try It Free' mod='getresponse'}</a>{l s='or' mod='getresponse'}<a target="_blank" href="http://app.getresponse.com/track_customer.html?tid=41901"> {l s='Learn more' mod='getresponse'}</a>
@@ -167,7 +167,7 @@
 									<div class="img flex-grow"></div>
 									<div class="bxHover">
 									    <h5>{l s='Verified Deliverability' mod='getresponse'}</h5>
-									    <p>{l s='Up to 99.5%% deliverability with solutions to keep your emails out of the junk box.' mod='getresponse'}</p>
+									    <p>{l s='Up to 99.5% deliverability with solutions to keep your emails out of the junk box.' mod='getresponse'}</p>
 									    <div class="btn-wrap">
 									        <a href="http://app.getresponse.com/track_customer.html?tid=42501" class="bt" title="Try It Free" target="_blank">{l s='Try It Free' mod='getresponse'}</a>{l s='or' mod='getresponse'}<a target="_blank" href="http://app.getresponse.com/track_customer.html?tid=42201"> {l s='Learn more' mod='getresponse'}</a>
 									    </div>
@@ -191,10 +191,10 @@
 						<div class="row row-flex row-flex-wrap gutter-5">
 							<div class="col-lg-12">
 								<div class="reson r10 flex-col">
-									<h3><i>10</i><span>{l s='1000+ Free iStockphoto images' mod='getresponse'}</span></h3>
+									<h3><i>10</i><span>{l s='1000+ Free iStockphoto Images' mod='getresponse'}</span></h3>
 									<div class="img flex-grow"></div>
 									<div class="bxHover">
-									    <h5>{l s='1000+ Free iStockphoto images' mod='getresponse'}</h5>
+									    <h5>{l s='1000+ Free iStockphoto Images' mod='getresponse'}</h5>
 									    <p>{l s='Multiple themes, simple drag\'n\'drop edition inside newsletter.' mod='getresponse'}</p>
 									    <div class="btn-wrap">
 									        <a href="http://app.getresponse.com/track_customer.html?tid=42501" class="bt" title="{l s='Try It Free' mod='getresponse'}" target="_blank">{l s='Try It Free' mod='getresponse'}</a>{l s='or' mod='getresponse'}<a target="_blank" href="http://app.getresponse.com/track_customer.html?tid=42401"> {l s='Learn more' mod='getresponse'}</a>

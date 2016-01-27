@@ -33,7 +33,8 @@
 				<div class="rwd-table">
 					<table>
 					    <tr>
-					        <th style="width:50%;">{l s='Category' mod='getresponse'}</th>
+					        <th>{l s='Category' mod='getresponse'}</th>
+					        <th>&nbsp;</th>
 					        <th>{l s='Campaign' mod='getresponse'}</th>
 					        <th>{l s='Action' mod='getresponse'}</th>
 					        <th>{l s='Status' mod='getresponse'}</th>
@@ -48,22 +49,19 @@
 										{/if}
 									{/foreach}
 								{/if}
-								<div class="item-dropdown-menu">
-									<div class="menu" style="white-space:normal;">
-										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit" style="height:30px;">
-											<i></i><span>{l s='Edit' mod='getresponse'}</span>
-										</a>
-										<button class="trigger" style="height:30px;"></button>
-										<ul class="dropdown">
-											<li>
-												<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del" onclick="return confirm('Do you want to remove this segment?');">
-													<i></i><span>{l s='Delete' mod='getresponse'}</span>
-												</a>
-											</li>
-										</ul>
-									</div>
-								</div>
 					        </td>
+					        <td>
+								<div class="item-dropdown-menu">
+									<span class="edit-automation-actions">
+										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit" style="height:30px;">
+											{l s='Edit' mod='getresponse'}
+										</a> |
+										<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del" onclick="return confirm('Do you want to remove this segment?');">
+											{l s='Delete' mod='getresponse'}
+										</a>
+									</span>
+								</div>
+							</td>
 					        <td data-th="{l s='Destination Campaign' mod='getresponse'}">
 								{if $campaigns}
 									{foreach $campaigns as $campaign}

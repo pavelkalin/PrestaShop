@@ -544,14 +544,15 @@
 }
 #getresponse #module .rwd-table td:nth-child(2) {
     text-align: right;
-    width: 40%;
 }
 #getresponse #module .rwd-table td:nth-child(2) > span {
     float: left;
     line-height: 31px;
 }
 
-
+.edit-automation-actions {
+    color: #7bcbff !important;
+}
 
 
 
