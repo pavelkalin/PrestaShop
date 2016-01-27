@@ -278,8 +278,14 @@
     height:100%;
     padding:0;
 }
-.r4, .r7, .r10 {
+.r4 {
+    height: 161px;
+}
+.r7 {
     height: 155px;
+}
+.r10 {
+    height: 160px;
 }
 #getresponse #module .reson.r1 .img {
     padding-top:63%;
