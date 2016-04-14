@@ -40,6 +40,17 @@
 		<div id="form-box" {if $status == 'yes'} style="display:block"{else} style="display:none"{/if}>
 			<div class="highslide-body">
 
+				<fieldset class="control-group">
+					<label for="newsletter" class="control-label"></label>
+					<div class="controls">
+						<label class="checkbox">
+							<input value="yes" name="newsletter" type="checkbox" {if $active_newsletter_subscription == 'yes'}checked{/if}>
+							<span>{l s='Include Prestashop newsletter subscribers' mod='getresponse'}</span>
+							<abbr title='{l s='Prestashop newsletter integration' mod='getresponse'}|{l s='Select if you want to subscribe customers added through Prestashop internal module.' mod='getresponse'}' rel="tooltip"></abbr>
+						</label>
+					</div>
+				</fieldset>
+
 				<fieldset class="control-group" id="campaignDiv">
 					<label for="targetCampaign" class="control-label">{l s='Select your campaign' mod='getresponse'}</label>
 					<div class="controls">

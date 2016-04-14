@@ -469,13 +469,14 @@ class DbConnection
         return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
-    public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day)
+    public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day, $newsletter)
     {
         $data = array(
-            'active_subscription' => pSQL($active_subscription),
-            'campaign_id'         => pSQL($campaign_id),
-            'update_address'      => pSQL($update_address),
-            'cycle_day'           => pSQL($cycle_day)
+            'active_subscription'            => pSQL($active_subscription),
+            'active_newsletter_subscription' => pSQL($newsletter),
+            'campaign_id'                    => pSQL($campaign_id),
+            'update_address'                 => pSQL($update_address),
+            'cycle_day'                      => pSQL($cycle_day)
         );
 
         return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
@@ -766,7 +767,11 @@ class DbConnection
 
         //add_contact
         if (!empty( $action ) && in_array($action, $allowed) == true && $action == 'create') {
-            $prefix  = 'newCustomer';
+            if (isset($params['newNewsletterContact'])) {
+                $prefix = 'newNewsletterContact';
+            } else {
+                $prefix  = 'newCustomer';
+            }
             $customs = $this->mapCustoms($params[$prefix], null, 'create');
 
             if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {

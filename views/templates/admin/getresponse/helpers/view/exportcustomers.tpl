@@ -39,7 +39,7 @@
 		{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/add_cycle.tpl"}
 
 		<fieldset class="control-group">
-			<label for="crypto" class="control-label"></label>
+			<label for="newsletter_guests" class="control-label"></label>
 			<div class="controls">
 				<label class="checkbox">
 					<input name="newsletter_guests" type="checkbox" checked>
