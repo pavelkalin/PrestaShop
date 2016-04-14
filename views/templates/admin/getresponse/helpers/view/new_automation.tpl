@@ -10,7 +10,7 @@
 
 			{if $d_categories}
 				<fieldset class="control-group">
-					<label for="filterCategory" class="control-label">{l s='If purchased in the category' mod='getresponse'}</label>
+					<label for="filterCategory" class="control-label">{l s='If customers buy in the category' mod='getresponse'}</label>
 					<div class="controls">
 						<!-- <div id="ErrorCategory"></div> -->
 						<div class="input-tip">
@@ -24,18 +24,18 @@
 							{/if}
 						</select>
 							<span>
-								<abbr title='{l s='Filter category' mod='getresponse'}|{l s='Choose one of your Prestashop product categories to copy or move the contact after a successful purchase in the selected category.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
+								<abbr title='{l s='Category' mod='getresponse'}|{l s='Select a PrestaShop category that will be used to categorize customers. When someone makes a purchase in this category they can be automatically moved or copied to a specific campaign.' mod='getresponse'}' mod='getresponse' rel="tooltip"></abbr>
 							</span>
 						</div>
 					</div>
 				</fieldset>
 
 				<fieldset class="control-group">
-					<label for="popAction" class="control-label">{l s='contact will be' mod='getresponse'}:</label>
+					<label for="popAction" class="control-label">{l s='they are' mod='getresponse'}:</label>
 					<div class="controls">
 						<select name="a_action" id="filterAction" class="gr_select hiddenselect">
-							<option value="move">{l s='Move' mod='getresponse'}</option>
-							<option value="copy">{l s='Copy' mod='getresponse'}</option>
+							<option value="move">{l s='Moved' mod='getresponse'}</option>
+							<option value="copy">{l s='Copied' mod='getresponse'}</option>
 						</select>
 						<div id="ErrorAction"></div>
 					</div>

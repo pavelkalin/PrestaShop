@@ -5,25 +5,25 @@
 *}
 
 <div class="content">
-	<h3>{l s='Automation' mod='getresponse'}</h3>
+	<h3>{l s='Automatic segmentation' mod='getresponse'}</h3>
 
 	{if !empty($no_automation) && $no_automation == 'yes'}
 		<div>
 			<p>
-				{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns once they purchase in a particular Prestashop product category. To do this, click “Create new” button and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option. ' mod='getresponse'}
+				{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns when they make a purchase in a particular PrestaShop product category. To do this, click “Create new segment” and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option.' mod='getresponse'}
 
 				<div class="btns">
-					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new automation" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
+					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new segment|Cancel" class="button default show-more" style="width: 135px;">{l s='Create new segment' mod='getresponse'}</a>
 				</div>
 				{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_automation.tpl"}
 			</p>
 		</div>
 	{else}
 		<p>
-			{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns once they purchase in a particular Prestashop product category. To do this, click “Create new” button and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option. ' mod='getresponse'}
+			{l s='GetResponse enables you to automatically move or copy your customers between GetResponse campaigns when they make a purchase in a particular PrestaShop product category. To do this, click “Create new segment” and choose automation parameters. When you select "move" option, the rule will move contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose "copy" option.' mod='getresponse'}
 
 			<div class="btns">
-				<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new automation|Close new automation" class="button default show-more">{l s='Create new automation' mod='getresponse'}</a>
+				<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id=new#add_automation" data-label="Create new segment|Cancel" class="button default show-more" style="width: 135px;">{l s='Create new segment' mod='getresponse'}</a>
 			</div>
 			{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_automation.tpl"}
 		</p>
@@ -31,18 +31,16 @@
 		<form class="" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation" method="post">
 			{if !empty($automation_settings)}
 				<div class="rwd-table">
-					<h3>{l s='Automation List' mod='getresponse'}</h3>
 					<table>
 					    <tr>
-					    	<th>{l s='ID' mod='getresponse'}</th>
 					        <th>{l s='Category' mod='getresponse'}</th>
-					        <th>{l s='Destination Campaign' mod='getresponse'}</th>
+					        <th>&nbsp;</th>
+					        <th>{l s='Campaign' mod='getresponse'}</th>
 					        <th>{l s='Action' mod='getresponse'}</th>
 					        <th>{l s='Status' mod='getresponse'}</th>
 					    </tr>
 					    {foreach $automation_settings as $automation name=id}
 					    <tr>
-					        <td data-th="{l s='ID' mod='getresponse'}"> <span>{$smarty.foreach.id.iteration|escape:'htmlall':'UTF-8'}</span></td>
 					        <td data-th="{l s='Category' mod='getresponse'}">
 								{if $categories}
 									{foreach $categories as $category}
@@ -51,22 +49,19 @@
 										{/if}
 									{/foreach}
 								{/if}
-								<div class="item-dropdown-menu">
-									<div class="menu">
-										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit">
-											<i></i><span>{l s='Edit' mod='getresponse'}</span>
-										</a>
-										<button class="trigger"></button>
-										<ul class="dropdown">
-											<li>
-												<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del">
-													<i></i><span>{l s='Delete' mod='getresponse'}</span>
-												</a>
-											</li>
-										</ul>
-									</div>
-								</div>
 					        </td>
+					        <td>
+								<div class="item-dropdown-menu">
+									<span class="edit-automation-actions">
+										<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=automation&amp;edit_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="edit" style="height:30px;">
+											{l s='Edit' mod='getresponse'}
+										</a> |
+										<a href="{$action_url|escape:'htmlall':'UTF-8'}&action=automation&delete_id={$automation['id']|escape:'htmlall':'UTF-8'}" class="del" onclick="return confirm('Do you want to remove this segment?');">
+											{l s='Delete' mod='getresponse'}
+										</a>
+									</span>
+								</div>
+							</td>
 					        <td data-th="{l s='Destination Campaign' mod='getresponse'}">
 								{if $campaigns}
 									{foreach $campaigns as $campaign}

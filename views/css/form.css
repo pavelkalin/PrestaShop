@@ -137,7 +137,7 @@
     text-align:center;
     text-decoration:none;
     letter-spacing:normal;
-    text-transform:uppercase;
+    text-transform:none;
     color:#fff;
     border:1px solid #2eacce;
     border-radius:3px;
@@ -300,13 +300,9 @@
 #getresponse #module .gr-custom-field li li {
     display:inline-block;
     box-sizing:border-box;
-    width:40%;
+    width:33%;
     padding-right:20px;
     vertical-align:middle;
-}
-#getresponse #module .gr-custom-field li li:last-child {
-    width:20%;
-    padding: 0;
 }
 #getresponse #module .gr-custom-field li li .FullSelectLcContainerDefault,
 #getresponse #module .gr-custom-field li li input {
@@ -548,14 +544,15 @@
 }
 #getresponse #module .rwd-table td:nth-child(2) {
     text-align: right;
-    width: 40%;
 }
 #getresponse #module .rwd-table td:nth-child(2) > span {
     float: left;
     line-height: 31px;
 }
 
-
+.edit-automation-actions {
+    color: #7bcbff !important;
+}
 
 
 
@@ -810,9 +807,6 @@
     #getresponse #module .gr-custom-field li li {
         width: 75%;
         margin-top: 5px;
-    }
-    #getresponse #module .gr-custom-field li li:last-child {
-        width: 25%;
     }
 }
 /* ==========================================================================
