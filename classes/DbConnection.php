@@ -469,13 +469,14 @@ class DbConnection
         return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
     }
 
-    public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day)
+    public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day, $newsletter)
     {
         $data = array(
-            'active_subscription' => pSQL($active_subscription),
-            'campaign_id'         => pSQL($campaign_id),
-            'update_address'      => pSQL($update_address),
-            'cycle_day'           => pSQL($cycle_day)
+            'active_subscription'            => pSQL($active_subscription),
+            'active_newsletter_subscription' => pSQL($newsletter),
+            'campaign_id'                    => pSQL($campaign_id),
+            'update_address'                 => pSQL($update_address),
+            'cycle_day'                      => pSQL($cycle_day)
         );
 
         return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
@@ -649,7 +650,11 @@ class DbConnection
                 // TODO: Tutaj trzeba zrobic obsluge nowych bledow
                 // TODO: M.in blad braku prefixu w polach mobile lub phone
                 if (!empty($r->message) && $r->message != 'Contact in queue') {
-                    return array('status' => '0', 'message' => $r);
+                    if ($r->message == 'Cannot add contact that is blacklisted') {
+                        return array('status' => '0', 'message' => $r->message . '. Please remove contact with email address: ' . $customer['email']);
+                    } else {
+                        return array('status' => '0', 'message' => $r->message);
+                    }
                 }
             }
         }
@@ -762,7 +767,11 @@ class DbConnection
 
         //add_contact
         if (!empty( $action ) && in_array($action, $allowed) == true && $action == 'create') {
-            $prefix  = 'newCustomer';
+            if (isset($params['newNewsletterContact'])) {
+                $prefix = 'newNewsletterContact';
+            } else {
+                $prefix  = 'newCustomer';
+            }
             $customs = $this->mapCustoms($params[$prefix], null, 'create');
 
             if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
@@ -785,7 +794,7 @@ class DbConnection
                 $categories = array();
                 foreach ($params['order']->product_list as $products) {
                     $temp_categories = Product::getProductCategories($products['id_product']);
-                    foreach($temp_categories as $tmp) {
+                    foreach ($temp_categories as $tmp) {
                         $categories[$tmp] = $tmp;
                     }
                 }

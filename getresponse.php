@@ -97,6 +97,7 @@ class Getresponse extends Module
 			`id_shop` char(32) NOT NULL,
 			`api_key` char(32) NOT NULL,
 			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`campaign_id` char(5) NOT NULL,
 			`cycle_day` char(5) NOT NULL,
@@ -177,6 +178,7 @@ class Getresponse extends Module
 				`id_shop` ,
 				`api_key` ,
 				`active_subscription` ,
+				`active_newsletter_subscription` ,
 				`update_address` ,
 				`campaign_id` ,
 				`cycle_day` ,
@@ -184,7 +186,7 @@ class Getresponse extends Module
 				`crypto`
 				)
 				VALUES (
-				' . (int) $store_id . ',  \'\',  \'no\', \'no\',  \'0\',  \' \',  \'gr\',  \'\'
+				' . (int) $store_id . ',  \'\',  \'no\', \'no\',  \'no\',  \'0\',  \' \',  \'gr\',  \'\'
 				)
 				ON DUPLICATE KEY UPDATE
 				`id` = `id`;
@@ -358,12 +360,32 @@ class Getresponse extends Module
         return $this->displayWebform('top');
     }
 
-    public function hookDisplayFooter($params)
+    public function hookDisplayFooter()
     {
-        if (Tools::isSubmit('submitNewsletter')) {
-            // W tym miejscu mozna dodac kontakt do kampanii w GRze z dodatku 'blocknewsletter' od Presty (domyslnie instalowanego).
-            // Tylko w jaki sposob? Czy jako oddzielny modul, mozliwosc customowych ustawien jak w przypadku exportu? Czy inaczej?
-            // Informacje z bloku newsletter przekazywane sa w tablicy $_POST - i w ten sposob sa w oryginalnym module przechwytywane.
+        // if submit from newsletter block
+        // and email not empty
+        // and action subscribe
+        // and email is valid
+        if (Tools::isSubmit('submitNewsletter') &&
+            !empty($_POST['email']) &&
+            $_POST['action'] == '0' &&
+            Validate::isEmail($_POST['email'])
+        ) {
+            $settings = $this->db->settings;
+
+            if (isset($settings['active_newsletter_subscription'] ) &&
+                $settings['active_newsletter_subscription'] == 'yes'
+            ) {
+                $client = new stdClass();
+                $client->newsletter = 1;
+                $client->firstname = 'Friend';
+                $client->lastname = '';
+                $client->email = $_POST['email'];
+
+                $data['newNewsletterContact'] = $client;
+
+                $this->addSubscriber($data, 'create');
+            }
         }
         return $this->displayWebform('footer');
     }

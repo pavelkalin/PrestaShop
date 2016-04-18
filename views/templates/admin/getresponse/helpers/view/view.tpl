@@ -16,11 +16,12 @@
 </script>
 
 <div id="getresponse" class="gr-wrapper">
-	{if isset($message)}
+	{if !empty($message) || (!empty($status_text) && $form_status == 'error')}
 		<div class="bootstrap">
-			<div class="module_confirmation conf confirm alert alert-success">
+			<div class="module_confirmation conf confirm alert alert-{if isset($form_status) && $form_status == 'success'}success{else}danger{/if}">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
-				{$message|escape:'htmlall':'UTF-8'}
+				{if isset($form_status) && $form_status == 'error'}{$status_text|escape:'htmlall':'UTF-8'}{/if}
+				{if isset($message)}{$message|escape:'htmlall':'UTF-8'}{/if}
 			</div>
 		</div>
 	{/if}

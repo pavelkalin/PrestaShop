@@ -14,7 +14,7 @@
             APP.publish('triggerAddToCycle.setConfig', {
                 container: '#triggerAddToCycleContainer',
                 translations: {
-                    translateDontAddToTheCycleOnDay: {/literal}" <span>{l s='Add to autoresponder sequence:' mod='getresponse'}</span>"{literal},
+                    translateDontAddToTheCycleOnDay: {/literal}" <span>{l s='Add to autoresponder sequence' mod='getresponse'}</span>"{literal},
                     translateMore: {/literal}'more'{literal},
                     translateDay: {/literal}'{l s='Day' mod='getresponse'}'{literal},
                     translateMessages: '{{/literal}{l s='messages' mod='getresponse'}{literal}|{/literal}{l s='message' mod='getresponse'}{literal}|{/literal}{l s='messages' mod='getresponse'}{literal}}',

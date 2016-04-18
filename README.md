@@ -1,2 +1,14 @@
-# GetResponse Prestashop Integration
-GetResponse Prestashop plugin. For more information, please visit our dedicated [Prestashop integration web page](http://connect.getresponse.com/integration/prestashop-plug-in).
+# GetResponse
+
+## About
+
+Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns
+
+## Requirements
+
+- cURL library
+- JSON library
+
+## Contact
+
+getresponse-devzone@cs.getresponse.com

@@ -7,12 +7,12 @@
 <div class="content">
 	<h3>{l s='Subscribe via registration page' mod='getresponse'}</h3>
 	<p>
-		{l s='With this feature you can add subscribers to a selected GetResponse campaign once they register to your online shop via the registration page. Select the target campaign or create a new campaign for your Prestashop subscribers. If the campaign includes an autoresponder, choose the sequence day you want to export the contacts to. In case a customer might change her/his contact data in the last stage of order placement, check the Checkout Update box and GetResponse will update the information automatically.' mod='getresponse'}
+		{l s='You can add subscribers to a selected GetResponse campaign when they register to your online shop (via the registration page). Select an existing campaign or create a new campaign for your PrestaShop visitors. If the campaign includes an autoresponder, choose the sequence day you want to add the contacts to. In case customers change their contact data in the last stage of order placement, select the ' mod='getresponse'} <strong>Checkout Update</strong> {l s=' box and we’ll update their details automatically.' mod='getresponse'}
 	</p>
 	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viapage" method="post">
 		<div id="switch-box">
 			<div class="control-group">
-				<label for="targetCampaign" class="control-label">{l s='Subscription:' mod='getresponse'}</label>
+				<label for="targetCampaign" class="control-label">{l s='Subscription' mod='getresponse'}</label>
 				<div class="controls">
 
 					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viapage#iswitch" id="chckSubscriptionInput" class="switch {if $status == 'yes'}enabled{else}disabled{/if}" data-params="{ run: 'switch_viapage' }">
@@ -32,7 +32,7 @@
 						</span>
 						<input type="checkbox" value="yes" id="chckSubscriptionInput" name="status" {if $status == 'yes'}checked{/if}/>
 					</a>
-					<abbr title='{l s='Subscription' mod='getresponse'}|{l s='If you enable the switch, subscribers will be added immediately to your GetResponse account. You can stop this option anytime by switching the slider to OFF' mod='getresponse'}' rel="tooltip"></abbr>
+					<abbr title='{l s='Subscription' mod='getresponse'}|{l s='If you set this to ON, subscribers are immediately added to your GetResponse account. You can stop this anytime by switching the slider to OFF.' mod='getresponse'}' rel="tooltip"></abbr>
 				</div>
 			</div>
 		</div>
@@ -40,8 +40,19 @@
 		<div id="form-box" {if $status == 'yes'} style="display:block"{else} style="display:none"{/if}>
 			<div class="highslide-body">
 
+				<fieldset class="control-group">
+					<label for="newsletter" class="control-label"></label>
+					<div class="controls">
+						<label class="checkbox">
+							<input value="yes" name="newsletter" type="checkbox" {if $active_newsletter_subscription == 'yes'}checked{/if}>
+							<span>{l s='Include Prestashop newsletter subscribers' mod='getresponse'}</span>
+							<abbr title='{l s='Prestashop newsletter integration' mod='getresponse'}|{l s='Select if you want to subscribe customers added through Prestashop internal module.' mod='getresponse'}' rel="tooltip"></abbr>
+						</label>
+					</div>
+				</fieldset>
+
 				<fieldset class="control-group" id="campaignDiv">
-					<label for="targetCampaign" class="control-label">{l s='Select target campaign' mod='getresponse'}:</label>
+					<label for="targetCampaign" class="control-label">{l s='Select your campaign' mod='getresponse'}</label>
 					<div class="controls">
 						{if $campaigns}
 							<div class="input-more">
@@ -50,7 +61,7 @@
 										<option value="{$campaign['id']|escape:'htmlall':'UTF-8'}" {if isset($c) && $c == $campaign['name'] || $selected_campaign == $campaign['id']}selected{/if}>{$campaign['name']|escape:'htmlall':'UTF-8'}</option>
 									{/foreach}
 								</select>
-								<a href="#add_campaign" data-label="Add new campaign|Hide new campaign" class="button default show-more">{l s='Add new campaign' mod='getresponse'}</a>
+								<a href="#add_campaign" data-label="Create new campaign|Cancel" class="button default show-more" style="width: 140px;">{l s='Create new campaign' mod='getresponse'}</a>
 							</div>
 							{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_campaign.tpl"}
 						{else}
@@ -71,11 +82,14 @@
 						<label class="checkbox"  data-params="{ action: 'checkbox', run: 'switch_viapage_customs' }">
 							<input value="yes" type="checkbox" name="update_address" id="chckUpdateContactDataOnPage" {if $update_address == 'yes'}checked{/if}>
 							<span class="tooltip-label">{l s='Checkout update' mod='getresponse'}</span>
-							<abbr title='{l s='Checkout update' mod='getresponse'}|{l s='Check if you want to update billing data. Custom name must be composed using up to 32: lowercase a-z letters, digits or underscores' mod='getresponse'}' rel="tooltip"></abbr>
+							<abbr title='{l s='Checkout update' mod='getresponse'}|{l s='Select if you want to update billing data. A custom name must be composed using up to 32: lowercase a-z letters, digits, or underscores.' mod='getresponse'}' rel="tooltip"></abbr>
 						</label>
 					</div>
 				</fieldset>
 				<fieldset id="customNameFields" {if $update_address == 'yes'} style="display:block"{else} style="display:none"{/if}>
+					<label>
+						<span class="tooltip-label">Copy PrestaShop customer details to custom fields</span>
+					</label>
 					<div class="gr-custom-field">
 						<select class="jsNarrowSelect" name="custom_field" multiple="multiple">
 							{foreach $custom_fields as $custom_field}

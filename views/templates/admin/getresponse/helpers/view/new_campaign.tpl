@@ -9,19 +9,19 @@
 		<div class="form-horizontal" action="">
 
 			<fieldset class="control-group" id="campaignDiv">
-				<label for="webformId" class="control-label">{l s='Campaign name' mod='getresponse'}:</label>
+				<label for="webformId" class="control-label">{l s='Enter the campaign name' mod='getresponse'}</label>
 				<div class="controls">
 					<div class="input-tip">
 						<input name="campaign_name" type="text" id="campaignName" placeholder="Campaign Name">
 						<span>
-							<abbr title='{l s='Campaign name' mod='getresponse'}|{l s='Campaign name must be between 3-64 characters, only a-z (lower case), numbers and "_"' mod='getresponse'}' rel="tooltip"></abbr>
+							<abbr title='{l s='Campaign name' mod='getresponse'}|{l s='Campaign name must be between 3-64 characters. Use only a-z (lower case), numbers, and "_".' mod='getresponse'}' rel="tooltip"></abbr>
 						</span>
 					</div>
 				</div>
 			</fieldset>
 
 			<fieldset class="control-group" id="fromFieldDiv">
-				<label for="from" class="control-label">{l s='From' mod='getresponse'}</label>
+				<label for="from" class="control-label">{l s='Select the From field' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="from_field" id="fromField" class="gr_select hiddenselect">
 						{if isset($fromfields)}
@@ -34,7 +34,7 @@
 			</fieldset>
 
 			<fieldset class="control-group" id="replyToDiv">
-				<label for="replyTo" class="control-label">{l s='Reply to' mod='getresponse'}</label>
+				<label for="replyTo" class="control-label">{l s='Select reply to address' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="reply_to_field" id="replyTo" class="gr_select hiddenselect">
 						{if isset($fromfields)}
@@ -47,7 +47,7 @@
 			</fieldset>
 
 			<fieldset class="control-group" id="confirmationSubjectDiv">
-				<label for="confirmationSubject" class="control-label">{l s='Confirmation subject' mod='getresponse'}</label>
+				<label for="confirmationSubject" class="control-label">{l s='Select subject line for confirmation message' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="confirmation_subject" id="confirmationSubject" class="gr_select hiddenselect">
 						{if isset($subscriptionConfirmationsSubject)}
@@ -60,7 +60,7 @@
 			</fieldset>
 
 			<fieldset class="control-group" id="confirmationBodyDiv">
-				<label for="confirmationSubject" class="control-label">{l s='Confirmation body' mod='getresponse'}</label>
+				<label for="confirmationSubject" class="control-label">{l s='Select confirmation message body' mod='getresponse'}</label>
 				<div class="controls select-wide">
 					<select name="confirmation_body" id="confirmationBody" class="gr_select hiddenselect">
 						{if isset($subscriptionConfirmationsBody)}
