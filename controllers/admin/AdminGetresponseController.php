@@ -421,18 +421,20 @@ class AdminGetresponseController extends ModuleAdminController
             $add_to_cycle   = Tools::getValue('add_to_cycle');
             $cycle_day      = Tools::getValue('cycle_day');
             $update_address = Tools::getValue('update_address');
+            $newsletter     = Tools::getValue('newsletter');
             $posted_customs = Tools::getValue('custom_field');
 
             // check subscription settings
             if (!empty($campaign[0]) && $campaign[0] != '0' && !empty( $status )) {
                 $update_address = empty($update_address) ? 'no' : $update_address;
+                $newsletter = empty($newsletter) ? 'no' : $newsletter;
                 $cycle_day      = !is_null($add_to_cycle) ? $cycle_day : null;
 
                 $validation = $this->validateCustoms($posted_customs);
                 if (is_array($validation) && !empty($validation['form_status'])) {
                     $this->context->smarty->assign($validation);
                 } else {
-                    $this->db->updateSettings($status, $campaign[0], $update_address, $cycle_day);
+                    $this->db->updateSettings($status, $campaign[0], $update_address, $cycle_day, $newsletter);
                     $this->db->updateCustoms($posted_customs);
                     $this->context->smarty->assign(array(
                         'form_status' => 'success',
@@ -453,6 +455,7 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('selected_campaign' => $settings['campaign_id']));
             $this->context->smarty->assign(array('selected_cycle_day' => $settings['cycle_day']));
             $this->context->smarty->assign(array('update_address' => $settings['update_address']));
+            $this->context->smarty->assign(array('active_newsletter_subscription' => $settings['active_newsletter_subscription']));
 
             $custom_fields = $this->db->getCustoms();
             $this->context->smarty->assign(array('custom_fields' => $custom_fields));
