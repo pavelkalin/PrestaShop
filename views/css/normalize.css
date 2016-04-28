@@ -1,0 +1,466 @@
+/*! normalize.css v3.0.1 | MIT License | git.io/normalize
+ *
+ *
+ *
+ *
+ *
+ *   Do not edit without consulting with front-end department
+ *   contact: rszczepankiewicz@getresponse.com
+ *
+ *
+ *
+ *
+ *
+*/
+
+/**
+ * 1. Set default font family to sans-serif.
+ * 2. Prevent iOS text size adjust after orientation change, without disabling
+ *    user zoom.
+ */
+
+
+
+#getresponse #module {
+    font-family:sans-serif; /* 1 */
+
+        -ms-text-size-adjust:100%; /* 2 */
+    -webkit-text-size-adjust:100%; /* 2 */
+
+}
+
+/**
+ * For better rendering fonts
+ */
+
+#getresponse #module input {
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+}
+
+/**
+ * Remove default margin.
+ */
+
+#getresponse #module {
+    margin:0;
+}
+
+/* HTML5 display definitions
+   ========================================================================== */
+
+/**
+ * Correct `block` display not defined for any HTML5 element in IE 8/9.
+ * Correct `block` display not defined for `details` or `summary` in IE 10/11 and Firefox.
+ * Correct `block` display not defined for `main` in IE 11.
+ */
+
+#getresponse #module article,
+#getresponse #module aside,
+#getresponse #module details,
+#getresponse #module figcaption,
+#getresponse #module figure,
+#getresponse #module footer,
+#getresponse #module header,
+#getresponse #module hgroup,
+#getresponse #module main,
+#getresponse #module nav,
+#getresponse #module section,
+#getresponse #module summary {
+    display:block;
+}
+
+/**
+ * 1. Correct `inline-block` display not defined in IE 8/9.
+ * 2. Normalize vertical alignment of `progress` in Chrome, Firefox, and Opera.
+ */
+
+#getresponse #module audio,
+#getresponse #module canvas,
+#getresponse #module progress,
+#getresponse #module video {
+    display:inline-block; /* 1 */
+    vertical-align:baseline; /* 2 */
+}
+
+/**
+ * Prevent modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+#getresponse #module audio:not([controls]) {
+    display:none;
+    height:0;
+}
+
+/**
+ * Address `[hidden]` styling not present in IE 8/9/10.
+ * Hide the `template` element in IE 8/9/11, Safari, and Firefox < 22.
+ */
+
+#getresponse #module [hidden],
+#getresponse #module template {
+    display:none;
+}
+
+/* Links
+   ========================================================================== */
+
+/**
+ * Remove the gray background color from active links in IE 10.
+ */
+
+#getresponse #module a {
+    background:transparent;
+}
+
+/**
+ * Improve readability when focused and also mouse hovered in all browsers.
+ */
+
+#getresponse #module a:active,
+#getresponse #module a:hover {
+    outline:0;
+}
+
+/* Text-level semantics
+   ========================================================================== */
+
+/**
+ * Address styling not present in IE 8/9/10/11, Safari, and Chrome.
+ */
+
+/*#getresponse #module abbr[title] {
+    border-bottom:1px dotted;
+}*/
+
+/**
+ * Address style set to `bolder` in Firefox 4+, Safari, and Chrome.
+ */
+
+#getresponse #module b,
+#getresponse #module strong {
+    font-weight:bold;
+}
+
+/**
+ * Address styling not present in Safari and Chrome.
+ */
+
+#getresponse #module dfn {
+    font-style:italic;
+}
+
+/**
+ * Address variable `h1` font-size and margin within `section` and `article`
+ * contexts in Firefox 4+, Safari, and Chrome.
+ */
+
+#getresponse #module h1 {
+    font-size:2em;
+    margin:0.67em 0;
+}
+
+/**
+ * Address styling not present in IE 8/9.
+ */
+
+#getresponse #module mark {
+    color:#000;
+    background:#ff0;
+}
+
+/**
+ * Address inconsistent and variable font size in all browsers.
+ */
+
+#getresponse #module small {
+    font-size:80%;
+}
+
+/**
+ * Prevent `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+#getresponse #module sub,
+#getresponse #module sup {
+    font-size:75%;
+    line-height:0;
+    position:relative;
+    vertical-align:baseline;
+}
+
+#getresponse #module sup {
+    top:-0.5em;
+}
+
+#getresponse #module sub {
+    bottom:-0.25em;
+}
+
+/* Embedded content
+   ========================================================================== */
+
+/**
+ * Remove border when inside `a` element in IE 8/9/10.
+ */
+
+#getresponse #module img {
+    border:0;
+}
+
+/**
+ * Correct overflow not hidden in IE 9/10/11.
+ */
+
+#getresponse #module svg:not(:root) {
+    overflow:hidden;
+}
+
+/* Grouping content
+   ========================================================================== */
+
+/**
+ * Address margin not present in IE 8/9 and Safari.
+ */
+
+#getresponse #module figure {
+    margin:1em 40px;
+}
+
+/**
+ * Address differences between Firefox and other browsers.
+ */
+
+#getresponse #module hr {
+    -moz-box-sizing:content-box;
+         box-sizing:content-box;
+    height:0;
+}
+
+/**
+ * Contain overflow in all browsers.
+ */
+
+#getresponse #module pre {
+    overflow:auto;
+}
+
+/**
+ * Address odd `em`-unit font size rendering in all browsers.
+ */
+
+#getresponse #module code,
+#getresponse #module kbd,
+#getresponse #module pre,
+#getresponse #module samp {
+    font-family:monospace, monospace;
+    font-size:1em;
+}
+
+/* Forms
+   ========================================================================== */
+
+/**
+ * Known limitation: by default, Chrome and Safari on OS X allow very limited
+ * styling of `select`, unless a `border` property is set.
+ */
+
+/**
+ * 1. Correct color not being inherited.
+ *    Known issue: affects color of disabled elements.
+ * 2. Correct font properties not being inherited.
+ * 3. Address margins set differently in Firefox 4+, Safari, and Chrome.
+ */
+
+#getresponse #module button,
+#getresponse #module input,
+#getresponse #module optgroup,
+#getresponse #module select,
+#getresponse #module textarea {
+    font:inherit; /* 2 */
+    margin:0; /* 3 */
+    color:inherit; /* 1 */
+}
+
+/**
+ * Address `overflow` set to `hidden` in IE 8/9/10/11.
+ */
+
+#getresponse #module button {
+    overflow:visible;
+}
+
+/**
+ * Address inconsistent `text-transform` inheritance for `button` and `select`.
+ * All other form control elements do not inherit `text-transform` values.
+ * Correct `button` style inheritance in Firefox, IE 8/9/10/11, and Opera.
+ * Correct `select` style inheritance in Firefox.
+ */
+
+#getresponse #module button,
+#getresponse #module select {
+    text-transform:none;
+}
+
+/**
+ * 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+ *    and `video` controls.
+ * 2. Correct inability to style clickable `input` types in iOS.
+ * 3. Improve usability and consistency of cursor style between image-type
+ *    `input` and others.
+ */
+
+#getresponse #module button,
+#getresponse #module html input[type="button"],
+/* 1 */
+#getresponse #module input[type="reset"],
+#getresponse #module input[type="submit"] {
+    cursor:pointer; /* 3 */
+
+    -webkit-appearance:button; /* 2 */
+}
+
+/**
+ * Re-set default cursor for disabled elements.
+ */
+
+#getresponse #module button[disabled],
+#getresponse #module html input[disabled] {
+    cursor:default;
+}
+
+/**
+ * Remove inner padding and border in Firefox 4+.
+ */
+
+#getresponse #module button::-moz-focus-inner,
+#getresponse #module input::-moz-focus-inner {
+    padding:0;
+    border:0;
+}
+
+/**
+ * Address Firefox 4+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet.
+ */
+
+#getresponse #module input {
+    line-height:normal;
+}
+
+/**
+ * It's recommended that you don't attempt to style these elements.
+ * Firefox's implementation doesn't respect box-sizing, padding, or width.
+ *
+ * 1. Address box sizing set to `content-box` in IE 8/9/10.
+ * 2. Remove excess padding in IE 8/9/10.
+ */
+
+#getresponse #module input[type="checkbox"],
+#getresponse #module input[type="radio"] {
+    box-sizing:border-box; /* 1 */
+    padding:0; /* 2 */
+}
+
+/**
+ * Fix the cursor style for Chrome's increment/decrement buttons. For certain
+ * `font-size` values of the `input`, it causes the cursor style of the
+ * decrement button to change from `default` to `text`.
+ */
+
+#getresponse #module input[type="number"]::-webkit-inner-spin-button,
+#getresponse #module input[type="number"]::-webkit-outer-spin-button {
+    height:auto;
+}
+
+/**
+ * 1. Address `appearance` set to `searchfield` in Safari and Chrome.
+ * 2. Address `box-sizing` set to `border-box` in Safari and Chrome
+ *    (include `-moz` to future-proof).
+ */
+
+#getresponse #module input[type="search"] {
+    -webkit-box-sizing:content-box; /* 2 */
+       -moz-box-sizing:content-box;
+            box-sizing:content-box;
+
+    -webkit-appearance:textfield; /* 1 */
+}
+
+/**
+ * Remove inner padding and search cancel button in Safari and Chrome on OS X.
+ * Safari (but not Chrome) clips the cancel button when the search input has
+ * padding (and `textfield` appearance).
+ */
+
+#getresponse #module input[type="search"]::-webkit-search-cancel-button,
+#getresponse #module input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance:none;
+}
+
+/**
+ * Define consistent border, margin, and padding.
+ */
+
+#getresponse #module fieldset {
+    margin:0 2px;
+    padding:0.35em 0.625em 0.75em;
+    border:1px solid #c0c0c0;
+}
+
+/**
+ * 1. Correct `color` not being inherited in IE 8/9/10/11.
+ * 2. Remove padding so people aren't caught out if they zero out fieldsets.
+ */
+
+#getresponse #module legend {
+    padding:0; /* 2 */
+    border:0; /* 1 */
+}
+
+/**
+ * Remove default vertical scrollbar in IE 8/9/10/11.
+ */
+
+#getresponse #module textarea {
+    overflow:auto;
+}
+
+/**
+ * Don't inherit the `font-weight` (applied by a rule above).
+ * NOTE: the default cannot safely be changed in Chrome and Safari on OS X.
+ */
+
+#getresponse #module optgroup {
+    font-weight:bold;
+}
+
+/* Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+#getresponse #module table {
+    border-spacing:0;
+    border-collapse:collapse;
+}
+
+#getresponse #module td,
+#getresponse #module th {
+    padding:0;
+}
+
+/* Author's custom styles
+   ========================================================================== */
+
+@media only screen and (max-width: 979px) {
+    #getresponse #module .mobile-nobreak br {
+        display:none;
+    }
+    #getresponse #module .mobile-break br {
+        display:block;
+    }
+}
