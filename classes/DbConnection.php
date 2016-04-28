@@ -28,8 +28,14 @@ class DbConnection
         $this->api_key = null;
         $this->settings = null;
 
-        $cookie = Context::getContext()->cookie->getAll();
-        $this->id_shop = (int)substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+        $context = Context::getContext();
+        $cookie = $context->cookie->getAll();
+
+        if (isset($cookie['shopContext'])) {
+            $this->id_shop = (int)substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+        } else {
+            $this->id_shop = $context->shop->id;
+        }
 
         //db prefix
         $this->prefix_settings   = _DB_PREFIX_ . 'getresponse_settings';
