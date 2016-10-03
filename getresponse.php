@@ -190,7 +190,7 @@ class Getresponse extends Module
 				)
 				ON DUPLICATE KEY UPDATE
 				`id` = `id`;
-			)';
+			';
 
         return $sql;
     }
@@ -213,7 +213,7 @@ class Getresponse extends Module
 				)
 				ON DUPLICATE KEY UPDATE
 				`id` = `id`;
-			)';
+			';
 
         return $sql;
     }
@@ -243,7 +243,7 @@ class Getresponse extends Module
 				(' . (int) $store_id . ', \'country\', \'country\', \'country\', \'no\', \'no\'),
 				(' . (int) $store_id . ', \'birthday\', \'birthday\', \'birthday\', \'no\', \'no\'),
 				(' . (int) $store_id . ', \'company\', \'company\', \'company\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'category\', \'category\', \'category\', \'no\', \'no\')';
+				(' . (int) $store_id . ', \'category\', \'category\', \'category\', \'no\', \'no\');';
 
         return $sql;
     }
