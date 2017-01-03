@@ -656,7 +656,7 @@ class DbConnection
                 // TODO: Tutaj trzeba zrobic obsluge nowych bledow
                 // TODO: M.in blad braku prefixu w polach mobile lub phone
                 if (!empty($r->message) && $r->message != 'Contact in queue') {
-                    if ($r->message == 'Cannot add contact that is blacklisted') {
+                    if (in_array($r->message, array('Cannot add contact that is blacklisted', 'Email domain not exists'))) {
                         return array('status' => '0', 'message' => $r->message . '. Please remove contact with email address: ' . $customer['email']);
                     } else {
                         return array('status' => '0', 'message' => $r->message);
