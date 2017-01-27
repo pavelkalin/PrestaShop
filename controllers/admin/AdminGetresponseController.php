@@ -339,7 +339,7 @@ class AdminGetresponseController extends ModuleAdminController
                         // show notice
                         if (is_array($add) && isset( $add['status'] ) && $add['status'] == 1) {
                             $this->context->smarty->assign(array(
-                                'message' => 'Export completed!',
+                                'message' => $add['message'],
                                 'form_status' => 'success',
                                 'status_text' => $add['message']
                             ));

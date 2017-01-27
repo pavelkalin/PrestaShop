@@ -632,6 +632,8 @@ class DbConnection
             return array('status' => '0', 'message' => 'Request error');
         }
 
+        $failed = 0;
+
         if (!empty( $customers )) {
             foreach ($customers as $customer) {
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
@@ -653,16 +655,18 @@ class DbConnection
                     $customs
                 );
 
-                // TODO: Tutaj trzeba zrobic obsluge nowych bledow
-                // TODO: M.in blad braku prefixu w polach mobile lub phone
                 if (!empty($r->message) && $r->message != 'Contact in queue') {
                     if (in_array($r->message, array('Cannot add contact that is blacklisted', 'Email domain not exists'))) {
-                        return array('status' => '0', 'message' => $r->message . '. Please remove contact with email address: ' . $customer['email']);
+                        $failed++;
                     } else {
                         return array('status' => '0', 'message' => $r->message);
                     }
                 }
             }
+        }
+
+        if ($failed > 0) {
+            return array('status' => '1', 'message' => 'Export completed. ' . $failed . ' addresses that you blacklisted in your GetResponse account were skipped');
         }
 
         return array('status' => '1', 'message' => 'Export completed.');
