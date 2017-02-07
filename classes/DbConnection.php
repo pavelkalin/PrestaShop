@@ -32,7 +32,7 @@ class DbConnection
         $cookie = $context->cookie->getAll();
 
         if (isset($cookie['shopContext'])) {
-            $this->id_shop = (int)substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+            $this->id_shop = (int)Tools::substr($cookie['shopContext'], 2, count($cookie['shopContext']));
         } else {
             $this->id_shop = $context->shop->id;
         }
@@ -943,6 +943,8 @@ class DbConnection
         );
 
         $this->all_custom_fields = $this->getCustomFields();
+
+        $user_customs['origin'] = 'prestashop';
 
         $results = (array) $this->grApiInstance->getContacts(array(
             'query' => array(
