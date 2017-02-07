@@ -319,10 +319,6 @@ class Getresponse extends Module
         $settings = $this->db->settings;
 
         if (!empty( $settings['api_key'] )) {
-            $api_crypto = null;
-            if ($settings['account_type'] != 'gr' &&!empty( $settings['api_crypto'] )) {
-                $api_crypto = '/' . $settings['api_crypto'];
-            }
 
             if (isset( $settings['active_subscription'] ) &&
                 $settings['active_subscription'] == 'yes' &&
