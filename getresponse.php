@@ -356,7 +356,7 @@ class Getresponse extends Module
 
     public function hookDisplayFooter()
     {
-        $data = [];
+        $data = array();
         // if submit from newsletter block
         // and email not empty
         // and action subscribe
