@@ -20,7 +20,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.0.3';
+        $this->version                = '4.0.4';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -324,8 +324,6 @@ class Getresponse extends Module
                 $api_crypto = '/' . $settings['api_crypto'];
             }
 
-            $api_url = $this->api_urls[$settings['account_type']] . $api_crypto;
-
             if (isset( $settings['active_subscription'] ) &&
                 $settings['active_subscription'] == 'yes' &&
                 !empty( $settings['campaign_id'] )
@@ -362,14 +360,15 @@ class Getresponse extends Module
 
     public function hookDisplayFooter()
     {
+        $data = [];
         // if submit from newsletter block
         // and email not empty
         // and action subscribe
         // and email is valid
         if (Tools::isSubmit('submitNewsletter') &&
-            !empty($_POST['email']) &&
-            $_POST['action'] == '0' &&
-            Validate::isEmail($_POST['email'])
+            !empty(Tools::getValue(['email'])) &&
+            Tools::getValue(['action']) == '0' &&
+            Validate::isEmail(Tools::getValue(['email']))
         ) {
             $settings = $this->db->settings;
 
@@ -380,7 +379,7 @@ class Getresponse extends Module
                 $client->newsletter = 1;
                 $client->firstname = 'Friend';
                 $client->lastname = '';
-                $client->email = $_POST['email'];
+                $client->email = Tools::getValue(['email']);
 
                 $data['newNewsletterContact'] = $client;
 
