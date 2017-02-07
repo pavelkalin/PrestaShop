@@ -944,6 +944,8 @@ class DbConnection
 
         $this->all_custom_fields = $this->getCustomFields();
 
+        $user_customs['origin'] = 'prestashop';
+
         $results = (array) $this->grApiInstance->getContacts(array(
             'query' => array(
                 'email'      => $email,
