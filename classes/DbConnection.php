@@ -713,6 +713,7 @@ class DbConnection
     {
         $fields  = array();
         $customs = array();
+        $address_name = '';
 
         //get fields form db
         $custom_fields = $this->getCustoms();
