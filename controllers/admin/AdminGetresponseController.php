@@ -17,6 +17,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->bootstrap  = true;
         $this->display    = 'view';
         $this->meta_title = $this->l('GetResponse Integration');
@@ -36,7 +38,6 @@ class AdminGetresponseController extends ModuleAdminController
         $instance = Db::getInstance();
         $this->db = new DbConnection($instance);
 
-        parent::__construct();
         if (!$this->module->active) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminHome'));
         }
@@ -355,10 +356,13 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $settings = $this->db->getSettings();
+
+
         if (!empty( $settings )) {
             $this->context->smarty->assign(array('api_key' => $settings['api_key']));
             $this->context->smarty->assign(array('account_type' => $settings['account_type']));
             $this->context->smarty->assign(array('crypto' => $settings['crypto']));
+            $this->context->smarty->assign(array('update_address' => $settings['update_address']));
         }
     }
 
@@ -450,6 +454,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $settings = $this->db->getSettings();
+
         if (!empty( $settings )) {
             $this->context->smarty->assign(array('status' => $settings['active_subscription']));
             $this->context->smarty->assign(array('selected_campaign' => $settings['campaign_id']));
