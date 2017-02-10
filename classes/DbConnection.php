@@ -470,13 +470,15 @@ class DbConnection
     {
         $query = "
         UPDATE ".$this->prefix_webform." SET
-            `webform_id` = ".pSQL($webform_id).",
+            `webform_id` = '".pSQL($webform_id)."',
             `active_subscription` = '".pSQL($active_subscription)."',
             `sidebar` = '".pSQL($sidebar)."',
             `style` = '".pSQL($style)."',
             `url` = '".pSQL($url)."'
         WHERE
             `id_shop` = ".$this->id_shop;
+
+        die($query);
 
         return $this->db->execute($query);
     }
