@@ -478,8 +478,6 @@ class DbConnection
         WHERE
             `id_shop` = ".$this->id_shop;
 
-        die($query);
-
         return $this->db->execute($query);
     }
 
