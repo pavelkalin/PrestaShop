@@ -48,10 +48,7 @@ class DbConnection
         $this->prefix_automation = _DB_PREFIX_ . 'getresponse_automation';
         $this->prefix_customs    = _DB_PREFIX_ . 'getresponse_customs';
 
-        $moduleManagerBuilder = ModuleManagerBuilder::getInstance();
-        $moduleManager = $moduleManagerBuilder->build();
-
-        if ($moduleManager->isInstalled('getresponse')) {
+        if (Module::isInstalled('getresponse')) {
             $this->settings = $this->getSettings();
         }
         $this->grApiInstance = $this->getApiInstance();
