@@ -21,6 +21,9 @@ class DbConnection
     public $grApiInstance;
     public $all_custom_fields;
 
+    /** @var DbPDO */
+    private $db;
+
     public function __construct($database)
     {
         $this->db  = $database;
@@ -450,49 +453,66 @@ class DbConnection
 
     public function updateApiSettings($apikey, $account_type, $crypto)
     {
-        $data = array('api_key' => pSQL($apikey), 'account_type' => pSQL($account_type), 'crypto' => pSQL($crypto));
+        $query = "
+        UPDATE " . $this->prefix_settings . " SET
+            `api_key` = '".pSQL($apikey)."',
+            `account_type` = '".pSQL($account_type)."',
+            `crypto` = '".pSQL($crypto)."'
+         WHERE
+            `id_shop` = ".$this->id_shop;
 
-        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . $this->id_shop);
+        return $this->db->execute($query);
     }
 
     public function updateWebformSettings($webform_id, $active_subscription, $sidebar, $style, $url)
     {
-        $data = array(
-            'webform_id'          => pSQL($webform_id),
-            'active_subscription' => pSQL($active_subscription),
-            'sidebar'             => pSQL($sidebar),
-            'style'               => pSQL($style),
-            'url'                 => pSQL($url)
-        );
+        $query = "
+        UPDATE ".$this->prefix_webform." SET
+            `webform_id` = '".pSQL($webform_id)."',
+            `active_subscription` = '".pSQL($active_subscription)."',
+            `sidebar` = '".pSQL($sidebar)."',
+            `style` = '".pSQL($style)."',
+            `url` = '".pSQL($url)."'
+        WHERE
+            `id_shop` = ".$this->id_shop;
 
-        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
+        return $this->db->execute($query);
     }
 
     public function updateWebformSubscription($active_subscription)
     {
-        $data = array('active_subscription' => pSQL($active_subscription));
+        $query = "
+        UPDATE ".$this->prefix_webform." SET
+            `active_subscription` = '".pSQL($active_subscription)."'
+        WHERE
+            `id_shop` = ".$this->id_shop;
 
-        return (bool) $this->db->autoExecute($this->prefix_webform, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
+        return $this->db->execute($query);
     }
 
     public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day, $newsletter)
     {
-        $data = array(
-            'active_subscription'            => pSQL($active_subscription),
-            'active_newsletter_subscription' => pSQL($newsletter),
-            'campaign_id'                    => pSQL($campaign_id),
-            'update_address'                 => pSQL($update_address),
-            'cycle_day'                      => pSQL($cycle_day)
-        );
+        $query = "
+        UPDATE ".$this->prefix_settings." SET
+            `active_subscription` = '".pSQL($active_subscription)."',
+            `active_newsletter_subscription` = '".pSQL($newsletter)."',
+            `campaign_id` = '".pSQL($campaign_id)."',
+            `update_address` = '".pSQL($update_address)."',
+            `cycle_day` = '".pSQL($cycle_day)."'
+        WHERE
+            `id_shop` = ".$this->id_shop;
 
-        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
+        return $this->db->execute($query);
     }
 
     public function updateSettingsSubscription($active_subscription)
     {
-        $data = array('active_subscription' => pSQL($active_subscription));
-
-        return (bool) $this->db->autoExecute($this->prefix_settings, $data, 'UPDATE', 'id_shop = ' . (int) $this->id_shop);
+        $query = "
+        UPDATE ".$this->prefix_settings." SET
+            `active_subscription` = '".pSQL($active_subscription)."'
+        WHERE
+            `id_shop` = ".$this->id_shop;
+        return $this->db->execute($query);
     }
 
     public function updateCustoms($customs)
@@ -556,26 +576,25 @@ class DbConnection
 
     public function updateAutomationSettings($category_id, $automation_to_edit, $campaign_id, $action, $cycle_day)
     {
-        $data = array(
-            'category_id' => pSQL($category_id),
-            'campaign_id' => pSQL($campaign_id),
-            'action'      => pSQL($action),
-            'cycle_day'   => pSQL($cycle_day)
-        );
-
-        return (bool) $this->db->autoExecute($this->prefix_automation, $data, 'UPDATE', 'id = ' . (int) $automation_to_edit);
+        $query = "
+        UPDATE ".$this->prefix_automation." SET
+            `category_id` = ".pSQL($category_id).",
+            `campaign_id` = '".pSQL($campaign_id)."',
+            `action` = '".pSQL($action)."',
+            `cycle_day` = '".pSQL($cycle_day)."'
+        WHERE
+            `id` = ".(int)$automation_to_edit;
+        return $this->db->execute($query);
     }
 
     public function updateAutomationStatus($status, $id)
     {
-        $data = array('active' => pSQL($status));
-
-        return (bool) $this->db->autoExecute(
-            pSQL($this->prefix_automation),
-            $data,
-            'UPDATE',
-            'id_shop = ' . (int) $this->id_shop . ' AND id = ' . (int) $id
-        );
+        $query = "
+        UPDATE ".$this->prefix_automation." SET
+            `active` = '".pSQL($status)."'
+        WHERE
+            'id_shop = " . (int) $this->id_shop . " AND id = " . (int) $id;
+        return $this->db->execute($query);
     }
 
     /******************************************************************/
@@ -584,22 +603,29 @@ class DbConnection
 
     public function insertAutomationSettings($category_id, $campaign_id, $action, $cycle_day)
     {
-        $data = array(
-            'category_id' => pSQL($category_id),
-            'campaign_id' => pSQL($campaign_id),
-            'action'      => pSQL($action),
-            'cycle_day'   => pSQL($cycle_day),
-            'id_shop'     => (int) $this->id_shop,
-            'active'      => 'yes'
-        );
+        $query = "
+        INSERT INTO ".$this->prefix_automation."  (
+            `category_id`, 
+            `campaign_id`, 
+            `action`, 
+            `cycle_day`, 
+            `id_shop`, 
+            `active` 
+            
+        ) VALUES (
+            ".pSQL($category_id).",
+            '".pSQL($campaign_id)."',
+            '".pSQL($action)."',
+            '".pSQL($cycle_day)."',
+            ".(int) $this->id_shop.",
+            'yes'
+        )";
 
         try {
-            $this->db->autoExecute($this->prefix_automation, $data, 'INSERT');
+            return $this->db->execute($query);
         } catch (Exception $e) {
             return false;
         }
-
-        return false;
     }
 
     /******************************************************************/
@@ -685,6 +711,7 @@ class DbConnection
     {
         $fields  = array();
         $customs = array();
+        $address_name = '';
 
         //get fields form db
         $custom_fields = $this->getCustoms();
