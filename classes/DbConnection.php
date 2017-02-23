@@ -83,10 +83,9 @@ class DbConnection
         }
     }
 
-    /******************************************************************/
-    /** Get Methods ***************************************************/
-    /******************************************************************/
-
+    /**
+     * @return array
+     */
     public function getSettings()
     {
         $sql = 'SELECT
@@ -101,8 +100,13 @@ class DbConnection
             $this->api_key = $results[0]['api_key'];
             return $results[0];
         }
+
+        return array();
     }
 
+    /**
+     * @return array
+     */
     public function getWebformSettings()
     {
         $sql = 'SELECT
@@ -116,8 +120,13 @@ class DbConnection
         if ($results = $this->db->ExecuteS($sql)) {
             return $results[0];
         }
+
+        return array();
     }
 
+    /**
+     * @return array
+     */
     public function getCampaigns()
     {
         if (empty( $this->api_key )) {
@@ -146,6 +155,9 @@ class DbConnection
         }
     }
 
+    /**
+     * @return array
+     */
     public function getWebforms()
     {
         if (empty( $this->api_key )) {
@@ -169,6 +181,9 @@ class DbConnection
         }
     }
 
+    /**
+     * @return array
+     */
     public function getForms()
     {
         if (empty( $this->api_key )) {
@@ -192,6 +207,10 @@ class DbConnection
         }
     }
 
+    /**
+     * @param string $lang
+     * @return array
+     */
     public function getSubscriptionConfirmationsSubject($lang = 'EN')
     {
         if (empty($this->api_key)) {
@@ -245,6 +264,9 @@ class DbConnection
         }
     }
 
+    /**
+     * @return array|bool
+     */
     public function getFromFields()
     {
         if (empty( $this->api_key )) {
@@ -271,9 +293,13 @@ class DbConnection
         }
     }
 
+    /**
+     * @param $module
+     * @return bool|string
+     */
     public function checkModuleStatus($module)
     {
-        if (empty( $module )) {
+        if (empty($module)) {
             return false;
         }
 
@@ -294,9 +320,15 @@ class DbConnection
         return false;
     }
 
+    /**
+     * @param null|string $email
+     * @param null|string $newsletter_guests
+     * @return array|false|mysqli_result|null|PDOStatement|resource
+     */
     public function getContacts($email = null, $newsletter_guests = null)
     {
         $where = !empty( $email ) ? " AND cu.email = '" . pSQL($email) . "'" : null;
+        $ng_where = '';
 
         if (!empty( $newsletter_guests )) {
             $blocknewsletter = $this->checkModuleStatus('blocknewsletter');
@@ -400,6 +432,10 @@ class DbConnection
         }
     }
 
+    /**
+     * @param null $default
+     * @return array|false|mysqli_result|null|PDOStatement|resource
+     */
     public function getCustoms($default = null)
     {
         $where = !empty( $default ) ? " AND `default` = '" . pSQL($default) . "'" : null;
@@ -414,8 +450,14 @@ class DbConnection
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
         }
+
+        return array();
     }
 
+    /**
+     * @param null|string $status
+     * @return array|false|mysqli_result|null|PDOStatement|resource
+     */
     public function getAutomationSettings($status = null)
     {
         $where_status = !empty( $status ) ? " AND `active` = 'yes'" : null;
@@ -430,6 +472,8 @@ class DbConnection
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
         }
+
+        return [];
     }
 
     public function getCycleDay()
@@ -447,10 +491,12 @@ class DbConnection
         }
     }
 
-    /******************************************************************/
-    /** Update Methods ************************************************/
-    /******************************************************************/
-
+    /**
+     * @param string $apikey
+     * @param string $account_type
+     * @param string $crypto
+     * @return bool
+     */
     public function updateApiSettings($apikey, $account_type, $crypto)
     {
         $query = "
@@ -479,6 +525,10 @@ class DbConnection
         return $this->db->execute($query);
     }
 
+    /**
+     * @param string $active_subscription
+     * @return bool
+     */
     public function updateWebformSubscription($active_subscription)
     {
         $query = "
@@ -490,6 +540,14 @@ class DbConnection
         return $this->db->execute($query);
     }
 
+    /**
+     * @param string $active_subscription
+     * @param string $campaign_id
+     * @param string $update_address
+     * @param string $cycle_day
+     * @param string $newsletter
+     * @return bool
+     */
     public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day, $newsletter)
     {
         $query = "
@@ -505,6 +563,10 @@ class DbConnection
         return $this->db->execute($query);
     }
 
+    /**
+     * @param string $active_subscription
+     * @return bool
+     */
     public function updateSettingsSubscription($active_subscription)
     {
         $query = "
@@ -515,11 +577,14 @@ class DbConnection
         return $this->db->execute($query);
     }
 
+    /**
+     * @param array $customs
+     */
     public function updateCustoms($customs)
     {
         $settings_customs = $this->getCustoms();
         if (empty($settings_customs)) {
-            return false;
+            return ;
         }
 
         if (!empty( $customs )) {
@@ -597,10 +662,13 @@ class DbConnection
         return $this->db->execute($query);
     }
 
-    /******************************************************************/
-    /** Insert Methods ************************************************/
-    /******************************************************************/
-
+    /**
+     * @param int $category_id
+     * @param int $campaign_id
+     * @param string $action
+     * @param int $cycle_day
+     * @return bool
+     */
     public function insertAutomationSettings($category_id, $campaign_id, $action, $cycle_day)
     {
         $query = "
@@ -628,10 +696,10 @@ class DbConnection
         }
     }
 
-    /******************************************************************/
-    /** Delete Methods ************************************************/
-    /******************************************************************/
-
+    /**
+     * @param $automation_id
+     * @return bool
+     */
     public function deleteAutomationSettings($automation_id)
     {
         $sql = 'DELETE FROM `' . pSQL($this->prefix_automation) . '` WHERE `id` = ' . (int) $automation_id;
@@ -658,10 +726,11 @@ class DbConnection
             return array('status' => '0', 'message' => 'Request error');
         }
 
-        $failed = 0;
+        $errorMessages = array();
 
         if (!empty( $customers )) {
             foreach ($customers as $customer) {
+
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
 
                 if (!empty( $customs['custom_error'] ) && $customs['custom_error'] == true) {
@@ -671,7 +740,6 @@ class DbConnection
                     );
                 }
 
-                // add contact to GR via API
                 $r = $this->addContact(
                     $campaign_id,
                     $customer['firstname'],
@@ -681,21 +749,30 @@ class DbConnection
                     $customs
                 );
 
-                if (!empty($r->message) && $r->message != 'Contact in queue') {
-                    if (in_array($r->message, array('Cannot add contact that is blacklisted', 'Email domain not exists'))) {
-                        $failed++;
-                    } else {
-                        return array('status' => '0', 'message' => $r->message);
-                    }
+                if (isset($r->httpStatus) && $r->httpStatus >= 400) {
+                    $errorMessages[] = '[' . $r->code . '] ' . $r->message;
                 }
             }
         }
 
-        if ($failed > 0) {
-            return array('status' => '1', 'message' => 'Export completed. ' . $failed . ' addresses that you blacklisted in your GetResponse account were skipped');
+        if (0 == count($errorMessages)) {
+            return array(
+                'status' => '1',
+                'message' => 'Export completed.'
+            );
+        } elseif (1 == count($errorMessages)) {
+            return array(
+                'status' => '1',
+                'message' => 'Export completed. ' . 'One contact hasn\'t been exported due to error : ' . $errorMessages[0]
+            );
+        } else {
+            return array(
+                'status' => '1',
+                'message' => 'Export completed. ' . count($errorMessages) . ' contacts haven\'t been exported due to various reasons'
+            );
         }
 
-        return array('status' => '1', 'message' => 'Export completed.');
+
     }
 
     /**
@@ -788,15 +865,14 @@ class DbConnection
 
     /**
      * Add (or update) contact to gr campaign depending on action and apply automation rules
+     * @todo implementacja uzytkownikow GR360 - wtedy bedzie trzeba przekazywac apikey i api_url
      *
      * @param array $params
-     * @param       $campaign_id
-     * @param       $action
-     * @param int   $cycle_day
-     *
-     * @return mixed
+     * @param int $campaign_id
+     * @param string $action
+     * @param int $cycle_day
+     * @return bool
      */
-    // TODO: implementacja uzytkownikow GR360 - wtedy bedzie trzeba przekazywac apikey i api_url
     public function addSubscriber($params, $campaign_id, $action, $cycle_day)
     {
         $allowed = array('order', 'create');
@@ -809,6 +885,7 @@ class DbConnection
             } else {
                 $prefix  = 'newCustomer';
             }
+
             $customs = $this->mapCustoms($params[$prefix], null, 'create');
 
             if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
@@ -907,16 +984,15 @@ class DbConnection
     }
 
     /**
-     * first delete contact from all campaigns then move contact to new one
+     * First delete contact from all campaigns then move contact to new one
      *
-     * @param       $new_campaign
-     * @param       $firstname
-     * @param       $lastname
-     * @param       $email
-     * @param int   $cycle_day
-     * @param array $user_customs
-     *
-     * @return mixed
+     * @param int $new_campaign_id
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $email
+     * @param array $customs
+     * @param int $cycle_day
+     * @return bool
      */
     public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $customs, $cycle_day = 0)
     {
@@ -940,8 +1016,10 @@ class DbConnection
                 }
             }
 
-            return $this->addContact($new_campaign_id, $firstname, $lastname, $email, $cycle_day, $customs);
+            $this->addContact($new_campaign_id, $firstname, $lastname, $email, $cycle_day, $customs);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -966,7 +1044,6 @@ class DbConnection
             'dayOfCycle' => (int) $cycle_day,
             'campaign'   => array('campaignId' => $campaign),
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
-            'consumer_key' => 'nKNAoE'
         );
 
         $this->all_custom_fields = $this->getCustomFields();
@@ -977,7 +1054,8 @@ class DbConnection
             'query' => array(
                 'email'      => $email,
                 'campaignId' => $campaign
-            )
+            ),
+            'additionalFlags' => 'exactMatch'
         ));
 
         $contact = array_pop($results);
@@ -1039,6 +1117,11 @@ class DbConnection
         }
 
         foreach ($user_customs as $name => $value) {
+
+            if (in_array($name, array('firstname', 'lastname', 'email'))) {
+                continue;
+            }
+
             // if custom field is already created on gr account set new value
             if (in_array($name, array_keys($this->all_custom_fields))) {
                 $custom_fields[] = array(
@@ -1046,6 +1129,7 @@ class DbConnection
                     'value'         => array($value)
                 );
             } else {
+
                 $custom = $this->grApiInstance->addCustomField(array(
                     'name'   => $name,
                     'type'   => "text",

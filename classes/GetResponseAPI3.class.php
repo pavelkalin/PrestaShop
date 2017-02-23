@@ -16,6 +16,8 @@ class GetResponseAPI3
     private $enterprise_domain = null;
     public $http_status;
 
+    const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
+
     /**
      * Set api key and optionally API endpoint
      * @param      $api_key
@@ -83,11 +85,11 @@ class GetResponseAPI3
      */
     public function getRSSNewsletters()
     {
-        $this->call('rss-newsletters', 'GET', null);
+        return $this->call('rss-newsletters', 'GET', null);
     }
 
     /**
-     * get all subscription confirmation subjects
+     * @param string $lang
      * @return mixed
      */
     public function getSubscriptionConfirmationsSubject($lang = 'EN')
@@ -96,7 +98,7 @@ class GetResponseAPI3
     }
 
     /**
-     * get all subscription confirmation bodies
+     * @param string $lang
      * @return mixed
      */
     public function getSubscriptionConfirmationsBody($lang = 'EN')
@@ -201,9 +203,7 @@ class GetResponseAPI3
     }
 
     /**
-     * retrieve single custom field
-     *
-     * @param string $cs_id obtained by API
+     * @param array $params
      * @return mixed
      */
     public function addCustomField($params = array())
@@ -245,9 +245,7 @@ class GetResponseAPI3
     }
 
     /**
-     * retrieve single custom field
-     *
-     * @param string $cs_id obtained by API
+     * @param $custom_id
      * @return mixed
      */
     public function getCustomField($custom_id)
@@ -332,6 +330,16 @@ class GetResponseAPI3
         $params = Tools::jsonEncode($params);
         $url = $this->api_url  . '/' .  $api_method;
 
+        $headers = array(
+            'X-APP-ID: ' . self::X_APP_ID,
+            'X-Auth-Token: api-key ' . $this->api_key,
+            'Content-Type: application/json'
+        );
+
+        if (!empty($this->enterprise_domain)) {
+            $headers[] = 'X-Domain: ' . $this->enterprise_domain;
+        }
+
         $options = array(
             CURLOPT_URL => $url,
             CURLOPT_ENCODING => 'gzip,deflate',
@@ -340,12 +348,8 @@ class GetResponseAPI3
             CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_HEADER => false,
             CURLOPT_USERAGENT => 'User-Agent: PHP GetResponse client 0.0.2',
-            CURLOPT_HTTPHEADER => array('X-Auth-Token: api-key ' . $this->api_key, 'Content-Type: application/json')
+            CURLOPT_HTTPHEADER => $headers
         );
-
-        if (!empty($this->enterprise_domain)) {
-            $options[CURLOPT_HTTPHEADER][] = 'X-Domain: ' . $this->enterprise_domain;
-        }
 
         if ($http_method == 'POST') {
             $options[CURLOPT_POST] = 1;
