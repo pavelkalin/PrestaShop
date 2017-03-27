@@ -1046,7 +1046,9 @@ class DbConnection
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
         );
 
-        $this->all_custom_fields = $this->getCustomFields();
+        if (empty($this->all_custom_fields)) {
+            $this->all_custom_fields = $this->getCustomFields();
+        }
 
         $user_customs['origin'] = 'prestashop';
 
@@ -1136,6 +1138,8 @@ class DbConnection
                     'hidden' => "false",
                     'values' => array($value),
                 ));
+
+                $this->all_custom_fields[$custom->name] = $custom->customFieldId;
 
                 if (!empty($custom) && !empty($custom->customFieldId)) {
                     $custom_fields[] = array(
