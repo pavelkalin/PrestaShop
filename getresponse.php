@@ -320,9 +320,14 @@ class Getresponse extends Module
 
         if (!empty( $settings['api_key'] )) {
 
-            if (isset( $settings['active_subscription'] ) &&
-                $settings['active_subscription'] == 'yes' &&
-                !empty( $settings['campaign_id'] )
+            if (
+                (
+                    $action === 'create'
+                    && isset( $settings['active_subscription'] )
+                    && $settings['active_subscription'] == 'yes'
+                    && !empty( $settings['campaign_id'] )
+                )
+                || $action === 'order'
             ) {
                 $this->db->addSubscriber(
                     $params,

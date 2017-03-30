@@ -875,11 +875,10 @@ class DbConnection
      */
     public function addSubscriber($params, $campaign_id, $action, $cycle_day)
     {
-        $allowed = array('order', 'create');
-        $prefix  = 'customer';
+        $prefix = 'customer';
 
         //add_contact
-        if (!empty( $action ) && in_array($action, $allowed) == true && $action == 'create') {
+        if ($action === 'create') {
             if (isset($params['newNewsletterContact'])) {
                 $prefix = 'newNewsletterContact';
             } else {
