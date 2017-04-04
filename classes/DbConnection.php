@@ -878,7 +878,7 @@ class DbConnection
         $prefix = 'customer';
 
         //add_contact
-        if ($action === 'create') {
+        if ('create' === $action) {
             if (isset($params['newNewsletterContact'])) {
                 $prefix = 'newNewsletterContact';
             } else {

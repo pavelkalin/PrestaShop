@@ -322,12 +322,12 @@ class Getresponse extends Module
 
             if (
                 (
-                    $action === 'create'
+                    'create' === $action
                     && isset( $settings['active_subscription'] )
                     && $settings['active_subscription'] == 'yes'
                     && !empty( $settings['campaign_id'] )
                 )
-                || $action === 'order'
+                || 'order' === $action
             ) {
                 $this->db->addSubscriber(
                     $params,
