@@ -20,7 +20,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.0.6';
+        $this->version                = '4.0.7';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -320,9 +320,14 @@ class Getresponse extends Module
 
         if (!empty( $settings['api_key'] )) {
 
-            if (isset( $settings['active_subscription'] ) &&
-                $settings['active_subscription'] == 'yes' &&
-                !empty( $settings['campaign_id'] )
+            if (
+                (
+                    'create' === $action
+                    && isset( $settings['active_subscription'] )
+                    && $settings['active_subscription'] == 'yes'
+                    && !empty( $settings['campaign_id'] )
+                )
+                || 'order' === $action
             ) {
                 $this->db->addSubscriber(
                     $params,
