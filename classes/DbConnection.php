@@ -875,11 +875,10 @@ class DbConnection
      */
     public function addSubscriber($params, $campaign_id, $action, $cycle_day)
     {
-        $allowed = array('order', 'create');
-        $prefix  = 'customer';
+        $prefix = 'customer';
 
         //add_contact
-        if (!empty( $action ) && in_array($action, $allowed) == true && $action == 'create') {
+        if ('create' === $action) {
             if (isset($params['newNewsletterContact'])) {
                 $prefix = 'newNewsletterContact';
             } else {
@@ -1046,7 +1045,9 @@ class DbConnection
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
         );
 
-        $this->all_custom_fields = $this->getCustomFields();
+        if (empty($this->all_custom_fields)) {
+            $this->all_custom_fields = $this->getCustomFields();
+        }
 
         $user_customs['origin'] = 'prestashop';
 
@@ -1136,6 +1137,8 @@ class DbConnection
                     'hidden' => "false",
                     'values' => array($value),
                 ));
+
+                $this->all_custom_fields[$custom->name] = $custom->customFieldId;
 
                 if (!empty($custom) && !empty($custom->customFieldId)) {
                     $custom_fields[] = array(
