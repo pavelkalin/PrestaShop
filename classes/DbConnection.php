@@ -8,7 +8,7 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-require_once( _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php' );
+require_once(PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php');
 
 /**
  * Class is used to calls to the PrestaShop Database
@@ -129,20 +129,20 @@ class DbConnection
      */
     public function getCampaigns()
     {
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return array();
         }
 
         try {
             $results = $this->grApiInstance->getCampaigns();
 
-            if (!empty( $results )) {
+            if (!empty($results)) {
                 $campaigns = array();
                 foreach ($results as $info) {
                     $campaigns[$info->name] = array(
                         'id'   => $info->campaignId,
                         'name' => $info->name
-                    );
+                   );
                 }
                 ksort($campaigns);
 
@@ -160,14 +160,14 @@ class DbConnection
      */
     public function getWebforms()
     {
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return array();
         }
 
         try {
             $results = $this->grApiInstance->getWebForms();
 
-            if (!empty( $results )) {
+            if (!empty($results)) {
                 $webforms = array();
                 foreach ($results as $id => $info) {
                     $webforms[$id] = $info;
@@ -186,14 +186,14 @@ class DbConnection
      */
     public function getForms()
     {
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return array();
         }
 
         try {
             $results = $this->grApiInstance->getForms();
 
-            if (!empty( $results )) {
+            if (!empty($results)) {
                 $forms = array();
                 foreach ($results as $id => $info) {
                     $forms[$id] = $info;
@@ -226,7 +226,7 @@ class DbConnection
                     $subjects[] = array(
                         'id'            => $subject->subscriptionConfirmationSubjectId,
                         'name'          => $subject->subject
-                    );
+                   );
                 }
                 return $subjects;
             }
@@ -253,7 +253,7 @@ class DbConnection
                         'id'            => $body->subscriptionConfirmationBodyId,
                         'name'          => $body->name,
                         'contentPlain'  => $body->contentPlain
-                    );
+                   );
                 }
                 return $bodies;
             }
@@ -269,7 +269,7 @@ class DbConnection
      */
     public function getFromFields()
     {
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return false;
         }
 
@@ -277,13 +277,13 @@ class DbConnection
 
         try {
             $results = $this->grApiInstance->getAccountFromFields();
-            if (!empty( $results )) {
+            if (!empty($results)) {
                 foreach ($results as $info) {
                     $fromfields[] = array(
                         'id'    => $info->fromFieldId,
                         'name'  => $info->name,
                         'email' => $info->email,
-                    );
+                   );
                 }
             }
 
@@ -312,7 +312,7 @@ class DbConnection
                 ';
 
         if ($results = $this->db->ExecuteS($sql)) {
-            if (isset( $results[0]['active'] ) && $results[0]['active'] == 1) {
+            if (isset($results[0]['active']) && $results[0]['active'] == 1) {
                 return 'active';
             }
         }
@@ -327,10 +327,10 @@ class DbConnection
      */
     public function getContacts($email = null, $newsletter_guests = null)
     {
-        $where = !empty( $email ) ? " AND cu.email = '" . pSQL($email) . "'" : null;
+        $where = !empty($email) ? " AND cu.email = '" . pSQL($email) . "'" : null;
         $ng_where = '';
 
-        if (!empty( $newsletter_guests )) {
+        if (!empty($newsletter_guests)) {
             $blocknewsletter = $this->checkModuleStatus('blocknewsletter');
 
             if ($blocknewsletter == 'active') {
@@ -412,7 +412,7 @@ class DbConnection
 
         $addresses = $this->db->ExecuteS($sql);
 
-        if (!empty( $addresses )) {
+        if (!empty($addresses)) {
             $adr = array();
             foreach ($addresses as $address) {
                 $adr[$address['email']] = $address['category'];
@@ -425,7 +425,7 @@ class DbConnection
             }
         }
 
-        if (!empty( $where )) {
+        if (!empty($where)) {
             return $contacts[0];
         } else {
             return $contacts;
@@ -438,7 +438,7 @@ class DbConnection
      */
     public function getCustoms($default = null)
     {
-        $where = !empty( $default ) ? " AND `default` = '" . pSQL($default) . "'" : null;
+        $where = !empty($default) ? " AND `default` = '" . pSQL($default) . "'" : null;
 
         $sql = 'SELECT
                     *
@@ -460,7 +460,7 @@ class DbConnection
      */
     public function getAutomationSettings($status = null)
     {
-        $where_status = !empty( $status ) ? " AND `active` = 'yes'" : null;
+        $where_status = !empty($status) ? " AND `active` = 'yes'" : null;
 
         $sql = 'SELECT
                     *
@@ -478,7 +478,7 @@ class DbConnection
 
     public function getCycleDay()
     {
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return array();
         }
 
@@ -587,13 +587,13 @@ class DbConnection
             return ;
         }
 
-        if (!empty( $customs )) {
+        if (!empty($customs)) {
             $allowed          = array();
             foreach ($settings_customs as $sc) {
                 $allowed[$sc['custom_value']] = $sc;
             }
 
-            if (!empty( $allowed )) {
+            if (!empty($allowed)) {
                 foreach (array_keys($allowed) as $a) {
                     if (in_array($a, array_keys($customs))) {
                         $sql = 'UPDATE
@@ -680,14 +680,14 @@ class DbConnection
             `id_shop`, 
             `active` 
             
-        ) VALUES (
+       ) VALUES (
             ".pSQL($category_id).",
             '".pSQL($campaign_id)."',
             '".pSQL($action)."',
             '".pSQL($cycle_day)."',
             ".(int) $this->id_shop.",
             'yes'
-        )";
+       )";
 
         try {
             return $this->db->execute($query);
@@ -722,22 +722,22 @@ class DbConnection
      */
     public function exportSubscriber($campaign_id, $customers, $cycle_day)
     {
-        if (empty( $_POST )) {
+        if (empty($_POST)) {
             return array('status' => '0', 'message' => 'Request error');
         }
 
         $errorMessages = array();
 
-        if (!empty( $customers )) {
+        if (!empty($customers)) {
             foreach ($customers as $customer) {
 
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
 
-                if (!empty( $customs['custom_error'] ) && $customs['custom_error'] == true) {
+                if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
                     return array(
                         'status'  => '0',
                         'message' => 'Incorrect field name: "' . $customs['custom_message']
-                    );
+                   );
                 }
 
                 $r = $this->addContact(
@@ -747,7 +747,7 @@ class DbConnection
                     $customer['email'],
                     $cycle_day,
                     $customs
-                );
+               );
 
                 if (isset($r->httpStatus) && $r->httpStatus >= 400) {
                     $errorMessages[] = '[' . $r->code . '] ' . $r->message;
@@ -759,17 +759,17 @@ class DbConnection
             return array(
                 'status' => '1',
                 'message' => 'Export completed.'
-            );
+           );
         } elseif (1 == count($errorMessages)) {
             return array(
                 'status' => '1',
                 'message' => 'Export completed. ' . 'One contact hasn\'t been exported due to error : ' . $errorMessages[0]
-            );
+           );
         } else {
             return array(
                 'status' => '1',
                 'message' => 'Export completed. ' . count($errorMessages) . ' contacts haven\'t been exported due to various reasons'
-            );
+           );
         }
 
 
@@ -794,12 +794,12 @@ class DbConnection
         $custom_fields = $this->getCustoms();
 
         // make fields array
-        if (!empty( $custom_fields )) {
+        if (!empty($custom_fields)) {
             foreach ($custom_fields as $cf) {
                 if ($type == 'export') {
-                    if (!empty( $customer_post['custom_field'] ) &&
+                    if (!empty($customer_post['custom_field']) &&
                         in_array($cf['custom_value'], array_keys($customer_post['custom_field']))
-                    ) {
+                   ) {
                         $fields[$cf['custom_value']] = $customer_post['custom_field'][$cf['custom_value']];
                     }
                 } else {
@@ -818,7 +818,7 @@ class DbConnection
         $customs['ref'] = 'Prestashop - ' . Configuration::get('PS_SHOP_NAME');
 
         // for fields from DB
-        if (!empty( $fields )) {
+        if (!empty($fields)) {
             foreach ($fields as $field_key => $field_value) {
                 $fv = $field_value;
                 //compose address custom field
@@ -827,20 +827,20 @@ class DbConnection
                 }
 
                 // for POST actions (export or update (order))
-                if (!empty( $customer_post )) {
-                    if ($type != 'order' &&!empty( $customer_post[$field_key] )) {
+                if (!empty($customer_post)) {
+                    if ($type != 'order' &&!empty($customer_post[$field_key])) {
                         $fv = $customer_post[$field_key];
                         //update address custom field
-                        $address_name = !empty( $customer_post['address1'] ) ? $customer_post['address1'] : null;
+                        $address_name = !empty($customer_post['address1']) ? $customer_post['address1'] : null;
                     }
                 }
 
                 // allowed custom and non empty
                 if (in_array($field_key, array_keys($customer)) == true &&
                     (!empty($fv) && !empty($customer[$field_key]))
-                ) {
+               ) {
                     // validation for custom field name
-                    if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(( $fv )))) {
+                    if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(($fv)))) {
                         return array('custom_error' => 'true', 'custom_message' => $fv);
                     }
 
@@ -850,7 +850,7 @@ class DbConnection
 
                     // compose address value address+address2
                     if ($fv == $address_name) {
-                        $address2 = !empty( $customer['address2'] ) ? ' ' . $customer['address2'] : '';
+                        $address2 = !empty($customer['address2']) ? ' ' . $customer['address2'] : '';
 
                         $customs[$address_name] = $customer['address1'] . $address2;
                     } else {
@@ -887,7 +887,7 @@ class DbConnection
 
             $customs = $this->mapCustoms($params[$prefix], null, 'create');
 
-            if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
+            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
                 $this->addContact(
                     $campaign_id,
                     $params[$prefix]->firstname,
@@ -895,7 +895,7 @@ class DbConnection
                     $params[$prefix]->email,
                     $cycle_day,
                     $customs
-                );
+               );
             }
         } else {
             //update_contact
@@ -903,7 +903,7 @@ class DbConnection
             $customs = $this->mapCustoms($contact, $_POST, 'order');
 
             // automation
-            if (!empty( $params['order']->product_list )) {
+            if (!empty($params['order']->product_list)) {
                 $categories = array();
                 foreach ($params['order']->product_list as $products) {
                     $temp_categories = Product::getProductCategories($products['id_product']);
@@ -913,7 +913,7 @@ class DbConnection
                 }
 
                 $automations = $this->getAutomationSettings('active');
-                if (!empty( $automations )) {
+                if (!empty($automations)) {
                     $default = false;
                     foreach ($automations as $automation) {
                         if (in_array($automation['category_id'], $categories)) {
@@ -926,7 +926,7 @@ class DbConnection
                                     $params[$prefix]->email,
                                     $customs,
                                     $cycle_day
-                                );
+                               );
                             } elseif ($automation['action'] == 'copy') {
                                 $this->addContact(
                                     $automation['campaign_id'],
@@ -935,14 +935,14 @@ class DbConnection
                                     $params[$prefix]->email,
                                     $cycle_day,
                                     $customs
-                                );
+                               );
                             }
                         } else {
                             $default = true;
                         }
                     }
 
-                    if ($default === true && isset( $params[$prefix]->newsletter ) &&
+                    if ($default === true && isset($params[$prefix]->newsletter) &&
                         $params[$prefix]->newsletter == 1) {
                         $this->addContact(
                             $campaign_id,
@@ -951,10 +951,10 @@ class DbConnection
                             $params[$prefix]->email,
                             $cycle_day,
                             $customs
-                        );
+                       );
                     }
                 } else {
-                    if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
+                    if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
                         $this->addContact(
                             $campaign_id,
                             $params[$prefix]->firstname,
@@ -962,11 +962,11 @@ class DbConnection
                             $params[$prefix]->email,
                             $cycle_day,
                             $customs
-                        );
+                       );
                     }
                 }
             } else {
-                if (isset( $params[$prefix]->newsletter ) && $params[$prefix]->newsletter == 1) {
+                if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
                     $this->addContact(
                         $campaign_id,
                         $params[$prefix]->firstname,
@@ -974,7 +974,7 @@ class DbConnection
                         $params[$prefix]->email,
                         $cycle_day,
                         $customs
-                    );
+                   );
                 }
             }
         }
@@ -996,15 +996,15 @@ class DbConnection
     public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $customs, $cycle_day = 0)
     {
         // required params
-        if (empty( $this->api_key )) {
+        if (empty($this->api_key)) {
             return false;
         }
 
         $contacts_id = (array) $this->grApiInstance->getContacts(array(
             'query' => array(
                 'email' => $email
-            )
-        ));
+           )
+       ));
 
         if (!empty($contacts_id) && isset($contacts_id[0]->contactId)) {
             foreach ($contacts_id as $contact) {
@@ -1043,7 +1043,7 @@ class DbConnection
             'dayOfCycle' => (int) $cycle_day,
             'campaign'   => array('campaignId' => $campaign),
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
-        );
+       );
 
         if (empty($this->all_custom_fields)) {
             $this->all_custom_fields = $this->getCustomFields();
@@ -1055,9 +1055,9 @@ class DbConnection
             'query' => array(
                 'email'      => $email,
                 'campaignId' => $campaign
-            ),
+           ),
             'additionalFlags' => 'exactMatch'
-        ));
+       ));
 
         $contact = array_pop($results);
 
@@ -1096,7 +1096,7 @@ class DbConnection
                 $custom_fields[] = array(
                     'customFieldId' => $customs->customFieldId,
                     'value'         => $value
-                );
+               );
             }
         }
 
@@ -1128,7 +1128,7 @@ class DbConnection
                 $custom_fields[] = array(
                     'customFieldId' => $this->all_custom_fields[$name],
                     'value'         => array($value)
-                );
+               );
             } else {
 
                 $custom = $this->grApiInstance->addCustomField(array(
@@ -1136,7 +1136,7 @@ class DbConnection
                     'type'   => "text",
                     'hidden' => "false",
                     'values' => array($value),
-                ));
+               ));
 
                 $this->all_custom_fields[$custom->name] = $custom->customFieldId;
 
@@ -1144,7 +1144,7 @@ class DbConnection
                     $custom_fields[] = array(
                         'customFieldId' => $custom->customFieldId,
                         'value'         => array($value)
-                    );
+                   );
                 }
             }
         }

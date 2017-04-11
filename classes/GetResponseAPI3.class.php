@@ -7,6 +7,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  @see http://apidocs.getresponse.com/en/v3/resources
  */
+
 class GetResponseAPI3
 {
     private $api_key;
