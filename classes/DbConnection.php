@@ -890,7 +890,7 @@ class DbConnection
                     $params[$prefix]->email,
                     $cycle_day,
                     $customs
-               );
+                );
             }
         } else {
             //update_contact
@@ -921,7 +921,7 @@ class DbConnection
                                     $params[$prefix]->email,
                                     $customs,
                                     $cycle_day
-                               );
+                                );
                             } elseif ($automation['action'] == 'copy') {
                                 $this->addContact(
                                     $automation['campaign_id'],
@@ -930,7 +930,7 @@ class DbConnection
                                     $params[$prefix]->email,
                                     $cycle_day,
                                     $customs
-                               );
+                                );
                             }
                         } else {
                             $default = true;
@@ -946,7 +946,7 @@ class DbConnection
                             $params[$prefix]->email,
                             $cycle_day,
                             $customs
-                       );
+                        );
                     }
                 } else {
                     if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
@@ -957,7 +957,7 @@ class DbConnection
                             $params[$prefix]->email,
                             $cycle_day,
                             $customs
-                       );
+                        );
                     }
                 }
             } else {
@@ -999,7 +999,7 @@ class DbConnection
             'query' => array(
                 'email' => $email
            )
-       ));
+        ));
 
         if (!empty($contacts_id) && isset($contacts_id[0]->contactId)) {
             foreach ($contacts_id as $contact) {
@@ -1038,7 +1038,7 @@ class DbConnection
             'dayOfCycle' => (int) $cycle_day,
             'campaign'   => array('campaignId' => $campaign),
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
-       );
+        );
 
         if (empty($this->all_custom_fields)) {
             $this->all_custom_fields = $this->getCustomFields();
@@ -1052,7 +1052,7 @@ class DbConnection
                 'campaignId' => $campaign
            ),
             'additionalFlags' => 'exactMatch'
-       ));
+        ));
 
         $contact = array_pop($results);
 
@@ -1091,7 +1091,7 @@ class DbConnection
                 $custom_fields[] = array(
                     'customFieldId' => $customs->customFieldId,
                     'value'         => $value
-               );
+                );
             }
         }
 
@@ -1122,9 +1122,8 @@ class DbConnection
                 $custom_fields[] = array(
                     'customFieldId' => $this->all_custom_fields[$name],
                     'value'         => array($value)
-               );
+                );
             } else {
-
                 $custom = $this->grApiInstance->addCustomField(array(
                     'name'   => $name,
                     'type'   => "text",
