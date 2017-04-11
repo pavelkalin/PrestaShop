@@ -27,8 +27,7 @@ class Getresponse extends Module
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION);
         $this->displayName            = $this->l('GetResponse');
         $this->description            = $this->l(
-            'Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically' .
-            'follow-up new subscriptions with engaging email marketing campaigns'
+            'Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns'
         );
         $this->confirmUninstall       = $this->l(
             'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'

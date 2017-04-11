@@ -393,7 +393,9 @@ class AdminGetresponseController extends ModuleAdminController
 
         $subscriptionConfirmationsSubject = $this->db->getSubscriptionConfirmationsSubject();
         if (!empty($subscriptionConfirmationsSubject)) {
-            $this->context->smarty->assign(array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject));
+            $this->context->smarty->assign(
+                array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject)
+            );
         }
 
         $subscriptionConfirmationsBody = $this->db->getSubscriptionConfirmationsBody();
@@ -464,7 +466,9 @@ class AdminGetresponseController extends ModuleAdminController
             $this->context->smarty->assign(array('selected_campaign' => $settings['campaign_id']));
             $this->context->smarty->assign(array('selected_cycle_day' => $settings['cycle_day']));
             $this->context->smarty->assign(array('update_address' => $settings['update_address']));
-            $this->context->smarty->assign(array('active_newsletter_subscription' => $settings['active_newsletter_subscription']));
+            $this->context->smarty->assign(
+                array('active_newsletter_subscription' => $settings['active_newsletter_subscription'])
+            );
 
             $custom_fields = $this->db->getCustoms();
             $this->context->smarty->assign(array('custom_fields' => $custom_fields));
