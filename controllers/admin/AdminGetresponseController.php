@@ -264,12 +264,16 @@ class AdminGetresponseController extends ModuleAdminController
 
         $subscriptionConfirmationsSubject = $this->db->getSubscriptionConfirmationsSubject();
         if (!empty($subscriptionConfirmationsSubject)) {
-            $this->context->smarty->assign(array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject));
+            $this->context->smarty->assign(
+                array('subscriptionConfirmationsSubject' => $subscriptionConfirmationsSubject)
+            );
         }
 
         $subscriptionConfirmationsBody = $this->db->getSubscriptionConfirmationsBody();
         if (!empty($subscriptionConfirmationsBody)) {
-            $this->context->smarty->assign(array('subscriptionConfirmationsBody' => $subscriptionConfirmationsBody));
+            $this->context->smarty->assign(
+                array('subscriptionConfirmationsBody' => $subscriptionConfirmationsBody)
+            );
         }
 
         $cycle_days = $this->db->getCycleDay();

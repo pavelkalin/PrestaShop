@@ -18,10 +18,6 @@ class Getresponse extends Module
 {
     public function __construct()
     {
-        $description = 'Add your Prestashop contacts to GetResponse or manage them via ';
-        $description .= 'automation rules. Automatically follow-up new subscriptions with ';
-        $description .= 'engaging email marketing campaigns';
-
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
         $this->version                = '4.0.8';
@@ -30,7 +26,10 @@ class Getresponse extends Module
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION);
         $this->displayName            = $this->l('GetResponse');
-        $this->description            = $this->l($description);
+        $this->description            = $this->l(
+            'Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically' .
+            'follow-up new subscriptions with engaging email marketing campaigns'
+        );
         $this->confirmUninstall       = $this->l(
             'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
         );
