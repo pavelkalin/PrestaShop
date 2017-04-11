@@ -758,20 +758,18 @@ class DbConnection
             return array(
                 'status' => '1',
                 'message' => 'Export completed.'
-           );
+            );
         } elseif (1 == count($errorMessages)) {
             return array(
                 'status' => '1',
                 'message' => 'Export completed. ' . 'One contact hasn\'t been exported due to error : ' . $errorMessages[0]
-           );
+            );
         } else {
             return array(
                 'status' => '1',
                 'message' => 'Export completed. ' . count($errorMessages) . ' contacts haven\'t been exported due to various reasons'
-           );
+            );
         }
-
-
     }
 
     /**
@@ -835,9 +833,7 @@ class DbConnection
                 }
 
                 // allowed custom and non empty
-                if (in_array($field_key, array_keys($customer)) == true &&
-                    (!empty($fv) && !empty($customer[$field_key]))
-               ) {
+                if (in_array($field_key, array_keys($customer)) == true && (!empty($fv) && !empty($customer[$field_key]))) {
                     // validation for custom field name
                     if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(($fv)))) {
                         return array('custom_error' => 'true', 'custom_message' => $fv);

@@ -26,7 +26,8 @@ class Getresponse extends Module
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
         $this->displayName            = $this->l('GetResponse');
-        $this->description            = $this->l('Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns');
+        $this->description            = $this->l('Add your Prestashop contacts to GetResponse or manage them via '
+            . 'automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns');
         $this->confirmUninstall       = $this->l(
             'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
         );
@@ -42,7 +43,7 @@ class Getresponse extends Module
             $this->warning = $this->l('No name provided');
         }
 
-        require_once( _PS_CLASS_DIR . '/DbConnection.php' );
+        require_once(_PS_CLASS_DIR . '/DbConnection.php');
         $instance = Db::getInstance();
         $this->db = new DbConnection($instance);
 
@@ -145,7 +146,7 @@ class Getresponse extends Module
             Shop::setContext(Shop::CONTEXT_ALL);
             $shops = Shop::getShops();
 
-            if (!empty( $shops ) && is_array($shops)) {
+            if (!empty($shops) && is_array($shops)) {
                 foreach ($shops as $shop) {
                     $sql[] = $this->sqlMainSetting($shop['id_shop']);
                     $sql[] = $this->sqlWebformSetting($shop['id_shop']);
@@ -170,7 +171,7 @@ class Getresponse extends Module
 
     private function sqlMainSetting($store_id)
     {
-        if (empty( $store_id )) {
+        if (empty($store_id)) {
             return false;
         }
 
@@ -197,7 +198,7 @@ class Getresponse extends Module
 
     private function sqlWebformSetting($store_id)
     {
-        if (empty( $store_id )) {
+        if (empty($store_id)) {
             return false;
         }
 
@@ -220,7 +221,7 @@ class Getresponse extends Module
 
     private function sqlCustomsSetting($store_id)
     {
-        if (empty( $store_id )) {
+        if (empty($store_id)) {
             return false;
         }
 
@@ -318,14 +319,12 @@ class Getresponse extends Module
     {
         $settings = $this->db->settings;
 
-        if (!empty( $settings['api_key'] )) {
-
+        if (!empty($settings['api_key'])) {
             if (
-                (
-                    'create' === $action
-                    && isset( $settings['active_subscription'] )
-                    && $settings['active_subscription'] == 'yes'
-                    && !empty( $settings['campaign_id'] )
+                ('create' === $action
+                && isset($settings['active_subscription'])
+                && $settings['active_subscription'] == 'yes'
+                && !empty($settings['campaign_id'])
                 )
                 || 'order' === $action
             ) {
@@ -361,11 +360,15 @@ class Getresponse extends Module
 
     public function hookDisplayFooter()
     {
-        if (Tools::isSubmit('submitNewsletter') && '0' == Tools::getValue('action') && Validate::isEmail(Tools::getValue('email'))) {
-
+        if (Tools::isSubmit('submitNewsletter')
+            && '0' == Tools::getValue('action')
+            && Validate::isEmail(Tools::getValue('email'))
+        ) {
             $settings = $this->db->settings;
 
-            if (isset($settings['active_newsletter_subscription']) && $settings['active_newsletter_subscription'] == 'yes') {
+            if (isset($settings['active_newsletter_subscription'])
+                && $settings['active_newsletter_subscription'] == 'yes'
+            ) {
                 $client = new stdClass();
                 $client->newsletter = 1;
                 $client->firstname = 'Friend';
@@ -388,12 +391,12 @@ class Getresponse extends Module
 
     private function displayWebform($position)
     {
-        if (empty( $position )) {
+        if (empty($position)) {
             return false;
         }
 
         $webform_settings = $this->db->getWebformSettings();
-        if (empty( $webform_settings ) ||
+        if (empty($webform_settings) ||
             $webform_settings['active_subscription'] != 'yes' ||
             $webform_settings['sidebar'] != $position
         ) {
@@ -401,7 +404,7 @@ class Getresponse extends Module
         }
 
         $set_style = null;
-        if (!empty( $webform_settings['style'] ) && $webform_settings['style'] == 'prestashop') {
+        if (!empty($webform_settings['style']) && $webform_settings['style'] == 'prestashop') {
             $set_style = '&css=1';
         }
 
