@@ -18,8 +18,9 @@ class Getresponse extends Module
 {
     public function __construct()
     {
-        $description = 'Add your Prestashop contacts to GetResponse or manage them via '
-            . 'automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns';
+        $description = 'Add your Prestashop contacts to GetResponse or manage them via ';
+        $description .= 'automation rules. Automatically follow-up new subscriptions with ';
+        $description .= 'engaging email marketing campaigns';
 
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
@@ -322,8 +323,7 @@ class Getresponse extends Module
         $settings = $this->db->settings;
 
         if (!empty($settings['api_key'])) {
-            if (
-                ('create' === $action
+            if (('create' === $action
                 && isset($settings['active_subscription'])
                 && $settings['active_subscription'] == 'yes'
                 && !empty($settings['campaign_id'])
