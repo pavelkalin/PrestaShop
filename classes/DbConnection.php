@@ -8,7 +8,7 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-require_once(PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php');
+require_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php');
 
 /**
  * Class is used to calls to the PrestaShop Database
