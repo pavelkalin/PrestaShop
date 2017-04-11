@@ -20,7 +20,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.0.7';
+        $this->version                = '4.0.8';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -361,27 +361,18 @@ class Getresponse extends Module
 
     public function hookDisplayFooter()
     {
-        $data = array();
-        // if submit from newsletter block
-        // and email not empty
-        // and action subscribe
-        // and email is valid
-        if (Tools::isSubmit('submitNewsletter') &&
-            !empty(Tools::getValue(['email'])) &&
-            Tools::getValue(['action']) == '0' &&
-            Validate::isEmail(Tools::getValue(['email']))
-        ) {
+        if (Tools::isSubmit('submitNewsletter') && '0' == Tools::getValue('action') && Validate::isEmail(Tools::getValue('email'))) {
+
             $settings = $this->db->settings;
 
-            if (isset($settings['active_newsletter_subscription'] ) &&
-                $settings['active_newsletter_subscription'] == 'yes'
-            ) {
+            if (isset($settings['active_newsletter_subscription']) && $settings['active_newsletter_subscription'] == 'yes') {
                 $client = new stdClass();
                 $client->newsletter = 1;
                 $client->firstname = 'Friend';
                 $client->lastname = '';
-                $client->email = Tools::getValue(['email']);
+                $client->email = Tools::getValue('email');
 
+                $data = array();
                 $data['newNewsletterContact'] = $client;
 
                 $this->addSubscriber($data, 'create');

@@ -473,7 +473,7 @@ class DbConnection
             return $results;
         }
 
-        return [];
+        return array();
     }
 
     public function getCycleDay()
