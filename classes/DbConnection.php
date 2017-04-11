@@ -142,7 +142,7 @@ class DbConnection
                     $campaigns[$info->name] = array(
                         'id'   => $info->campaignId,
                         'name' => $info->name
-                   );
+                    );
                 }
                 ksort($campaigns);
 
@@ -226,7 +226,7 @@ class DbConnection
                     $subjects[] = array(
                         'id'            => $subject->subscriptionConfirmationSubjectId,
                         'name'          => $subject->subject
-                   );
+                    );
                 }
                 return $subjects;
             }
@@ -253,7 +253,7 @@ class DbConnection
                         'id'            => $body->subscriptionConfirmationBodyId,
                         'name'          => $body->name,
                         'contentPlain'  => $body->contentPlain
-                   );
+                    );
                 }
                 return $bodies;
             }
@@ -283,7 +283,7 @@ class DbConnection
                         'id'    => $info->fromFieldId,
                         'name'  => $info->name,
                         'email' => $info->email,
-                   );
+                    );
                 }
             }
 
@@ -730,14 +730,13 @@ class DbConnection
 
         if (!empty($customers)) {
             foreach ($customers as $customer) {
-
                 $customs = $this->mapCustoms($customer, $_POST, 'export');
 
                 if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
                     return array(
                         'status'  => '0',
                         'message' => 'Incorrect field name: "' . $customs['custom_message']
-                   );
+                    );
                 }
 
                 $r = $this->addContact(
@@ -747,7 +746,7 @@ class DbConnection
                     $customer['email'],
                     $cycle_day,
                     $customs
-               );
+                );
 
                 if (isset($r->httpStatus) && $r->httpStatus >= 400) {
                     $errorMessages[] = '[' . $r->code . '] ' . $r->message;
@@ -799,7 +798,7 @@ class DbConnection
                 if ($type == 'export') {
                     if (!empty($customer_post['custom_field']) &&
                         in_array($cf['custom_value'], array_keys($customer_post['custom_field']))
-                   ) {
+                    ) {
                         $fields[$cf['custom_value']] = $customer_post['custom_field'][$cf['custom_value']];
                     }
                 } else {
@@ -974,7 +973,7 @@ class DbConnection
                         $params[$prefix]->email,
                         $cycle_day,
                         $customs
-                   );
+                    );
                 }
             }
         }
@@ -1118,7 +1117,6 @@ class DbConnection
         }
 
         foreach ($user_customs as $name => $value) {
-
             if (in_array($name, array('firstname', 'lastname', 'email'))) {
                 continue;
             }
@@ -1136,7 +1134,7 @@ class DbConnection
                     'type'   => "text",
                     'hidden' => "false",
                     'values' => array($value),
-               ));
+                ));
 
                 $this->all_custom_fields[$custom->name] = $custom->customFieldId;
 
@@ -1144,7 +1142,7 @@ class DbConnection
                     $custom_fields[] = array(
                         'customFieldId' => $custom->customFieldId,
                         'value'         => array($value)
-                   );
+                    );
                 }
             }
         }

@@ -8,7 +8,7 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-include_once( _PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php' );
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php');
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -84,7 +84,7 @@ class AdminGetresponseController extends ModuleAdminController
             parent::initPageHeaderToolbar();
         }
 
-        unset( $this->page_header_toolbar_btn['back'] );
+        unset($this->page_header_toolbar_btn['back'] );
     }
 
     /**
@@ -98,7 +98,7 @@ class AdminGetresponseController extends ModuleAdminController
         // set main settings
         $this->setSettings();
 
-        if (!empty( $this->apikey )) {
+        if (!empty($this->apikey)) {
             switch ($action) {
                 case 'api':
                     $this->apiView();
@@ -149,14 +149,14 @@ class AdminGetresponseController extends ModuleAdminController
         $this->context->smarty->assign('base_url', __PS_BASE_URI__);
 
         $settings = $this->db->getSettings();
-        if (!empty( $settings )) {
-            if (!empty( $settings['api_key'] )) {
+        if (!empty($settings)) {
+            if (!empty($settings['api_key'] )) {
                 $this->apikey = $settings['api_key'];
                 $this->context->smarty->assign(array('api_key' => $this->apikey));
             }
 
             // settings
-            if (!empty( $settings['account_type'] )) {
+            if (!empty($settings['account_type'] )) {
                 $this->api_url = $this->api_urls[$settings['account_type']];
 
                 if ($settings['account_type'] != 'gr') {
@@ -166,11 +166,11 @@ class AdminGetresponseController extends ModuleAdminController
                 $this->context->smarty->assign(array('api_url' => $this->api_url));
             }
 
-            if (!empty( $settings['crypto'] )) {
+            if (!empty($settings['crypto'] )) {
                 $this->crypto = $settings['crypto'];
             }
 
-            if (!empty( $settings['cycle_day'] )) {
+            if (!empty($settings['cycle_day'] )) {
                 $this->cycle_day = $settings['cycle_day'];
             }
         }
@@ -187,15 +187,15 @@ class AdminGetresponseController extends ModuleAdminController
         if ($is_submit) {
             $api_key = Tools::getValue('api_key');
 
-            if (!empty( $api_key )) {
+            if (!empty($api_key)) {
                 $account_type = Tools::getValue('account_type');
                 $api_crypto   = Tools::getValue('crypto');
 
-                if (empty( $account_type[0] )) {
+                if (empty($account_type[0] )) {
                     $account_type[0] = 'gr';
                 }
 
-                if ($account_type[0] != 'gr' && empty( $api_crypto )) {
+                if ($account_type[0] != 'gr' && empty($api_crypto)) {
                     $this->context->smarty->assign(array(
                         'form_status' => 'error',
                         'status_text' => $this->l('For GetResponse360 Crypto can not be empty')
@@ -240,7 +240,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $settings = $this->db->getSettings();
-        if (!empty( $settings )) {
+        if (!empty($settings)) {
             $this->context->smarty->assign(array('api_key' => $settings['api_key']));
             $this->context->smarty->assign(array('account_type' => $settings['account_type']));
             $this->context->smarty->assign(array('crypto' => $settings['crypto']));
@@ -258,7 +258,7 @@ class AdminGetresponseController extends ModuleAdminController
         $this->context->smarty->assign(array('campaigns' => $campaigns));
 
         $fromfields = $this->db->getFromFields();
-        if (!empty( $fromfields )) {
+        if (!empty($fromfields)) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
@@ -289,7 +289,7 @@ class AdminGetresponseController extends ModuleAdminController
         $is_submit = Tools::isSubmit('ExportConfiguration');
         if ($is_submit) {
             // set api key
-            if (empty( $this->apikey )) {
+            if (empty($this->apikey)) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Wrong API Key')
@@ -299,7 +299,7 @@ class AdminGetresponseController extends ModuleAdminController
             // check _POST
             $campaign = Tools::getValue('campaign');
 
-            if (empty( $campaign[0] ) || $campaign[0] == '0') {
+            if (empty($campaign[0] ) || $campaign[0] == '0') {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('No campaign selected')
@@ -311,18 +311,18 @@ class AdminGetresponseController extends ModuleAdminController
                 $ng        = Tools::getValue('newsletter_guests');
                 $cycle_day = Tools::getValue('cycle_day');
 
-                if (!empty( $ng )) {
+                if (!empty($ng)) {
                     $newsletter_guests = true;
                 }
 
                 $posted_customs = Tools::getValue('custom_field');
                 $validation     = $this->validateCustoms($posted_customs);
-                if (is_array($validation) && !empty( $validation['form_status'] )) {
+                if (is_array($validation) && !empty($validation['form_status'] )) {
                     $this->context->smarty->assign($validation);
                 } else {
                     // get contacts
                     $contacts = $this->db->getContacts(null, $newsletter_guests);
-                    if (empty( $contacts )) {
+                    if (empty($contacts)) {
                         $this->context->smarty->assign(array(
                             'form_status' => 'error',
                             'status_text' => $this->l('No contacts to export')
@@ -338,7 +338,7 @@ class AdminGetresponseController extends ModuleAdminController
                         );
 
                         // show notice
-                        if (is_array($add) && isset( $add['status'] ) && $add['status'] == 1) {
+                        if (is_array($add) && isset($add['status'] ) && $add['status'] == 1) {
                             $this->context->smarty->assign(array(
                                 'message' => $add['message'],
                                 'form_status' => 'success',
@@ -358,7 +358,7 @@ class AdminGetresponseController extends ModuleAdminController
         $settings = $this->db->getSettings();
 
 
-        if (!empty( $settings )) {
+        if (!empty($settings)) {
             $this->context->smarty->assign(array('api_key' => $settings['api_key']));
             $this->context->smarty->assign(array('account_type' => $settings['account_type']));
             $this->context->smarty->assign(array('crypto' => $settings['crypto']));
@@ -374,7 +374,7 @@ class AdminGetresponseController extends ModuleAdminController
         $this->context->smarty->assign(array('selected_tab' => 'viapage'));
 
         $fromfields = $this->db->getFromFields();
-        if (!empty( $fromfields )) {
+        if (!empty($fromfields)) {
             $this->context->smarty->assign(array('fromfields' => $fromfields));
         }
 
@@ -412,7 +412,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         $is_submit = Tools::isSubmit('ViapageConfiguration');
         if ($is_submit) {
-            if (empty( $this->apikey )) {
+            if (empty($this->apikey)) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Wrong API Key')
@@ -429,7 +429,7 @@ class AdminGetresponseController extends ModuleAdminController
             $posted_customs = Tools::getValue('custom_field');
 
             // check subscription settings
-            if (!empty($campaign[0]) && $campaign[0] != '0' && !empty( $status )) {
+            if (!empty($campaign[0]) && $campaign[0] != '0' && !empty($status)) {
                 $update_address = empty($update_address) ? 'no' : $update_address;
                 $newsletter = empty($newsletter) ? 'no' : $newsletter;
                 $cycle_day      = !is_null($add_to_cycle) ? $cycle_day : null;
@@ -455,7 +455,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         $settings = $this->db->getSettings();
 
-        if (!empty( $settings )) {
+        if (!empty($settings)) {
             $this->context->smarty->assign(array('status' => $settings['active_subscription']));
             $this->context->smarty->assign(array('selected_campaign' => $settings['campaign_id']));
             $this->context->smarty->assign(array('selected_cycle_day' => $settings['cycle_day']));
@@ -475,7 +475,7 @@ class AdminGetresponseController extends ModuleAdminController
         $this->context->smarty->assign(array('selected_tab' => 'viawebform'));
 
         $campaigns = $this->db->getCampaigns();
-        if (!empty( $campaigns )) {
+        if (!empty($campaigns)) {
             $campaign_id = array();
             foreach ($campaigns as $campaign) {
                 $campaign_id[$campaign['id']] = $campaign['name'];
@@ -486,13 +486,13 @@ class AdminGetresponseController extends ModuleAdminController
 
         // get old webforms
         $webforms = $this->db->getWebforms();
-        if (!empty( $webforms )) {
+        if (!empty($webforms)) {
             $this->context->smarty->assign(array('webforms' => $webforms));
         }
 
         // get new forms
         $forms = $this->db->getForms();
-        if (!empty( $forms )) {
+        if (!empty($forms)) {
             $this->context->smarty->assign(array('forms' => $forms));
         }
 
@@ -538,7 +538,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $settings = $this->db->getWebformSettings();
-        if (!empty( $settings )) {
+        if (!empty($settings)) {
             $this->context->smarty->assign(array('webform_id' => $settings['webform_id']));
             $this->context->smarty->assign(array('webform_sidebar' => $settings['sidebar']));
             $this->context->smarty->assign(array('webform_style' => $settings['style']));
@@ -554,7 +554,7 @@ class AdminGetresponseController extends ModuleAdminController
         $this->context->smarty->assign(array('selected_tab' => 'automation'));
         $this->context->smarty->assign(array('gr_css_path' => $this->gr_css_path));
 
-        if (empty( $this->apikey )) {
+        if (empty($this->apikey)) {
             $this->context->smarty->assign(array('form_status' => 'error', 'status_text' => $this->l('Wrong API Key')));
         }
 
@@ -578,24 +578,24 @@ class AdminGetresponseController extends ModuleAdminController
             $action    = Tools::getValue('a_action');
             $cycle_day = Tools::getValue('cycle_day');
 
-            if (empty( $category[0] )) {
+            if (empty($category[0] )) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Category can not be empty')
                 ));
-            } elseif (empty( $campaign[0] )) {
+            } elseif (empty($campaign[0] )) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Campaign can not be empty')
                 ));
-            } elseif (empty( $action[0] )) {
+            } elseif (empty($action[0] )) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Action can not be empty')
                 ));
             } else {
                 $add_to_cycle = Tools::getValue('add_to_cycle');
-                $cycle_day    =!empty( $add_to_cycle ) ? $cycle_day[0] : null;
+                $cycle_day    =!empty($add_to_cycle) ? $cycle_day[0] : null;
                 // set automation info to DB
                 $this->db->insertAutomationSettings($category[0], $campaign[0], $action[0], $cycle_day);
                 $this->context->smarty->assign(array(
@@ -614,19 +614,19 @@ class AdminGetresponseController extends ModuleAdminController
             $action    = Tools::getValue('a_action');
             $cycle_day = Tools::getValue('cycle_day');
 
-            if (empty( $campaign )) {
+            if (empty($campaign)) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Campaign can not be empty')
                 ));
-            } elseif (empty( $action )) {
+            } elseif (empty($action)) {
                 $this->context->smarty->assign(array(
                     'form_status' => 'error',
                     'status_text' => $this->l('Action can not be empty')
                 ));
             } else {
                 $add_to_cycle = Tools::getValue('add_to_cycle');
-                $cycle_day    =!empty( $add_to_cycle ) ? $cycle_day : null;
+                $cycle_day    =!empty($add_to_cycle) ? $cycle_day : null;
                 // set automation info to DB
                 $this->db->updateAutomationSettings($category, $automation_to_edit, $campaign, $action, $cycle_day);
                 $this->context->smarty->assign(array(
@@ -665,7 +665,7 @@ class AdminGetresponseController extends ModuleAdminController
         $automation_settings = $this->db->getAutomationSettings();
         $edit_automation     = Tools::getValue('edit_id');
         $this->context->smarty->assign(array('edit_automation' => $edit_automation));
-        if (!empty( $automation_settings )) {
+        if (!empty($automation_settings)) {
             $this->context->smarty->assign(array('automation_settings' => $automation_settings));
 
             if ($edit_automation) {
@@ -692,7 +692,7 @@ class AdminGetresponseController extends ModuleAdminController
                     foreach ($automation_settings as $automation) {
                         // unset category if already is set automation for this option
                         if ($automation['category_id'] == $category['id_category']) {
-                            unset( $categories[$id] );
+                            unset($categories[$id] );
                         }
                     }
                 }
@@ -729,7 +729,7 @@ class AdminGetresponseController extends ModuleAdminController
     {
         if (is_array($customs)) {
             foreach ($customs as $custom) {
-                if (!empty( $custom ) && preg_match('/^[\w\-]+$/', $custom) == false) {
+                if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
                     return array(
                         'form_status' => 'error',
                         'status_text' => 'Error - "' . $custom . '" ' . $this->l('contains invalid characters')
@@ -747,15 +747,15 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function displayAjaxGetMessages()
     {
-        if (empty( $this->apikey )) {
-            die( Tools::jsonEncode(array('error' => 'Wrong API Key', 'table' => '')) );
+        if (empty($this->apikey)) {
+            die(Tools::jsonEncode(array('error' => 'Wrong API Key', 'table' => '')));
         }
 
         $campaign_id   = Tools::getValue('campaign_id');
         $campaign_name = Tools::getValue('campaign_name');
 
-        if (empty( $campaign_id )) {
-            die( Tools::jsonEncode(array('error' => 'Campaign id can\'t be empty.', 'table' => '')) );
+        if (empty($campaign_id)) {
+            die(Tools::jsonEncode(array('error' => 'Campaign id can\'t be empty.', 'table' => '')));
         }
 
         // add new campaign to GR
@@ -782,7 +782,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $return = array('error' => '', 'table' => $table);
-        die( Tools::jsonEncode($return) );
+        die(Tools::jsonEncode($return));
     }
 
     /**
@@ -795,7 +795,7 @@ class AdminGetresponseController extends ModuleAdminController
     private function getMessagesFromGr()
     {
         // required params
-        if (empty( $this->apikey )) {
+        if (empty($this->apikey)) {
             return false;
         }
 
@@ -814,8 +814,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function displayAjaxAddCampaign()
     {
-        if (empty( $this->apikey )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Wrong API Key')) );
+        if (empty($this->apikey)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Wrong API Key')));
         }
 
         $campaign_name        = Tools::getValue('campaign_name');
@@ -824,30 +824,30 @@ class AdminGetresponseController extends ModuleAdminController
         $confirmation_subject = Tools::getValue('confirmation_subject');
         $confirmation_body    = Tools::getValue('confirmation_body');
 
-        if (empty( $campaign_name )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name can\'t be empty.')) );
+        if (empty($campaign_name)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name can\'t be empty.')));
         }
 
-        if (empty( $from_field )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'From field can\'t be empty.')) );
+        if (empty($from_field)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'From field can\'t be empty.')));
         }
 
-        if (empty( $reply_to_field )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Reply field can\'t be empty.')) );
+        if (empty($reply_to_field)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Reply field can\'t be empty.')));
         }
 
-        if (empty( $confirmation_subject )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation subject can\'t be empty.')) );
+        if (empty($confirmation_subject)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation subject can\'t be empty.')));
         }
 
-        if (empty( $confirmation_body )) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation body can\'t be empty.')) );
+        if (empty($confirmation_body)) {
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation body can\'t be empty.')));
         }
 
         $campaign_name = Tools::strtolower($campaign_name);
 
         if (preg_match('/^[\w\-]+$/', $campaign_name) == false) {
-            die( Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name contains invalid characters.')) );
+            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name contains invalid characters.')));
         }
 
         // add new campaign to GR
@@ -861,13 +861,13 @@ class AdminGetresponseController extends ModuleAdminController
 
         // show notice
         if (is_object($add) && isset($add->campaignId)) {
-            die( Tools::jsonEncode(array(
+            die(Tools::jsonEncode(array(
                 'type' => 'success',
                 'msg'  => 'Campaign "' . $campaign_name . '" sucessfully created.',
                 'c'    => $campaign_name
             )) );
         } else {
-            die( Tools::jsonEncode(array(
+            die(Tools::jsonEncode(array(
                 'type' => 'error',
                 'msg'  => 'Campaign "' . $campaign_name . '" has not been added ' . ' - ' . $add->message
             )) );
@@ -893,7 +893,7 @@ class AdminGetresponseController extends ModuleAdminController
         $confirmation_body
     ) {
         // required params
-        if (empty( $this->apikey ) || empty( $this->api_url )) {
+        if (empty($this->apikey) || empty($this->api_url)) {
             return false;
         }
 
