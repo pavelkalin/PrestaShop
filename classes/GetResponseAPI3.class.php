@@ -2,10 +2,10 @@
 /**
  * GetResponse API V3 class
  *
- *  @author    Grzegorz Struczynski <grzegorz.struczynski@implix.com>
- *  @see http://apidocs.getresponse.com/en/v3/resources
+ *  @author Getresponse <grintegrations@getresponse.com>
  *  @copyright GetResponse
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  @see http://apidocs.getresponse.com/en/v3/resources
  */
 
 class GetResponseAPI3
