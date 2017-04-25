@@ -32,10 +32,14 @@ class DbConnection
         $this->settings = null;
 
         $context = Context::getContext();
-        $cookie = $context->cookie->getAll();
+        if (method_exists($context->cookie, 'getAll')) {
+            $cookie = $context->cookie->getAll();
 
-        if (isset($cookie['shopContext'])) {
-            $this->id_shop = (int)Tools::substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+            if (isset($cookie['shopContext'])) {
+                $this->id_shop = (int)Tools::substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+            } else {
+                $this->id_shop = $context->shop->id;
+            }
         } else {
             $this->id_shop = $context->shop->id;
         }
