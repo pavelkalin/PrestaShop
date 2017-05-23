@@ -1,35 +1,34 @@
 <?php
-/**
- * GetResponse API V3 class
- *
- *  @author Getresponse <grintegrations@getresponse.com>
- *  @copyright GetResponse
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  @see http://apidocs.getresponse.com/en/v3/resources
- */
 
+/**
+ * Class GetResponseAPI3
+ */
 class GetResponseAPI3
 {
-    private $api_key;
-    private $api_url = 'https://api.getresponse.com/v3';
-    private $timeout = 8;
-    private $enterprise_domain = null;
-    public $http_status;
-
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
 
+    /** @var string */
+    private $api_key;
+
+    /** @var string */
+    private $api_url;
+
+    /** @var int */
+    private $timeout = 8;
+
+    /** @var string */
+    private $domain;
+
     /**
-     * Set api key and optionally API endpoint
-     * @param      $api_key
-     * @param null $api_url
+     * @param string $api_key
+     * @param string $api_url
+     * @param string $domain
      */
-    public function __construct($api_key, $api_url = null)
+    public function __construct($api_key, $api_url, $domain)
     {
         $this->api_key = $api_key;
-
-        if (!empty($api_url)) {
-            $this->api_url = $api_url;
-        }
+        $this->api_url = $api_url;
+        $this->domain = $domain;
     }
 
     /**
@@ -316,7 +315,7 @@ class GetResponseAPI3
      * @return mixed
      * @throws Exception
      */
-    private function call($api_method = null, $http_method = 'GET', $params = array())
+    private function call($api_method, $http_method = 'GET', $params = array())
     {
         if (empty($api_method)) {
             return (object)array(
@@ -336,8 +335,8 @@ class GetResponseAPI3
             'Content-Type: application/json'
         );
 
-        if (!empty($this->enterprise_domain)) {
-            $headers[] = 'X-Domain: ' . $this->enterprise_domain;
+        if (!empty($this->domain)) {
+            $headers[] = 'X-Domain: ' . $this->domain;
         }
 
         $options = array(
@@ -362,9 +361,6 @@ class GetResponseAPI3
         curl_setopt_array($curl, $options);
 
         $response = Tools::jsonDecode(curl_exec($curl));
-
-        $this->http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
         curl_close($curl);
         return (object)$response;
     }
@@ -383,5 +379,26 @@ class GetResponseAPI3
             }
         }
         return http_build_query($result);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return null
+     */
+    public function searchCustomFieldByName($name)
+    {
+        $customs = $this->call('custom-fields?query[name]=' . $name, 'GET');
+
+        if (empty($customs)) {
+            return null;
+        }
+
+        foreach ($customs as $custom) {
+            if ($custom->name === $name) {
+                return $custom;
+            }
+        }
+        return null;
     }
 }

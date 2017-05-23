@@ -9,22 +9,18 @@
 <script type="text/javascript">
 	APP.files.js.templateBuilder = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/templateBuilder.src-verified.async.js';
 	APP.files.js.lightbox = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/lightbox.src-verified.async.js';
-	$.register = {
-		form_status: "{$form_status|escape:'htmlall':'UTF-8'}",
-		status_text: "{$status_text|escape:'htmlall':'UTF-8'}"
-	}
 </script>
 
-<div id="getresponse" class="gr-wrapper">
-	{if !empty($message) || (!empty($status_text) && $form_status == 'error')}
-		<div class="bootstrap">
-			<div class="module_confirmation conf confirm alert alert-{if isset($form_status) && $form_status == 'success'}success{else}danger{/if}">
-				<button type="button" class="close" data-dismiss="alert">&times;</button>
-				{if isset($form_status) && $form_status == 'error'}{$status_text|escape:'htmlall':'UTF-8'}{/if}
-				{if isset($message)}{$message|escape:'htmlall':'UTF-8'}{/if}
-			</div>
+{if !empty($flash_message)}
+	<div class="bootstrap">
+		<div class="module_confirmation conf confirm alert alert-{$flash_message['status']}">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+            {$flash_message['message']|escape:'htmlall':'UTF-8'}
 		</div>
-	{/if}
+	</div>
+{/if}
+
+<div id="getresponse" class="gr-wrapper">
 	<div id="module">
 		<div class="row">
 			<div class="col-md-3">
@@ -38,14 +34,14 @@
 					{if $selected_tab == 'api'}
 						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/api.tpl"}
 					{/if}
-					{if $selected_tab == 'exportcustomers'}
+					{if $selected_tab == 'export_customers'}
 						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/exportcustomers.tpl"}
 					{/if}
-					{if $selected_tab == 'viapage'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/viapage.tpl"}
+					{if $selected_tab == 'subscribe_via_registration'}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/subscribe_via_registration.tpl"}
 					{/if}
-					{if $selected_tab == 'viawebform'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/viawebform.tpl"}
+					{if $selected_tab == 'subscribe_via_form'}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/subscribe_via_form.tpl"}
 					{/if}
 					{if $selected_tab == 'automation'}
 						{if $edit_automation}

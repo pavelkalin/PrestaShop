@@ -390,12 +390,14 @@
 }
 #getresponse #module .input-more .FullSelectLcContainerDefault,
 #getresponse #module .input-tip input[type="text"],
+#getresponse #module .input-tip select,
 #getresponse #module .input-tip .FullSelectLcContainerDefault {
     display: table-cell;
     width: 100%;
     max-width: none;
 }
 #getresponse #module .input-tip input[type="text"] + span,
+#getresponse #module .input-tip select + span,
 #getresponse #module .input-tip .FullSelectLcContainerDefault + span {
     display: table-cell;
     padding: 0;

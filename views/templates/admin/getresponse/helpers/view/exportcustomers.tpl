@@ -12,7 +12,7 @@
 	<p class="note">
 		{l s='Each customer export includes all entries from your PrestaShop database.' mod='getresponse'}
 	</p>
-	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=exportcustomers" method="post">
+	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=export_customers_save" method="post">
 		<fieldset class="control-group">
 			<label for="targetCampaign" class="control-label">{l s='Select your campaign' mod='getresponse'}</label>
 			<div class="controls">
@@ -50,7 +50,7 @@
 		<fieldset class="control-group" id="updateDiv">
 			<label for="crypto" class="control-label"></label>
 			<div class="controls">
-				<label class="checkbox"  data-params="{ action: 'checkbox', run: 'switch_viapage_customs' }">
+				<label class="checkbox"  data-params="{ action: 'checkbox', run: 'switch_subscribe_via_registration_customs' }">
 					<input value="yes" type="checkbox" name="update_address" id="chckUpdateContactDataOnPage" {if isset($update_address) && $update_address == 'yes'}checked{/if}>
 					<span class="tooltip-label">{l s='Update details' mod='getresponse'}</span>
 					<abbr title='{l s='Update details' mod='getresponse'}|{l s='Select this option if you want to override contact details that already exist in your GetResponse database. Clear this option to keep existing data intact.' mod='getresponse'}' rel="tooltip"></abbr>
@@ -75,7 +75,7 @@
 		<fieldset class="control-group">
 			<div class="controls">
 				<div class="btns">
-					<input type="submit" value="{l s='Export' mod='getresponse'}" name="ExportConfiguration" class="button">
+					<input type="submit" name="export_subscribers" value="{l s='Export' mod='getresponse'}" class="button">
 				</div>
 			</div>
 		</fieldset>

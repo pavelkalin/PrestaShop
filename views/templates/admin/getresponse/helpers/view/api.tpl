@@ -11,27 +11,79 @@
 			<div class="row row-flex row-flex-wrap">
 				<div class="col-lg-5">
 					<div class="api content-in">
-						<h3>
-							{l s='Already a GetResponse user?' mod='getresponse'}
-						</h3>
-						<p>{l s='Enter your GetResponse API key to connect. Click' mod='getresponse'} <strong>Save</strong> {l s='to import your forms, campaigns and enable turning customers into subscribers.' mod='getresponse'}</p>
+
+                        {if false == $is_connected}
+							<h3>
+                                {l s='Already a GetResponse user?' mod='getresponse'}
+							</h3>
+							<p>{l s='Enter your GetResponse API key to connect. Click' mod='getresponse'} <strong>Save</strong> {l s='to import your forms, campaigns and enable turning customers into subscribers.' mod='getresponse'}</p>
+						{else}
+							<h3>
+                                {l s='GetResponse for PrestaShop' mod='getresponse'}
+							</h3>
+							<p>{l s='You are now connected to GetResponse.' mod='getresponse'}</p>
+						{/if}
 						<form accept-charset="utf-8" class="FormsEffectLc FormsValidateLc" action="{$action_url|escape:'htmlall':'UTF-8'}" method="post">
 							<fieldset>
 								<div class="fieldLine clearfix">
 									<label class="txtLabel">API key</label>
 									<div class="input-tip">
-										<input autocomplete="off" type="text" title="API key" id="apiKey" name="api_key" class="jsFE-Input FE-Input" value="{$api_key|escape:'htmlall':'UTF-8'}">
+										<input autocomplete="off" type="text" title="API key" id="apiKey" name="api_key" class="jsFE-Input FE-Input" value="{$api_key|escape:'htmlall':'UTF-8'}" {if $is_connected}disabled="disabled"{/if}>
 										<span>
-											<abbr title='{l s='API key' mod='getresponse'}|{l s='You can find your API key in the settings of your GetResponse account. Log in to GetResponse and go to <strong>My account > Account details > API & OAuth</strong> to find the key.' mod='getresponse'}' rel="tooltip"></abbr>
+											<abbr title='{l s='API key' mod='getresponse'}|{l s='Enter your API key. You can find it on your GetResponse profile in Account Details -> GetResponse API' mod='getresponse'}' rel="tooltip"></abbr>
 										</span>
 									</div>
 									<span class="formErrorIco"></span>
 								</div>
-								<div class="btns">
-									<div class="submit">
-										<input type="submit" value="{l s='Save' mod='getresponse'}" name="ApiConfiguration" class="fontGetresponsePro">
+
+								{if false == $is_connected}
+
+									<div class="fieldLine clearfix enterprise_account">
+										<label class="txtLabel">GetResponse 360</label>
+										<input type="checkbox" title="Enterprise account" id="isEnterprise" name="is_enterprise" />
+										<span class="formErrorIco"></span>
 									</div>
-								</div>
+
+									<div class="enterprise_connect_fields">
+										<div class="fieldLine clearfix">
+											<label class="txtLabel">Type</label>
+											<div class="input-tip">
+												<select name="account_type" id="account_type" class="jsFE-Input FE-Input">
+													<option value="360pl">GetResponse 360 PL</option>
+													<option value="360en">GetResponse 360 COM</option>
+												</select>
+												<span>
+													{*<abbr title='{l s='Account type' mod='getresponse'}|{l s='' mod='getresponse'}' rel="tooltip"></abbr>*}
+												</span>
+											</div>
+											<span class="formErrorIco"></span>
+										</div>
+
+										<div class="fieldLine clearfix">
+											<label class="txtLabel">Domain</label>
+											<div class="input-tip">
+												<input autocomplete="off" type="text" title="Domain" id="domain" name="domain" class="jsFE-Input FE-Input" />
+												<span>
+													<abbr title='{l s='Domain' mod='getresponse'}|{l s='Enter your domain without protocol http:// eg: "yourdomainname.com"' mod='getresponse'}' rel="tooltip"></abbr>
+												</span>
+											</div>
+											<span class="formErrorIco"></span>
+										</div>
+									</div>
+
+									<div class="btns">
+										<div class="submit">
+											<input type="submit" value="{l s='Save' mod='getresponse'}" name="connectToGetResponse" class="fontGetresponsePro">
+										</div>
+									</div>
+								{else}
+
+									<div class="btns">
+										<div class="submit">
+											<input type="submit" value="{l s='Disconnect' mod='getresponse'}" name="disconnectFromGetResponse" class="fontGetresponsePro">
+										</div>
+									</div>
+                                {/if}
 							</fieldset>
 						</form>
 					</div>

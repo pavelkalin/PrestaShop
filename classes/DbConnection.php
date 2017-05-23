@@ -1,90 +1,24 @@
 <?php
-/**
- * This module integrate GetResponse and PrestaShop Allows subscribe via checkout page and export your contacts.
- *
- *  @author Getresponse <grintegrations@getresponse.com>
- *  @copyright GetResponse
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
- */
-
-require_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.class.php');
 
 /**
- * Class is used to calls to the PrestaShop Database
- *
- * Functions Create, Update, Insert
- * @uses Database instance [ie DB::getInstance()]
+ * Class DbConnection
  */
 class DbConnection
 {
-    public $grApiInstance;
-    public $all_custom_fields;
-
-    /** @var DbPDO */
+    /** @var Db */
     private $db;
 
-    public function __construct($database)
+    /** @var int */
+    private $id_shop;
+
+    /**
+     * @param Db $db
+     * @param int $shop_id
+     */
+    public function __construct($db, $shop_id)
     {
-        $this->db  = $database;
-        $this->obj = 1;
-        $this->api_key = null;
-        $this->settings = null;
-
-        $context = Context::getContext();
-        if (method_exists($context->cookie, 'getAll')) {
-            $cookie = $context->cookie->getAll();
-
-            if (isset($cookie['shopContext'])) {
-                $this->id_shop = (int)Tools::substr($cookie['shopContext'], 2, count($cookie['shopContext']));
-            } else {
-                $this->id_shop = $context->shop->id;
-            }
-        } else {
-            $this->id_shop = $context->shop->id;
-        }
-
-        //db prefix
-        $this->prefix_settings   = _DB_PREFIX_ . 'getresponse_settings';
-        $this->prefix_webform    = _DB_PREFIX_ . 'getresponse_webform';
-        $this->prefix_automation = _DB_PREFIX_ . 'getresponse_automation';
-        $this->prefix_customs    = _DB_PREFIX_ . 'getresponse_customs';
-
-        if (Module::isInstalled('getresponse')) {
-            $this->settings = $this->getSettings();
-        }
-        $this->grApiInstance = $this->getApiInstance();
-    }
-
-    public function getApiInstance()
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $apiInstance = new GetResponseAPI3($this->api_key);
-
-            return $apiInstance;
-        } catch (Exception $e) {
-            return array('message' => $e->getMessage());
-        }
-    }
-
-    public function ping($api_key)
-    {
-        if (empty($api_key)) {
-            return false;
-        }
-
-        $api = new GetResponseAPI3($api_key);
-        $ping = $api->ping();
-
-        if (isset($ping->accountId)) {
-            return true;
-        } else {
-            return false;
-        }
+        $this->db = $db;
+        $this->id_shop = $shop_id;
     }
 
     /**
@@ -92,16 +26,24 @@ class DbConnection
      */
     public function getSettings()
     {
-        $sql = 'SELECT
-                    *
-                FROM
-                    ' . pSQL($this->prefix_settings) . '
-                WHERE
-                    id_shop = ' . (int) $this->id_shop . '
-                ';
+        $sql = '
+        SELECT
+            `id`,
+            `id_shop`,
+            `api_key`,
+            `active_subscription`,
+            `active_newsletter_subscription`,
+            `update_address`,
+            `campaign_id`,
+            `cycle_day`,
+            `account_type`,
+            `crypto`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_settings
+        WHERE
+            `id_shop` = ' . (int) $this->id_shop;
 
         if ($results = $this->db->ExecuteS($sql)) {
-            $this->api_key = $results[0]['api_key'];
             return $results[0];
         }
 
@@ -113,13 +55,17 @@ class DbConnection
      */
     public function getWebformSettings()
     {
-        $sql = 'SELECT
-                    webform_id, active_subscription, sidebar, style, url
-                FROM
-                    ' . pSQL($this->prefix_webform) . '
-                WHERE
-                    id_shop = ' . (int) $this->id_shop . '
-                ';
+        $sql = '
+        SELECT
+            `webform_id`, 
+            `active_subscription`, 
+            `sidebar`, 
+            `style`, 
+            `url`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_webform
+        WHERE
+            `id_shop` = ' . (int) $this->id_shop;
 
         if ($results = $this->db->ExecuteS($sql)) {
             return $results[0];
@@ -129,236 +75,66 @@ class DbConnection
     }
 
     /**
-     * @return array
+     * @param string $moduleName
+     * @return bool
      */
-    public function getCampaigns()
+    public function checkModuleStatus($moduleName)
     {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getCampaigns();
-
-            if (!empty($results)) {
-                $campaigns = array();
-                foreach ($results as $info) {
-                    $campaigns[$info->name] = array(
-                        'id'   => $info->campaignId,
-                        'name' => $info->name
-                    );
-                }
-                ksort($campaigns);
-
-                return $campaigns;
-            }
-
-            return array();
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getWebforms()
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getWebForms();
-
-            if (!empty($results)) {
-                $webforms = array();
-                foreach ($results as $id => $info) {
-                    $webforms[$id] = $info;
-                }
-                return $webforms;
-            }
-
-            return array();
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getForms()
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getForms();
-
-            if (!empty($results)) {
-                $forms = array();
-                foreach ($results as $id => $info) {
-                    $forms[$id] = $info;
-                }
-                return $forms;
-            }
-
-            return array();
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
-    /**
-     * @param string $lang
-     * @return array
-     */
-    public function getSubscriptionConfirmationsSubject($lang = 'EN')
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getSubscriptionConfirmationsSubject($lang);
-
-            if (!empty($results)) {
-                $subjects = array();
-                foreach ($results as $subject) {
-                    $subjects[] = array(
-                        'id'            => $subject->subscriptionConfirmationSubjectId,
-                        'name'          => $subject->subject
-                    );
-                }
-                return $subjects;
-            }
-
-            return array();
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
-    public function getSubscriptionConfirmationsBody($lang = 'EN')
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getSubscriptionConfirmationsBody($lang);
-
-            if (!empty($results)) {
-                $bodies = array();
-                foreach ($results as $body) {
-                    $bodies[] = array(
-                        'id'            => $body->subscriptionConfirmationBodyId,
-                        'name'          => $body->name,
-                        'contentPlain'  => $body->contentPlain
-                    );
-                }
-                return $bodies;
-            }
-
-            return array();
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
-    /**
-     * @return array|bool
-     */
-    public function getFromFields()
-    {
-        if (empty($this->api_key)) {
+        if (empty($moduleName)) {
             return false;
         }
 
-        $fromfields = array();
-
-        try {
-            $results = $this->grApiInstance->getAccountFromFields();
-            if (!empty($results)) {
-                foreach ($results as $info) {
-                    $fromfields[] = array(
-                        'id'    => $info->fromFieldId,
-                        'name'  => $info->name,
-                        'email' => $info->email,
-                    );
-                }
-            }
-
-            return $fromfields;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
-     * @param $module
-     * @return bool|string
-     */
-    public function checkModuleStatus($module)
-    {
-        if (empty($module)) {
-            return false;
-        }
-
-        $sql = 'SELECT
-                    active
-                FROM
-                    ' . _DB_PREFIX_ . 'module
-                WHERE
-                    name = "' . pSQL($module) . '"
-                ';
+        $sql = '
+        SELECT
+            `active`
+        FROM
+            ' . _DB_PREFIX_ . 'module
+        WHERE
+            `name` = "' . pSQL($moduleName) . '"';
 
         if ($results = $this->db->ExecuteS($sql)) {
-            if (isset($results[0]['active']) && $results[0]['active'] == 1) {
-                return 'active';
+            if (isset($results[0]['active']) && 1 === (int) $results[0]['active']) {
+                return true;
             }
         }
-
         return false;
     }
 
     /**
-     * @param null|string $email
-     * @param null|string $newsletter_guests
-     * @return array|false|mysqli_result|null|PDOStatement|resource
+     * @param bool $newsletter_guests
+     * @return array
      */
-    public function getContacts($email = null, $newsletter_guests = null)
+    public function getContacts($newsletter_guests = false)
     {
-        $where = !empty($email) ? " AND cu.email = '" . pSQL($email) . "'" : null;
+        if (version_compare(_PS_VERSION_, '1.7') === -1) {
+            $newsletter_table_name = _DB_PREFIX_ . 'newsletter';
+            $newsletter_module = 'blocknewsletter';
+        } else {
+            $newsletter_table_name = _DB_PREFIX_ . 'emailsubscription';
+            $newsletter_module = _DB_PREFIX_ . 'emailsubscription';
+        }
         $ng_where = '';
 
-        if (!empty($newsletter_guests)) {
-            $blocknewsletter = $this->checkModuleStatus('blocknewsletter');
-
-            if ($blocknewsletter == 'active') {
-                $ng_where = 'UNION SELECT
-                        "Friend" as firstname,
-                        "" as lastname,
-                        n.email as email,
-                        "" as company,
-                        "" as birthday,
-                        "" as address1,
-                        "" as address2,
-                        "" as postcode,
-                        "" as city,
-                        "" as phone,
-                        "" as country,
-                        "" as category
-                    FROM
-                        ' . _DB_PREFIX_ . 'newsletter n
-                    WHERE
-                        n.active = 1
-                    AND
-                        id_shop = ' . (int) $this->id_shop . '
-                ';
-            }
+        if ($newsletter_guests && $this->checkModuleStatus($newsletter_module)) {
+            $ng_where = 'UNION SELECT
+                    "Friend" as firstname,
+                    "" as lastname,
+                    n.email as email,
+                    "" as company,
+                    "" as birthday,
+                    "" as address1,
+                    "" as address2,
+                    "" as postcode,
+                    "" as city,
+                    "" as phone,
+                    "" as country
+                FROM
+                    ' . $newsletter_table_name . ' n
+                WHERE
+                    n.active = 1
+                AND
+                    id_shop = ' . (int) $this->id_shop . '
+            ';
         }
 
         $sql = 'SELECT
@@ -372,8 +148,7 @@ class DbConnection
                     ad.postcode as postcode,
                     ad.city as city,
                     ad.phone as phone,
-                    co.iso_code as country,
-                    "" as category
+                    co.iso_code as country
                 FROM
                     ' . _DB_PREFIX_ . 'customer as cu
                 LEFT JOIN
@@ -381,7 +156,7 @@ class DbConnection
                 LEFT JOIN
                     ' . _DB_PREFIX_ . 'country co ON ad.id_country = co.id_country
                 WHERE
-                    cu.newsletter = 1' . $where . '
+                    cu.newsletter = 1
                 AND
                     cu.id_shop = ' . (int) $this->id_shop . '
                 ' . $ng_where . '
@@ -389,67 +164,75 @@ class DbConnection
 
         $contacts = $this->db->ExecuteS($sql);
 
-        $sql = 'SELECT
-                cu.email as email,
-                group_concat(DISTINCT cp.id_category separator ", ") as category
-            FROM
-                ' . _DB_PREFIX_ . 'customer as cu
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'address ad ON cu.id_customer = ad.id_customer
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'country co ON ad.id_country = co.id_country
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'orders o ON o.id_customer = cu.id_customer
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'order_detail od ON (od.id_order = o.id_order AND o.id_shop = ' . (int) $this->id_shop . ')
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'category_product cp ON (cp.id_product = od.product_id AND od.id_shop = ' .
-            (int) $this->id_shop . ')
-            LEFT JOIN
-                ' . _DB_PREFIX_ . 'category_lang cl ON (cl.id_category = cp.id_category AND cl.id_shop = ' .
-            (int) $this->id_shop . ' AND cl.id_lang = cu.id_lang)
-            WHERE
-                    cu.newsletter = 1' . $where . '
-                AND
-                    cu.id_shop = ' . (int) $this->id_shop . '
-            ';
-
-        $addresses = $this->db->ExecuteS($sql);
-
-        if (!empty($addresses)) {
-            $adr = array();
-            foreach ($addresses as $address) {
-                $adr[$address['email']] = $address['category'];
-            }
-
-            foreach ($contacts as $id => $contact) {
-                if (in_array($contact['email'], array_keys($adr))) {
-                    $contacts[$id]['category'] = $adr[$contact['email']];
-                }
-            }
+        if (empty($contacts)) {
+            return array();
         }
 
-        if (!empty($where)) {
-            return $contacts[0];
-        } else {
-            return $contacts;
+        foreach ($contacts as $id => $contact) {
+            $contacts[$id]['category'] = $this->getContactCategory($contact['email']);
         }
+        return $contacts;
     }
 
     /**
-     * @param null $default
-     * @return array|false|mysqli_result|null|PDOStatement|resource
+     * @param string $email
+     * @return array
      */
-    public function getCustoms($default = null)
+    public function getContactByEmail($email)
     {
-        $where = !empty($default) ? " AND `default` = '" . pSQL($default) . "'" : null;
+        $sql = '
+        SELECT
+            cu.`firstname`,
+            cu.`lastname`,
+            cu.`email`,
+            cu.`company`,
+            cu.`birthday`,
+            ad.`address1`,
+            ad.`address2`,
+            ad.`postcode`,
+            ad.`city`,
+            ad.`phone`,
+            co.`iso_code` as country
+        FROM
+            ' . _DB_PREFIX_ . 'customer as cu
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'address ad ON cu.`id_customer` = ad.`id_customer`
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'country co ON ad.`id_country` = co.`id_country`
+        WHERE
+            cu.`newsletter` = 1
+            AND cu.`email` = "' . pSQL($email) . '"
+            AND cu.`id_shop` = ' . (int) $this->id_shop;
 
-        $sql = 'SELECT
-                    *
-                FROM
-                    ' . $this->prefix_customs . '
-                WHERE
-                    id_shop = ' . (int) $this->id_shop . $where;
+        $contacts = $this->db->ExecuteS($sql);
+
+        if (empty($contacts)) {
+            return array();
+        }
+
+        $contact = $contacts[0];
+        $contact['category'] = $this->getContactCategory($contact['email']);
+        return $contact;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCustoms()
+    {
+        $sql = '
+        SELECT
+            `id_custom`,
+            `id_shop`,
+            `custom_field`,
+            `custom_value`,
+            `custom_name`,
+            `default`,
+            `active_custom`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_customs
+        WHERE
+            id_shop = ' . (int) $this->id_shop;
 
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
@@ -459,19 +242,22 @@ class DbConnection
     }
 
     /**
-     * @param null|string $status
-     * @return array|false|mysqli_result|null|PDOStatement|resource
+     * @param bool $isActive
+     * @return array
      */
-    public function getAutomationSettings($status = null)
+    public function getAutomationSettings($isActive = false)
     {
-        $where_status = !empty($status) ? " AND `active` = 'yes'" : null;
+        $sql = '
+        SELECT
+            `id`, `id_shop`, `category_id`, `campaign_id`, `action`, `cycle_day`, `active`
+        FROM
+            ' .  _DB_PREFIX_ . 'getresponse_automation
+        WHERE
+            id_shop = ' . (int) $this->id_shop;
 
-        $sql = 'SELECT
-                    *
-                FROM
-                    ' . pSQL($this->prefix_automation) . '
-                WHERE
-                    id_shop = ' . (int) $this->id_shop . $where_status;
+        if ($isActive) {
+            $sql .= ' AND `active` = "yes"';
+        }
 
         if ($results = $this->db->ExecuteS($sql)) {
             return $results;
@@ -480,68 +266,64 @@ class DbConnection
         return array();
     }
 
-    public function getCycleDay()
-    {
-        if (empty($this->api_key)) {
-            return array();
-        }
-
-        try {
-            $results = $this->grApiInstance->getAutoresponders();
-
-            return $results;
-        } catch (Exception $e) {
-            return array();
-        }
-    }
-
     /**
-     * @param string $apikey
+     * @param string $api_key
      * @param string $account_type
      * @param string $crypto
-     * @return bool
      */
-    public function updateApiSettings($apikey, $account_type, $crypto)
+    public function updateApiSettings($api_key, $account_type, $crypto)
     {
-        $query = "
-        UPDATE " . $this->prefix_settings . " SET
-            `api_key` = '".pSQL($apikey)."',
-            `account_type` = '".pSQL($account_type)."',
-            `crypto` = '".pSQL($crypto)."'
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `api_key` = "' . pSQL($api_key) . '",
+            `account_type` = "' . pSQL($account_type) . '",
+            `crypto` = "' . pSQL($crypto) . '"
          WHERE
-            `id_shop` = ".$this->id_shop;
+            `id_shop` = ' . (int) $this->id_shop;
 
-        return $this->db->execute($query);
+        $this->db->execute($query);
     }
 
+    /**
+     * @param int $webform_id
+     * @param string $active_subscription
+     * @param string $sidebar
+     * @param string $style
+     * @param string $url
+     */
     public function updateWebformSettings($webform_id, $active_subscription, $sidebar, $style, $url)
     {
-        $query = "
-        UPDATE ".$this->prefix_webform." SET
-            `webform_id` = '".pSQL($webform_id)."',
-            `active_subscription` = '".pSQL($active_subscription)."',
-            `sidebar` = '".pSQL($sidebar)."',
-            `style` = '".pSQL($style)."',
-            `url` = '".pSQL($url)."'
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_webform
+        SET
+            `webform_id` = "' . pSQL($webform_id) . '",
+            `active_subscription` = "' . pSQL($active_subscription) . '",
+            `sidebar` = "' . pSQL($sidebar) . '",
+            `style` = "' . pSQL($style) . '",
+            `url` = "' . pSQL($url) . '"
         WHERE
-            `id_shop` = ".$this->id_shop;
+            `id_shop` = ' . (int) $this->id_shop;
 
-        return $this->db->execute($query);
+        $this->db->execute($query);
     }
 
     /**
      * @param string $active_subscription
-     * @return bool
      */
     public function updateWebformSubscription($active_subscription)
     {
-        $query = "
-        UPDATE ".$this->prefix_webform." SET
-            `active_subscription` = '".pSQL($active_subscription)."'
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_webform 
+        SET
+            `active_subscription` = "' . pSQL($active_subscription) . '"
         WHERE
-            `id_shop` = ".$this->id_shop;
+            `id_shop` = ' . (int) $this->id_shop;
 
-        return $this->db->execute($query);
+        $this->db->execute($query);
     }
 
     /**
@@ -550,120 +332,154 @@ class DbConnection
      * @param string $update_address
      * @param string $cycle_day
      * @param string $newsletter
-     * @return bool
      */
     public function updateSettings($active_subscription, $campaign_id, $update_address, $cycle_day, $newsletter)
     {
-        $query = "
-        UPDATE ".$this->prefix_settings." SET
-            `active_subscription` = '".pSQL($active_subscription)."',
-            `active_newsletter_subscription` = '".pSQL($newsletter)."',
-            `campaign_id` = '".pSQL($campaign_id)."',
-            `update_address` = '".pSQL($update_address)."',
-            `cycle_day` = '".pSQL($cycle_day)."'
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `active_subscription` = "' . pSQL($active_subscription) . '",
+            `active_newsletter_subscription` = "' . pSQL($newsletter) . '",
+            `campaign_id` = "' . pSQL($campaign_id) . '",
+            `update_address` = "' . pSQL($update_address) . '",
+            `cycle_day` = "' . pSQL($cycle_day) . '"
         WHERE
-            `id_shop` = ".$this->id_shop;
+            `id_shop` = ' . (int) $this->id_shop;
 
-        return $this->db->execute($query);
+        $this->db->execute($query);
     }
 
     /**
      * @param string $active_subscription
-     * @return bool
      */
     public function updateSettingsSubscription($active_subscription)
     {
-        $query = "
-        UPDATE ".$this->prefix_settings." SET
-            `active_subscription` = '".pSQL($active_subscription)."'
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `active_subscription` = "' . pSQL($active_subscription) . '"
         WHERE
-            `id_shop` = ".$this->id_shop;
-        return $this->db->execute($query);
+            `id_shop` = ' . (int) $this->id_shop;
+
+        $this->db->execute($query);
     }
 
     /**
      * @param array $customs
      */
-    public function updateCustoms($customs)
+    public function updateCustomsWithPostedData($customs)
     {
         $settings_customs = $this->getCustoms();
-        if (empty($settings_customs)) {
-            return ;
+        if (empty($settings_customs) || empty($customs)) {
+            return;
         }
 
-        if (!empty($customs)) {
-            $allowed          = array();
-            foreach ($settings_customs as $sc) {
-                $allowed[$sc['custom_value']] = $sc;
-            }
+        $allowed = array();
+        foreach ($settings_customs as $sc) {
+            $allowed[$sc['custom_value']] = $sc;
+        }
 
-            if (!empty($allowed)) {
-                foreach (array_keys($allowed) as $a) {
-                    if (in_array($a, array_keys($customs))) {
-                        $sql = 'UPDATE
-                                    ' . pSQL($this->prefix_customs) . '
-                                SET
-                                    custom_name = "' . pSQL($customs[$a]) . '",
-                                    active_custom = "yes"
-                                WHERE
-                                    id_shop = "' . (int) $this->id_shop . '"
-                                AND
-                                    custom_value = "' . pSQL($a) . '"';
+        if (empty($allowed)) {
+            return;
+        }
 
-                        $this->db->Execute($sql);
-                    } elseif ($allowed[$a]['default'] != 'yes') {
-                        $sql = 'UPDATE
-                                    ' . pSQL($this->prefix_customs) . '
-                                SET
-                                    active_custom = "no"
-                                WHERE
-                                    id_shop = "' . (int) $this->id_shop . '"
-                                AND
-                                    custom_value = "' . pSQL($a) . '"';
+        foreach (array_keys($allowed) as $a) {
+            if (in_array($a, array_keys($customs))) {
 
-                        $this->db->Execute($sql);
-                    }
-                }
-            }
-        } else {
-            foreach ($settings_customs as $sc) {
-                if ($sc['default'] === 'no') {
-                    $sql = 'UPDATE
-                                ' . pSQL($this->prefix_customs) . '
-                            SET
-                                active_custom = "no"
-                            WHERE
-                                id_shop = "' . (int) $this->id_shop . '"
-                            AND
-                                custom_value = "' . pSQL($sc['custom_value']) . '"';
+                $sql = '
+                UPDATE
+                    ' . _DB_PREFIX_ . 'getresponse_customs
+                SET
+                    `custom_name` = "' . pSQL($customs[$a]) . '",
+                    `active_custom` = "yes"
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop . '
+                    AND `custom_value` = "' . pSQL($a) . '"';
 
-                    $this->db->Execute($sql);
-                }
+                $this->db->Execute($sql);
+
+            } elseif ('yes' !== $allowed[$a]['default']) {
+                $sql = '
+                UPDATE
+                    ' . _DB_PREFIX_ . 'getresponse_customs
+                SET
+                    `active_custom` = "no"
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop . '
+                    AND `custom_value` = "' . pSQL($a) . '"';
+
+                $this->db->Execute($sql);
             }
         }
     }
 
-    public function updateAutomationSettings($category_id, $automation_to_edit, $campaign_id, $action, $cycle_day)
+    public function disableCustoms()
     {
-        $query = "
-        UPDATE ".$this->prefix_automation." SET
-            `category_id` = ".pSQL($category_id).",
-            `campaign_id` = '".pSQL($campaign_id)."',
-            `action` = '".pSQL($action)."',
-            `cycle_day` = '".pSQL($cycle_day)."'
-        WHERE
-            `id` = ".(int)$automation_to_edit;
-        return $this->db->execute($query);
+        $customs = $this->getCustoms();
+
+        if (empty($customs)) {
+            return;
+        }
+
+        foreach ($customs as $custom) {
+            if ('no' !== $custom['default']) {
+                continue;
+            }
+
+            $sql = '
+            UPDATE
+                ' . _DB_PREFIX_ . 'getresponse_customs
+            SET
+                `active_custom` = "no"
+            WHERE
+                `id_shop` = ' . (int) $this->id_shop . '
+                AND `custom_value` = "' . pSQL($custom['custom_value']) . '"';
+
+            $this->db->Execute($sql);
+        }
     }
 
+    /**
+     * @param int $category_id
+     * @param int $automation_id
+     * @param int $campaign_id
+     * @param string $action
+     * @param int $cycle_day
+     */
+    public function updateAutomationSettings($category_id, $automation_id, $campaign_id, $action, $cycle_day)
+    {
+        $query = '
+        UPDATE
+            ' . _DB_PREFIX_ . 'getresponse_automation
+        SET
+            `category_id` = "' . pSQL($category_id) . '",
+            `campaign_id` = "' . pSQL($campaign_id). '",
+            `action` = "' . pSQL($action) . '",
+            `cycle_day` = "' . pSQL($cycle_day) . '"
+        WHERE
+            `id` = ' . (int)$automation_id . '
+            AND `id_shop` = ' . (int) $this->id_shop;
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @param  string $status
+     * @param int $id
+     */
     public function updateAutomationStatus($status, $id)
     {
-        $query = "
-        UPDATE ".$this->prefix_automation." SET
-            `active` = '".pSQL($status)."'
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_automation
+        SET
+            `active` = "' . pSQL($status) . '"
         WHERE
-            'id_shop = " . (int) $this->id_shop . " AND id = " . (int) $id;
-        return $this->db->execute($query);
+            `id_shop` = ' . (int) $this->id_shop . ' AND `id` = ' . (int) $id;
+
+        $this->db->execute($query);
     }
 
     /**
@@ -671,500 +487,247 @@ class DbConnection
      * @param int $campaign_id
      * @param string $action
      * @param int $cycle_day
-     * @return bool
      */
     public function insertAutomationSettings($category_id, $campaign_id, $action, $cycle_day)
     {
-        $query = "
-        INSERT INTO ".$this->prefix_automation."  (
+        $query = '
+        INSERT INTO ' . _DB_PREFIX_ . 'getresponse_automation (
             `category_id`, 
             `campaign_id`, 
             `action`, 
             `cycle_day`, 
             `id_shop`, 
             `active` 
-            
        ) VALUES (
-            ".pSQL($category_id).",
-            '".pSQL($campaign_id)."',
-            '".pSQL($action)."',
-            '".pSQL($cycle_day)."',
-            ".(int) $this->id_shop.",
-            'yes'
-       )";
+            "' . pSQL($category_id) . '",
+            "' . pSQL($campaign_id) . '",
+            "' . pSQL($action) . '",
+            "' . pSQL($cycle_day) . '",
+            "' . (int) $this->id_shop . '",
+            "yes"
+       )';
 
         try {
-            return $this->db->execute($query);
-        } catch (Exception $e) {
-            return false;
-        }
+            $this->db->execute($query);
+        } catch (Exception $e) {}
     }
 
     /**
-     * @param $automation_id
-     * @return bool
+     * @param int $automation_id
      */
     public function deleteAutomationSettings($automation_id)
     {
-        $sql = 'DELETE FROM `' . pSQL($this->prefix_automation) . '` WHERE `id` = ' . (int) $automation_id;
-
-        return (bool) $this->db->execute($sql);
-    }
-
-    /******************************************************************/
-    /** API Methods *****************************&*********************/
-    /******************************************************************/
-
-    /**
-     * Export newsletter subscribers from Prestashop to GR campaign
-     *
-     * @param       $campaign_id
-     * @param array $customers
-     * @param int   $cycle_day
-     *
-     * @return mixed
-     */
-    public function exportSubscriber($campaign_id, $customers, $cycle_day)
-    {
-        if (empty($_POST)) {
-            return array('status' => '0', 'message' => 'Request error');
+        if (empty($automation_id)) {
+            return;
         }
 
-        $errorMessages = array();
+        $sql = '
+        DELETE FROM 
+            ' . _DB_PREFIX_ . 'getresponse_automation 
+        WHERE 
+            `id` = ' . (int) $automation_id;
 
-        if (!empty($customers)) {
-            foreach ($customers as $customer) {
-                $customs = $this->mapCustoms($customer, $_POST, 'export');
-
-                if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
-                    return array(
-                        'status'  => '0',
-                        'message' => 'Incorrect field name: "' . $customs['custom_message']
-                    );
-                }
-
-                $r = $this->addContact(
-                    $campaign_id,
-                    $customer['firstname'],
-                    $customer['lastname'],
-                    $customer['email'],
-                    $cycle_day,
-                    $customs
-                );
-
-                if (isset($r->httpStatus) && $r->httpStatus >= 400) {
-                    $errorMessages[] = '[' . $r->code . '] ' . $r->message;
-                }
-            }
-        }
-
-        if (0 == count($errorMessages)) {
-            return array(
-                'status' => '1',
-                'message' => 'Export completed.'
-            );
-        } elseif (1 == count($errorMessages)) {
-            return array(
-                'status' => '1',
-                'message' => 'Export completed. ' . 'One contact hasn\'t been exported due to error : ' . $errorMessages[0]
-            );
-        } else {
-            return array(
-                'status' => '1',
-                'message' => 'Export completed. ' . count($errorMessages) . ' contacts haven\'t been exported due to various reasons'
-            );
-        }
+        $this->db->execute($sql);
     }
 
     /**
-     * Map custom fields from DB and $_POST
-     *
-     * @param       $customer
-     * @param       $customer_post
-     * @param       $type
-     *
-     * @return mixed
+     * @param string $email
+     * @return string
      */
-    private function mapCustoms($customer, $customer_post, $type)
+    private function getContactCategory($email)
     {
-        $fields  = array();
-        $customs = array();
-        $address_name = '';
+        $sql = '
+        SELECT
+            group_concat(DISTINCT cp.`id_category separator` ", ") as category
+        FROM
+            ' . _DB_PREFIX_ . 'customer as cu
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'address ad ON cu.`id_customer` = ad.`id_customer`
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'country co ON ad.`id_country` = co.`id_country`
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'orders o ON o.`id_customer` = cu.`id_customer`
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'order_detail od ON (od.`id_order` = o.`id_order` AND o.`id_shop` = ' . (int) $this->id_shop . ')
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'category_product cp ON (cp.`id_product` = od.`product_id` AND od.`id_shop` = ' . (int) $this->id_shop . ')
+        LEFT JOIN
+            ' . _DB_PREFIX_ . 'category_lang cl ON (cl.`id_category` = cp.`id_category` AND cl.`id_shop` = ' .
+            (int) $this->id_shop . ' AND cl.`id_lang` = cu.`id_lang`)
+        WHERE
+            cu.`newsletter` = 1
+            AND cu.`email` = "' . pSQL($email) . '"
+            AND cu.`id_shop` = ' . (int) $this->id_shop;
 
-        //get fields form db
-        $custom_fields = $this->getCustoms();
+        $categories = $this->db->ExecuteS($sql);
 
-        // make fields array
-        if (!empty($custom_fields)) {
-            foreach ($custom_fields as $cf) {
-                if ($type == 'export') {
-                    if (!empty($customer_post['custom_field']) &&
-                        in_array($cf['custom_value'], array_keys($customer_post['custom_field']))
-                    ) {
-                        $fields[$cf['custom_value']] = $customer_post['custom_field'][$cf['custom_value']];
-                    }
-                } else {
-                    if ($cf['active_custom'] == 'yes') {
-                        $fields[$cf['custom_value']] = $cf['custom_name'];
-                    }
-                }
-            }
+        if (empty($categories)) {
+            return '';
         }
+        return $categories[0]['category'];
+    }
 
-        if (is_object($customer)) {
-            $customer = get_object_vars($customer);
-        }
+    public function prepareDatabase()
+    {
+        $sql = array();
 
-        // default reference custom
-        $customs['ref'] = 'Prestashop - ' . Configuration::get('PS_SHOP_NAME');
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_settings` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` char(32) NOT NULL,
+			`api_key` char(32) NOT NULL,
+			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`campaign_id` char(5) NOT NULL,
+			`cycle_day` char(5) NOT NULL,
+			`account_type` enum(\'gr\',\'360en\',\'360pl\') NOT NULL DEFAULT \'gr\',
+			`crypto` char(32) NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-        // for fields from DB
-        if (!empty($fields)) {
-            foreach ($fields as $field_key => $field_value) {
-                $fv = $field_value;
-                //compose address custom field
-                if ($field_key == 'address1') {
-                    $address_name = $field_value;
-                }
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_customs` (
+			`id_custom` int(11) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`custom_field` char(32) NOT NULL,
+			`custom_value` char(32) NOT NULL,
+			`custom_name` char(32) NOT NULL,
+			`default` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_custom` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			PRIMARY KEY (`id_custom`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-                // for POST actions (export or update (order))
-                if (!empty($customer_post)) {
-                    if ($type != 'order' &&!empty($customer_post[$field_key])) {
-                        $fv = $customer_post[$field_key];
-                        //update address custom field
-                        $address_name = !empty($customer_post['address1']) ? $customer_post['address1'] : null;
-                    }
-                }
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_webform` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`webform_id` char(32) NOT NULL,
+			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`sidebar` enum(\'left\',\'right\',\'header\',\'top\',\'footer\',\'home\') NOT NULL DEFAULT \'home\',
+			`style` enum(\'webform\',\'prestashop\') NOT NULL DEFAULT \'webform\',
+			`url` varchar(255) DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-                // allowed custom and non empty
-                if (in_array($field_key, array_keys($customer)) == true && (!empty($fv) && !empty($customer[$field_key]))) {
-                    // validation for custom field name
-                    if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(($fv)))) {
-                        return array('custom_error' => 'true', 'custom_message' => $fv);
-                    }
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_automation` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`category_id` char(32) NOT NULL,
+			`campaign_id` char(32) NOT NULL,
+			`action` char(32) NOT NULL DEFAULT \'move\',
+			`cycle_day` char(5) NOT NULL,
+			`active` enum(\'yes\',\'no\') NOT NULL DEFAULT \'yes\',
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `id_shop` (`id_shop`,`category_id`,`campaign_id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-                    if ($field_key == 'birthday' && $customer['birthday'] == '0000-00-00') {
+        //multistore
+        if (Shop::isFeatureActive()) {
+            Shop::setContext(Shop::CONTEXT_ALL);
+            $shops = Shop::getShops();
+
+            if (!empty($shops) && is_array($shops)) {
+                foreach ($shops as $shop) {
+                    if (empty($shop['id_shop'])) {
                         continue;
                     }
-
-                    // compose address value address+address2
-                    if ($fv == $address_name) {
-                        $address2 = !empty($customer['address2']) ? ' ' . $customer['address2'] : '';
-
-                        $customs[$address_name] = $customer['address1'] . $address2;
-                    } else {
-                        $customs[$field_value] = $customer[$field_key];
-                    }
+                    $sql[] = $this->sqlMainSetting($shop['id_shop']);
+                    $sql[] = $this->sqlWebformSetting($shop['id_shop']);
+                    $sql[] = $this->sqlCustomsSetting($shop['id_shop']);
                 }
-            }
-        }
-
-        return $customs;
-    }
-
-    /**
-     * Add (or update) contact to gr campaign depending on action and apply automation rules
-     * @todo implementacja uzytkownikow GR360 - wtedy bedzie trzeba przekazywac apikey i api_url
-     *
-     * @param array $params
-     * @param int $campaign_id
-     * @param string $action
-     * @param int $cycle_day
-     * @return bool
-     */
-    public function addSubscriber($params, $campaign_id, $action, $cycle_day)
-    {
-        $prefix = 'customer';
-
-        //add_contact
-        if ('create' === $action) {
-            if (isset($params['newNewsletterContact'])) {
-                $prefix = 'newNewsletterContact';
-            } else {
-                $prefix  = 'newCustomer';
-            }
-
-            $customs = $this->mapCustoms($params[$prefix], null, 'create');
-
-            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $this->addContact(
-                    $campaign_id,
-                    $params[$prefix]->firstname,
-                    $params[$prefix]->lastname,
-                    $params[$prefix]->email,
-                    $cycle_day,
-                    $customs
-                );
             }
         } else {
-            //update_contact
-            $contact = $this->getContacts($params[$prefix]->email, null);
-            $customs = $this->mapCustoms($contact, $_POST, 'order');
+            $sql[] = $this->sqlMainSetting('1');
+            $sql[] = $this->sqlWebformSetting('1');
+            $sql[] = $this->sqlCustomsSetting('1');
+        }
 
-            // automation
-            if (!empty($params['order']->product_list)) {
-                $categories = array();
-                foreach ($params['order']->product_list as $products) {
-                    $temp_categories = Product::getProductCategories($products['id_product']);
-                    foreach ($temp_categories as $tmp) {
-                        $categories[$tmp] = $tmp;
-                    }
-                }
-
-                $automations = $this->getAutomationSettings('active');
-                if (!empty($automations)) {
-                    $default = false;
-                    foreach ($automations as $automation) {
-                        if (in_array($automation['category_id'], $categories)) {
-                            // do automation
-                            if ($automation['action'] == 'move') {
-                                $this->moveContactToGr(
-                                    $automation['campaign_id'],
-                                    $params[$prefix]->firstname,
-                                    $params[$prefix]->lastname,
-                                    $params[$prefix]->email,
-                                    $customs,
-                                    $cycle_day
-                                );
-                            } elseif ($automation['action'] == 'copy') {
-                                $this->addContact(
-                                    $automation['campaign_id'],
-                                    $params[$prefix]->firstname,
-                                    $params[$prefix]->lastname,
-                                    $params[$prefix]->email,
-                                    $cycle_day,
-                                    $customs
-                                );
-                            }
-                        } else {
-                            $default = true;
-                        }
-                    }
-
-                    if ($default === true && isset($params[$prefix]->newsletter) &&
-                        $params[$prefix]->newsletter == 1) {
-                        $this->addContact(
-                            $campaign_id,
-                            $params[$prefix]->firstname,
-                            $params[$prefix]->lastname,
-                            $params[$prefix]->email,
-                            $cycle_day,
-                            $customs
-                        );
-                    }
-                } else {
-                    if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                        $this->addContact(
-                            $campaign_id,
-                            $params[$prefix]->firstname,
-                            $params[$prefix]->lastname,
-                            $params[$prefix]->email,
-                            $cycle_day,
-                            $customs
-                        );
-                    }
-                }
-            } else {
-                if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                    $this->addContact(
-                        $campaign_id,
-                        $params[$prefix]->firstname,
-                        $params[$prefix]->lastname,
-                        $params[$prefix]->email,
-                        $cycle_day,
-                        $customs
-                    );
-                }
+        //Install SQL
+        foreach ($sql as $s) {
+            if (!Db::getInstance()->Execute($s)) {
+                return;
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * First delete contact from all campaigns then move contact to new one
-     *
-     * @param int $new_campaign_id
-     * @param string $firstname
-     * @param string $lastname
-     * @param string $email
-     * @param array $customs
-     * @param int $cycle_day
-     * @return bool
-     */
-    public function moveContactToGr($new_campaign_id, $firstname, $lastname, $email, $customs, $cycle_day = 0)
-    {
-        // required params
-        if (empty($this->api_key)) {
-            return false;
-        }
-
-        $contacts_id = (array) $this->grApiInstance->getContacts(array(
-            'query' => array(
-                'email' => $email
-           )
-        ));
-
-        if (!empty($contacts_id) && isset($contacts_id[0]->contactId)) {
-            foreach ($contacts_id as $contact) {
-                try {
-                    $this->grApiInstance->deleteContact($contact->contactId);
-                } catch (Exception $e) {
-                    return true;
-                }
-            }
-
-            $this->addContact($new_campaign_id, $firstname, $lastname, $email, $cycle_day, $customs);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Add (or update) contact to gr campaign
-     *
-     * @param       $campaign
-     * @param       $firstname
-     * @param       $lastname
-     * @param       $email
-     * @param int   $cycle_day
-     * @param array $user_customs
-     *
-     * @return mixed
-     */
-    public function addContact($campaign, $firstname, $lastname, $email, $cycle_day = 0, $user_customs = array())
-    {
-        $name = trim($firstname) . ' ' . trim($lastname);
-
-        $params = array(
-            'name'       => $name,
-            'email'      => $email,
-            'dayOfCycle' => (int) $cycle_day,
-            'campaign'   => array('campaignId' => $campaign),
-            'ipAddress'  => $_SERVER['REMOTE_ADDR'],
-        );
-
-        if (empty($this->all_custom_fields)) {
-            $this->all_custom_fields = $this->getCustomFields();
-        }
-
-        $user_customs['origin'] = 'prestashop';
-
-        $results = (array) $this->grApiInstance->getContacts(array(
-            'query' => array(
-                'email'      => $email,
-                'campaignId' => $campaign
-           ),
-            'additionalFlags' => 'exactMatch'
-        ));
-
-        $contact = array_pop($results);
-
-        // if contact already exists in gr account
-        if (!empty($contact) && isset($contact->contactId)) {
-            $results = $this->grApiInstance->getContact($contact->contactId);
-            if (!empty($results->customFieldValues)) {
-                $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $user_customs);
-            }
-            return $this->grApiInstance->updateContact($contact->contactId, $params);
-        } else {
-            $params['customFieldValues'] = $this->setCustoms($user_customs);
-            return $this->grApiInstance->addContact($params);
         }
     }
 
     /**
-     * Merge user custom fields selected on WP admin site with those from gr account
-     * @param $results
-     * @param $user_customs
+     * @param int $store_id
      *
-     * @return array
+     * @return string
      */
-    public function mergeUserCustoms($results, $user_customs)
+    private function sqlMainSetting($store_id)
     {
-        $custom_fields = array();
-
-        if (is_array($results)) {
-            foreach ($results as $customs) {
-                $value = $customs->value;
-                if (in_array($customs->name, array_keys($user_customs))) {
-                    $value = array($user_customs[$customs->name]);
-                    unset($user_customs[$customs->name]);
-                }
-
-                $custom_fields[] = array(
-                    'customFieldId' => $customs->customFieldId,
-                    'value'         => $value
-                );
-            }
-        }
-
-        return array_merge($custom_fields, $this->setCustoms($user_customs));
+        return '
+        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_settings` (
+            `id_shop` ,
+            `api_key` ,
+            `active_subscription` ,
+            `active_newsletter_subscription` ,
+            `update_address` ,
+            `campaign_id` ,
+            `cycle_day` ,
+            `account_type` ,
+            `crypto`
+        )
+        VALUES (
+            ' . (int) $store_id . ',  \'\',  \'no\', \'no\',  \'no\',  \'0\',  \' \',  \'gr\',  \'\'
+        )
+        ON DUPLICATE KEY UPDATE `id` = `id`;';
     }
 
     /**
-     * Set user custom fields
-     * @param $user_customs
-     *
-     * @return array
+     * @param int $store_id
+     * @return string
      */
-    public function setCustoms($user_customs)
+    private function sqlWebformSetting($store_id)
     {
-        $custom_fields = array();
-
-        if (empty($user_customs)) {
-            return $custom_fields;
-        }
-
-        foreach ($user_customs as $name => $value) {
-            if (in_array($name, array('firstname', 'lastname', 'email'))) {
-                continue;
-            }
-
-            // if custom field is already created on gr account set new value
-            if (in_array($name, array_keys($this->all_custom_fields))) {
-                $custom_fields[] = array(
-                    'customFieldId' => $this->all_custom_fields[$name],
-                    'value'         => array($value)
-                );
-            } else {
-                $custom = $this->grApiInstance->addCustomField(array(
-                    'name'   => $name,
-                    'type'   => "text",
-                    'hidden' => "false",
-                    'values' => array($value),
-                ));
-
-                $this->all_custom_fields[$custom->name] = $custom->customFieldId;
-
-                if (!empty($custom) && !empty($custom->customFieldId)) {
-                    $custom_fields[] = array(
-                        'customFieldId' => $custom->customFieldId,
-                        'value'         => array($value)
-                    );
-                }
-            }
-        }
-
-        return $custom_fields;
+        return '
+        INSERT INTO  `' . _DB_PREFIX_ . 'getresponse_webform` (
+            `id_shop` ,
+            `webform_id` ,
+            `active_subscription` ,
+            `sidebar`,
+            `style`
+        )
+        VALUES (
+            ' . (int) $store_id . ',  \'\',  \'no\',  \'left\',  \'webform\'
+        )
+        ON DUPLICATE KEY UPDATE `id` = `id`;';
     }
 
     /**
-     * Get all user custom fields from gr account
-     * @return array
+     * @param int $store_id
+     *
+     * @return string
      */
-    public function getCustomFields()
+    private function sqlCustomsSetting($store_id)
     {
-        $all_customs = array();
-        $results     = $this->grApiInstance->getCustomFields();
-        if (!empty($results)) {
-            foreach ($results as $ac) {
-                if (isset($ac->name) && isset($ac->customFieldId)) {
-                    $all_customs[$ac->name] = $ac->customFieldId;
-                }
-            }
-        }
+        return '
+        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_customs` (
+            `id_shop` ,
+            `custom_field`,
+            `custom_value`,
+            `custom_name`,
+            `default`,
+            `active_custom`
+        )
+        VALUES
+            (' . (int) $store_id . ', \'firstname\', \'firstname\', \'firstname\', \'yes\', \'yes\'),
+            (' . (int) $store_id . ', \'lastname\', \'lastname\', \'lastname\', \'yes\', \'yes\'),
+            (' . (int) $store_id . ', \'email\', \'email\', \'email\', \'yes\', \'yes\'),
+            (' . (int) $store_id . ', \'address\', \'address1\', \'address\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'postal\', \'postcode\', \'postal\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'city\', \'city\', \'city\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'phone\', \'phone\', \'phone\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'country\', \'country\', \'country\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'birthday\', \'birthday\', \'birthday\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'company\', \'company\', \'company\', \'no\', \'no\'),
+            (' . (int) $store_id . ', \'category\', \'category\', \'category\', \'no\', \'no\');';
+    }
 
-        return $all_customs;
+    public function clearDatabase()
+    {
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
     }
 }

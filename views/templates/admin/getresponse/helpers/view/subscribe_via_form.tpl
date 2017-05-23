@@ -9,11 +9,11 @@
 	<p>
 		{l s='Add your GetResponse forms to your PrestaShop store. Simply pick one of the forms you’ve created in GetResponse and choose the location to insert the form. You can display the form in its original GetResponse style or the plain PrestaShop style.' mod='getresponse'}
 	</p>
-	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&action=viawebform" method="post">
+	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&action=subscribe_via_form_send" method="post">
 		<div class="control-group" id="chckSubscriptoinDiv">
 			<label for="targetCampaign" class="control-label">{l s='Publish' mod='getresponse'}</label>
 			<div class="controls">
-				<a title="Status" data-params="{ run: 'switch_webformpage' }" href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viawebform#iswitch" id="chckSubscriptionInput" class="switch {if $webform_status == 'yes'}enabled{else}disabled{/if}">
+				<a title="Status" data-params="{ run: 'switch_webformpage' }" href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=subscribe_via_form_ajax#iswitch" id="chckSubscriptionInput" class="switch {if $webform_status == 'yes'}enabled{else}disabled{/if}">
 					<span data-iswitch="" class="s-css3 {if $webform_status == 'yes'}enabled{else}disabled{/if}">
 						<span class="s-css3-c">
 							<span class="s-css3-c-1">
@@ -86,7 +86,7 @@
 				<fieldset class="control-group" id="saveDiv">
 					<div class="controls">
 						<div class="btns">
-							<input type="submit" value="{l s='Save' mod='getresponse'}" name="ViawebformConfiguration" class="button">
+							<input type="submit" value="{l s='Save' mod='getresponse'}" name="subscribe_via_form" class="button">
 						</div>
 					</div>
 				</fieldset>

@@ -14,6 +14,7 @@
 
     throw new Error('Nie ma APP.core.define');
 }('GetResponse', function (box) {
+
     var $ = box.dom || jQuery,
         win = window,
         doc = win.document,
@@ -56,8 +57,6 @@
 
                     if (data.action && 'function' === typeof actions[data.action]) {
                         return actions[data.action].call(that, data);
-                    } else {
-                        console.log(data.action);
                     }
                 }
             });
@@ -70,7 +69,7 @@
 
                 APP('lightbox.open', {selector: '#add_campaign'});
             },
-            switch_viapage: function(data, status) {
+            switch_subscribe_via_registration: function(data, status) {
                 var formBoxEl = $('#form-box');
                 if (status) {
                     formBoxEl.slideDown(300);
@@ -78,9 +77,27 @@
                     formBoxEl.slideUp(300);
                 }
 
-                $.post( data.activator.href, { subscription: (status) ? 'yes' : 'no' }, function(){
+                $.post( data.activator.href, { subscription: (status) ? 'yes' : 'no' }, function(result) {
 
-                });
+                    var message = '';
+                    if (undefined !== result.error) {
+                        message = '<div class="bootstrap">'+
+                            '<div class="module_confirmation conf confirm alert alert-danger">'+
+                            '<button type="button" class="close" data-dismiss="alert">&times;</button>'+
+                            result.error+
+                            '</div>'+
+                            '</div>';
+                    } else {
+                        message = '<div class="bootstrap">'+
+                            '<div class="module_confirmation conf confirm alert alert-success">'+
+                            '<button type="button" class="close" data-dismiss="alert">&times;</button>'+
+                            result.success+
+                            '</div>'+
+                            '</div>';
+                    }
+
+                    $('#getresponse').parent().prepend(message);
+                }, "json");
 
             },
             switch_webformpage: function(data, status) {
@@ -91,11 +108,29 @@
                     formBoxEl.slideUp(300);
                 }
 
-                $.post( data.activator.href, { subscription: (status) ? 'yes' : 'no' }, function(){
+                $.post( data.activator.href, { subscription: (status) ? 'yes' : 'no' }, function(result) {
 
-                });
+                    var message = '';
+                    if (undefined !== result.error) {
+                        message = '<div class="bootstrap">'+
+                            '<div class="module_confirmation conf confirm alert alert-danger">'+
+                            '<button type="button" class="close" data-dismiss="alert">&times;</button>'+
+                            result.error+
+                            '</div>'+
+                            '</div>';
+                    } else {
+                        message = '<div class="bootstrap">'+
+                            '<div class="module_confirmation conf confirm alert alert-success">'+
+                            '<button type="button" class="close" data-dismiss="alert">&times;</button>'+
+                            result.success+
+                            '</div>'+
+                            '</div>';
+                    }
+
+                    $('#getresponse').parent().prepend(message);
+                }, "json");
             },
-            switch_viapage_customs: function(data, status) {
+            switch_subscribe_via_registration_customs: function(data, status) {
                 var customNameFields = $('#customNameFields');
                 if (status) {
                     customNameFields.slideDown(300);
@@ -402,3 +437,13 @@ $(function() {
     });
 });
 
+
+$(function() {
+    $('input#isEnterprise').on('click', function() {
+       if ($(this).is(':checked')) {
+           $('div.enterprise_connect_fields').show();
+       } else {
+           $('div.enterprise_connect_fields').hide();
+       }
+    });
+});

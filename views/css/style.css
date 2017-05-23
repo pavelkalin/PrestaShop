@@ -474,6 +474,19 @@
 #getresponse #module .join-us .btns small {
     display: block;
 }
+
+#getresponse #module div.enterprise_connect_fields {
+    display: none;
+}
+
+#getresponse #module div.enterprise_account {
+    margin: 5px 0;
+}
+
+#getresponse #module div.enterprise_account > label {
+    padding: 5px 10px 0 0;
+}
+
 /* ==========================================================================
    Media Queries for Responsive Design.
    These styles override the primary ('mobile first') styles.
@@ -600,7 +613,7 @@
     #getresponse #module .reson.r4 h5,
     #getresponse #module .reson.r5 h5,
     #getresponse #module .reson.r7 h5,
-    #getresponse #module .reson.r10 h5, {
+    #getresponse #module .reson.r10 h5 {
         font-size:16px;
     }
     #getresponse #module .join-us h2 {

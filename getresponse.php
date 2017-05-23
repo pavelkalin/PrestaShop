@@ -12,15 +12,22 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-define('_PS_CLASS_DIR', _PS_MODULE_DIR_ . '/getresponse/classes');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 
 class Getresponse extends Module
 {
+    /** @var DbConnection */
+    private $db;
+
     public function __construct()
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.0.8';
+        $this->version                = '4.1.0';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -33,27 +40,22 @@ class Getresponse extends Module
             'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
         );
 
-        // API urls
-        $this->api_urls = array(
-            'gr' => 'https://api.getresponse.com/v3'
-        );
-
         parent::__construct();
 
-        if (!Configuration::get('getresponse')) {
-            $this->warning = $this->l('No name provided');
-        }
+        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
 
-        require_once(_PS_CLASS_DIR . '/DbConnection.php');
-        $instance = Db::getInstance();
-        $this->db = new DbConnection($instance);
-
-        if (version_compare(_PS_VERSION_, '1.5') == '-1') {
-            return false;
+        if (version_compare(_PS_VERSION_, '1.5') === -1) {
+            $this->context->smarty->assign(array('flash_message' => array(
+                'message' => $this->l('Unsupported Prestashop version'),
+                'status' => 'danger'
+            )));
         }
 
         if (!function_exists('curl_init')) {
-            return false;
+            $this->context->smarty->assign(array('flash_message' => array(
+                'message' => $this->l('Curl library not found'),
+                'status' => 'danger'
+            )));
         }
     }
 
@@ -76,6 +78,9 @@ class Getresponse extends Module
         return $tab->add();
     }
 
+    /**
+     * @return bool
+     */
     public function install()
     {
         if (!parent::install() ||!$this->installTab() ||!$this->registerHook('newOrder') ||
@@ -92,162 +97,8 @@ class Getresponse extends Module
             return false;
         }
 
-        $sql = array();
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_settings` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` char(32) NOT NULL,
-			`api_key` char(32) NOT NULL,
-			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`campaign_id` char(5) NOT NULL,
-			`cycle_day` char(5) NOT NULL,
-			`account_type` enum(\'gr\',\'360en\',\'360pl\') NOT NULL DEFAULT \'gr\',
-			`crypto` char(32) NULL,
-			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_customs` (
-			`id_custom` int(11) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`custom_field` char(32) NOT NULL,
-			`custom_value` char(32) NOT NULL,
-			`custom_name` char(32) NOT NULL,
-			`default` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_custom` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			PRIMARY KEY (`id_custom`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_webform` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`webform_id` char(32) NOT NULL,
-			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`sidebar` enum(\'left\',\'right\',\'header\',\'top\',\'footer\',\'home\') NOT NULL DEFAULT \'home\',
-			`style` enum(\'webform\',\'prestashop\') NOT NULL DEFAULT \'webform\',
-			`url` varchar(255) DEFAULT NULL,
-			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_automation` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`category_id` char(32) NOT NULL,
-			`campaign_id` char(32) NOT NULL,
-			`action` char(32) NOT NULL DEFAULT \'move\',
-			`cycle_day` char(5) NOT NULL,
-			`active` enum(\'yes\',\'no\') NOT NULL DEFAULT \'yes\',
-			PRIMARY KEY (`id`),
-			UNIQUE KEY `id_shop` (`id_shop`,`category_id`,`campaign_id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        //multistore
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-            $shops = Shop::getShops();
-
-            if (!empty($shops) && is_array($shops)) {
-                foreach ($shops as $shop) {
-                    $sql[] = $this->sqlMainSetting($shop['id_shop']);
-                    $sql[] = $this->sqlWebformSetting($shop['id_shop']);
-                    $sql[] = $this->sqlCustomsSetting($shop['id_shop']);
-                }
-            }
-        } else {
-            $sql[] = $this->sqlMainSetting('1');
-            $sql[] = $this->sqlWebformSetting('1');
-            $sql[] = $this->sqlCustomsSetting('1');
-        }
-
-        //Install SQL
-        foreach ($sql as $s) {
-            if (!Db::getInstance()->Execute($s)) {
-                return false;
-            }
-        }
-
+        $this->db->prepareDatabase();
         return true;
-    }
-
-    private function sqlMainSetting($store_id)
-    {
-        if (empty($store_id)) {
-            return false;
-        }
-
-        $sql = 'INSERT INTO `' . _DB_PREFIX_ . 'getresponse_settings` (
-				`id_shop` ,
-				`api_key` ,
-				`active_subscription` ,
-				`active_newsletter_subscription` ,
-				`update_address` ,
-				`campaign_id` ,
-				`cycle_day` ,
-				`account_type` ,
-				`crypto`
-				)
-				VALUES (
-				' . (int) $store_id . ',  \'\',  \'no\', \'no\',  \'no\',  \'0\',  \' \',  \'gr\',  \'\'
-				)
-				ON DUPLICATE KEY UPDATE
-				`id` = `id`;
-			';
-
-        return $sql;
-    }
-
-    private function sqlWebformSetting($store_id)
-    {
-        if (empty($store_id)) {
-            return false;
-        }
-
-        $sql = 'INSERT INTO  `' . _DB_PREFIX_ . 'getresponse_webform` (
-				`id_shop` ,
-				`webform_id` ,
-				`active_subscription` ,
-				`sidebar`,
-				`style`
-				)
-				VALUES (
-				' . (int) $store_id . ',  \'\',  \'no\',  \'left\',  \'webform\'
-				)
-				ON DUPLICATE KEY UPDATE
-				`id` = `id`;
-			';
-
-        return $sql;
-    }
-
-    private function sqlCustomsSetting($store_id)
-    {
-        if (empty($store_id)) {
-            return false;
-        }
-
-        $sql = 'INSERT INTO  `' . _DB_PREFIX_ . 'getresponse_customs` (
-				`id_shop` ,
-				`custom_field`,
-				`custom_value`,
-				`custom_name`,
-				`default`,
-				`active_custom`
-				)
-				VALUES
-				(' . (int) $store_id . ', \'firstname\', \'firstname\', \'firstname\', \'yes\', \'yes\'),
-				(' . (int) $store_id . ', \'lastname\', \'lastname\', \'lastname\', \'yes\', \'yes\'),
-				(' . (int) $store_id . ', \'email\', \'email\', \'email\', \'yes\', \'yes\'),
-				(' . (int) $store_id . ', \'address\', \'address1\', \'address\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'postal\', \'postcode\', \'postal\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'city\', \'city\', \'city\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'phone\', \'phone\', \'phone\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'country\', \'country\', \'country\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'birthday\', \'birthday\', \'birthday\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'company\', \'company\', \'company\', \'no\', \'no\'),
-				(' . (int) $store_id . ', \'category\', \'category\', \'category\', \'no\', \'no\');';
-
-        return $sql;
     }
 
     /******************************************************************/
@@ -257,13 +108,11 @@ class Getresponse extends Module
     public function uninstallTab()
     {
         $id_tab = (int) Tab::getIdFromClassName('AdminGetresponse');
-        if ($id_tab) {
-            $tab = new Tab($id_tab);
-
-            return $tab->delete();
-        } else {
+        if (false === $id_tab) {
             return false;
         }
+        $tab = new Tab($id_tab);
+        return $tab->delete();
     }
 
     public function getContent()
@@ -271,6 +120,9 @@ class Getresponse extends Module
         Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
     }
 
+    /**
+     * @return bool
+     */
     public function uninstall()
     {
         if (!parent::uninstall() || !$this->uninstallTab() || !$this->unregisterHook('newOrder') ||
@@ -286,19 +138,7 @@ class Getresponse extends Module
             return false;
         }
 
-        // Uninstall SQL
-        $sql   = array();
-        $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;';
-        $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;';
-        $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;';
-        $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;';
-
-        foreach ($sql as $s) {
-            if (!Db::getInstance()->Execute($s)) {
-                return false;
-            }
-        }
-
+        $this->db->clearDatabase();
         return true;
     }
 
@@ -306,65 +146,198 @@ class Getresponse extends Module
     /** Hook Methods **************************************************/
     /******************************************************************/
 
+    /**
+     * @param array $params
+     */
     public function hookNewOrder($params)
     {
-        $this->addSubscriber($params, 'order');
+        $this->addSubscriberForOrder($params);
     }
 
+    /**
+     * @param array $params
+     */
     public function hookCreateAccount($params)
     {
-        $this->addSubscriber($params, 'create');
+        $this->createSubscriber($params);
     }
 
-    private function addSubscriber($params, $action)
+    /**
+     * @param array $params
+     *
+     */
+    public function createSubscriber($params)
     {
-        $settings = $this->db->settings;
+        $settings = $this->db->getSettings();
 
-        if (!empty($settings['api_key'])) {
-            if (('create' === $action
-                && isset($settings['active_subscription'])
-                && $settings['active_subscription'] == 'yes'
-                && !empty($settings['campaign_id'])
-                )
-                || 'order' === $action
-            ) {
-                $this->db->addSubscriber(
-                    $params,
+        if (empty($settings['api_key'])) {
+            return;
+        }
+
+        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+
+        if (isset($settings['active_subscription'])
+            && $settings['active_subscription'] == 'yes'
+            && !empty($settings['campaign_id'])
+        ) {
+            if (isset($params['newNewsletterContact'])) {
+                $prefix = 'newNewsletterContact';
+            } else {
+                $prefix  = 'newCustomer';
+            }
+
+            $customs = $api->mapCustoms((array)$params[$prefix], null, $this->db->getCustoms(), 'create');
+
+            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
+                $api->addContact(
                     $settings['campaign_id'],
-                    $action,
-                    $settings['cycle_day']
+                    $params[$prefix]->firstname,
+                    $params[$prefix]->lastname,
+                    $params[$prefix]->email,
+                    $settings['cycle_day'],
+                    $customs
                 );
             }
         }
     }
 
+    /**
+     * @param array $params
+     */
+    public function addSubscriberForOrder($params)
+    {
+        $prefix = 'customer';
+        $settings = $this->db->getSettings();
+
+        if (empty($settings['api_key'])) {
+            return;
+        }
+
+        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+
+        //update_contact
+        $contact = $this->db->getContactByEmail($params[$prefix]->email);
+        $customs = $api->mapCustoms((array) $contact, $_POST, $this->db->getCustoms(), 'order');
+
+        // automation
+        if (!empty($params['order']->product_list)) {
+            $categories = array();
+            foreach ($params['order']->product_list as $products) {
+                $temp_categories = Product::getProductCategories($products['id_product']);
+                foreach ($temp_categories as $tmp) {
+                    $categories[$tmp] = $tmp;
+                }
+            }
+
+            $automations = $this->db->getAutomationSettings(true);
+            if (!empty($automations)) {
+                $default = false;
+                foreach ($automations as $automation) {
+                    if (in_array($automation['category_id'], $categories)) {
+                        // do automation
+                        if ($automation['action'] == 'move') {
+                            $api->moveContactToGr(
+                                $automation['campaign_id'],
+                                $params[$prefix]->firstname,
+                                $params[$prefix]->lastname,
+                                $params[$prefix]->email,
+                                $customs,
+                                $settings['cycle_day']
+                            );
+                        } elseif ($automation['action'] == 'copy') {
+                            $api->addContact(
+                                $automation['campaign_id'],
+                                $params[$prefix]->firstname,
+                                $params[$prefix]->lastname,
+                                $params[$prefix]->email,
+                                $settings['cycle_day'],
+                                $customs
+                            );
+                        }
+                    } else {
+                        $default = true;
+                    }
+                }
+
+                if ($default === true && isset($params[$prefix]->newsletter) &&
+                    $params[$prefix]->newsletter == 1) {
+                    $api->addContact(
+                        $settings['campaign_id'],
+                        $params[$prefix]->firstname,
+                        $params[$prefix]->lastname,
+                        $params[$prefix]->email,
+                        $settings['cycle_day'],
+                        $customs
+                    );
+                }
+            } else {
+                if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
+                    $api->addContact(
+                        $settings['campaign_id'],
+                        $params[$prefix]->firstname,
+                        $params[$prefix]->lastname,
+                        $params[$prefix]->email,
+                        $settings['cycle_day'],
+                        $customs
+                    );
+                }
+            }
+        } else {
+            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
+                $api->addContact(
+                    $settings['campaign_id'],
+                    $params[$prefix]->firstname,
+                    $params[$prefix]->lastname,
+                    $params[$prefix]->email,
+                    $settings['cycle_day'],
+                    $customs
+                );
+            }
+        }
+    }
+
+    /**
+     * @return string
+     */
     public function hookDisplayRightColumn()
     {
-        return $this->displayWebform('right');
+        return $this->displayWebForm('right');
     }
 
+    /**
+     * @return string
+     */
     public function hookDisplayLeftColumn()
     {
-        return $this->displayWebform('left');
+        return $this->displayWebForm('left');
     }
 
+    /**
+     * @return string
+     */
     public function hookDisplayHeader()
     {
-        return $this->displayWebform('header');
+        return $this->displayWebForm('header');
     }
 
+    /**
+     * @return string
+     */
     public function hookDisplayTop()
     {
-        return $this->displayWebform('top');
+        return $this->displayWebForm('top');
     }
 
+    /**
+     * @return string
+     */
     public function hookDisplayFooter()
     {
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
         ) {
-            $settings = $this->db->settings;
+            $settings = $this->db->getSettings();
 
             if (isset($settings['active_newsletter_subscription'])
                 && $settings['active_newsletter_subscription'] == 'yes'
@@ -378,21 +351,30 @@ class Getresponse extends Module
                 $data = array();
                 $data['newNewsletterContact'] = $client;
 
-                $this->addSubscriber($data, 'create');
+                $this->createSubscriber($data);
             }
         }
-        return $this->displayWebform('footer');
+
+        return $this->displayWebForm('footer');
     }
 
+    /**
+     * @return string
+     */
     public function hookDisplayHome()
     {
-        return $this->displayWebform('home');
+        return $this->displayWebForm('home');
     }
 
-    private function displayWebform($position)
+    /**
+     * @param string $position
+     *
+     * @return string
+     */
+    private function displayWebForm($position)
     {
         if (empty($position)) {
-            return false;
+            return '';
         }
 
         $webform_settings = $this->db->getWebformSettings();
@@ -400,7 +382,7 @@ class Getresponse extends Module
             $webform_settings['active_subscription'] != 'yes' ||
             $webform_settings['sidebar'] != $position
         ) {
-            return false;
+            return '';
         }
 
         $set_style = null;
@@ -409,7 +391,6 @@ class Getresponse extends Module
         }
 
         $this->smarty->assign(array('webform_url' => $webform_settings['url'], 'style' => $set_style));
-
         return $this->display(__FILE__, 'views/templates/admin/getresponse/helpers/view/webform.tpl');
     }
 }

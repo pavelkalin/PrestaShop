@@ -3,19 +3,18 @@
 * @copyright  GetResponse
 * @license	http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-
 <div class="content">
 	<h3>{l s='Subscribe via registration page' mod='getresponse'}</h3>
 	<p>
 		{l s='You can add subscribers to a selected GetResponse campaign when they register to your online shop (via the registration page). Select an existing campaign or create a new campaign for your PrestaShop visitors. If the campaign includes an autoresponder, choose the sequence day you want to add the contacts to. In case customers change their contact data in the last stage of order placement, select the ' mod='getresponse'} <strong>Checkout Update</strong> {l s=' box and we’ll update their details automatically.' mod='getresponse'}
 	</p>
-	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viapage" method="post">
+	<form class="form-horizontal" action="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=subscribe_via_registration_send" method="post">
 		<div id="switch-box">
 			<div class="control-group">
 				<label for="targetCampaign" class="control-label">{l s='Subscription' mod='getresponse'}</label>
 				<div class="controls">
 
-					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=viapage#iswitch" id="chckSubscriptionInput" class="switch {if $status == 'yes'}enabled{else}disabled{/if}" data-params="{ run: 'switch_viapage' }">
+					<a href="{$action_url|escape:'htmlall':'UTF-8'}&amp;action=subscribe_via_registration_ajax#iswitch" id="chckSubscriptionInput" class="switch {if $status == 'yes'}enabled{else}disabled{/if}" data-params="{ run: 'switch_subscribe_via_registration' }">
 
 						<span data-iswitch="" class="s-css3 {if $status == 'yes'}enabled{else}disabled{/if}">
 							<span class="s-css3-c">
@@ -79,7 +78,7 @@
 				<fieldset class="control-group" id="updateDiv">
 					<label for="crypto" class="control-label"></label>
 					<div class="controls">
-						<label class="checkbox"  data-params="{ action: 'checkbox', run: 'switch_viapage_customs' }">
+						<label class="checkbox"  data-params="{ action: 'checkbox', run: 'switch_subscribe_via_registration_customs' }">
 							<input value="yes" type="checkbox" name="update_address" id="chckUpdateContactDataOnPage" {if $update_address == 'yes'}checked{/if}>
 							<span class="tooltip-label">{l s='Checkout update' mod='getresponse'}</span>
 							<abbr title='{l s='Checkout update' mod='getresponse'}|{l s='Select if you want to update billing data. A custom name must be composed using up to 32: lowercase a-z letters, digits, or underscores.' mod='getresponse'}' rel="tooltip"></abbr>
@@ -103,7 +102,7 @@
 
 				<fieldset class="control-group" id="saveDiv">
 					<div class="controls">
-						<input type="submit" value="{l s='Save' mod='getresponse'}" name="ViapageConfiguration" class="button">
+						<input type="submit" value="{l s='Save' mod='getresponse'}" name="subscribe_via_registration" class="button">
 					</div>
 				</fieldset>
 			</div>
