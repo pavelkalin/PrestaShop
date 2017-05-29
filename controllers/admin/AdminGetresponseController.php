@@ -1,8 +1,12 @@
 <?php
-
 /**
  * Class AdminGetresponseController
+ *
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 class AdminGetresponseController extends ModuleAdminController
 {
     /** @var DbConnection */
@@ -183,11 +187,15 @@ class AdminGetresponseController extends ModuleAdminController
 
         $api = new GrApi($api_key, $account_type, $domain);
 
-        if (true === $api->checkConnection()) {
-            $this->db->updateApiSettings($api_key, $account_type, $domain);
-            $this->addSuccessMessage('You have been connected.');
-        } else {
-            $this->addErrorMessage($account_type !== 'gr' ? 'Wrong API key or domain' : 'Wrong API Key');
+        try {
+            if (true === $api->checkConnection()) {
+                $this->db->updateApiSettings($api_key, $account_type, $domain);
+                $this->addSuccessMessage('You have been connected.');
+            } else {
+                $this->addErrorMessage($account_type !== 'gr' ? 'Wrong API key or domain' : 'Wrong API Key');
+            }
+        } catch (GrApiException $e) {
+            $this->addErrorMessage($e->getMessage());
         }
     }
 
@@ -286,7 +294,6 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         foreach ($contacts as $contact) {
-
             $customs = $api->mapCustoms($contact, $_POST, $this->db->getCustoms(), 'export');
 
             if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
@@ -311,9 +318,11 @@ class AdminGetresponseController extends ModuleAdminController
         if (0 == count($errorMessages)) {
             $this->addSuccessMessage('Export completed');
         } elseif (1 == count($errorMessages)) {
-            $this->addSuccessMessage('Export completed. One contact hasn\'t been exported due to error : ' . $errorMessages[0]);
+            $message = 'Export completed. One contact hasn\'t been exported due to error :';
+            $this->addSuccessMessage($message . ' ' . $errorMessages[0]);
         } else {
-            $this->addSuccessMessage('Export completed. ' . count($errorMessages) . ' contacts haven\'t been exported due to various reasons');
+            $message = 'contacts haven\'t been exported due to various reasons';
+            $this->addSuccessMessage('Export completed. ' . count($errorMessages) . ' ' . $message);
         }
 
         $this->exportView();
@@ -321,7 +330,8 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaRegistrationAjax()
     {
-        if(empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
             die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
         }
 
@@ -413,7 +423,8 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaFormAjax()
     {
-        if(empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
             die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
         }
 
@@ -786,7 +797,6 @@ class AdminGetresponseController extends ModuleAdminController
                 'msg'  => 'Campaign "' . $campaign_name . '" sucessfully created.',
                 'c'    => $campaign_name
             )));
-
         } catch (GrApiException $e) {
             die(Tools::jsonEncode(array(
                 'type' => 'error',
@@ -871,7 +881,11 @@ class AdminGetresponseController extends ModuleAdminController
      */
     private function hideApiKey($api_key)
     {
-        return strlen($api_key) > 0 ? str_repeat("*", strlen($api_key) - 6) . substr($api_key, -6) : $api_key;
+        if (Tools::strlen($api_key) > 0) {
+            return str_repeat("*", Tools::strlen($api_key) - 6) . Tools::substr($api_key, -6);
+        }
+
+        return $api_key;
     }
 
     private function redirectIfNotAuthorized()

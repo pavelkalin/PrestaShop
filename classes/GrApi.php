@@ -1,8 +1,12 @@
 <?php
-
 /**
  * Class Api
+ *
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 class GrApi
 {
     const SMB_PREFIX = 'gr';
@@ -62,7 +66,6 @@ class GrApi
 
             ksort($campaigns);
             return $campaigns;
-
         } catch (Exception $e) {
             return array();
         }
@@ -86,7 +89,6 @@ class GrApi
                 $webForms[$id] = $info;
             }
             return $webForms;
-
         } catch (Exception $e) {
             return array();
         }
@@ -110,7 +112,6 @@ class GrApi
                 $forms[$id] = $info;
             }
             return $forms;
-
         } catch (Exception $e) {
             return array();
         }
@@ -241,7 +242,6 @@ class GrApi
 
         $this->addContact($new_campaign_id, $first_name, $last_name, $email, $cycle_day, $customs);
         return true;
-
     }
 
     /**
@@ -392,7 +392,6 @@ class GrApi
                 }
             }
         }
-
         return $all_customs;
     }
 
@@ -456,7 +455,8 @@ class GrApi
                 }
 
                 // allowed custom and non empty
-                if (in_array($field_key, array_keys($customer)) == true && (!empty($fv) && !empty($customer[$field_key]))) {
+                if (in_array($field_key, array_keys($customer)) == true
+                    && (!empty($fv) && !empty($customer[$field_key]))) {
                     // validation for custom field name
                     if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(($fv)))) {
                         return array('custom_error' => 'true', 'custom_message' => $fv);

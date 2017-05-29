@@ -27,12 +27,13 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.1.0';
+        $this->version                = '4.1.1';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
         $this->displayName            = $this->l('GetResponse');
+
         $this->description            = $this->l(
             'Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns'
         );

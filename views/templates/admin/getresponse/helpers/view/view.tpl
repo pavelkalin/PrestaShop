@@ -13,7 +13,7 @@
 
 {if !empty($flash_message)}
 	<div class="bootstrap">
-		<div class="module_confirmation conf confirm alert alert-{$flash_message['status']}">
+		<div class="module_confirmation conf confirm alert alert-{$flash_message['status']|escape:'htmlall':'UTF-8'}">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
             {$flash_message['message']|escape:'htmlall':'UTF-8'}
 		</div>

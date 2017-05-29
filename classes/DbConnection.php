@@ -1,8 +1,12 @@
 <?php
-
 /**
  * Class DbConnection
+ *
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 class DbConnection
 {
     /** @var Db */
@@ -387,7 +391,6 @@ class DbConnection
 
         foreach (array_keys($allowed) as $a) {
             if (in_array($a, array_keys($customs))) {
-
                 $sql = '
                 UPDATE
                     ' . _DB_PREFIX_ . 'getresponse_customs
@@ -399,7 +402,6 @@ class DbConnection
                     AND `custom_value` = "' . pSQL($a) . '"';
 
                 $this->db->Execute($sql);
-
             } elseif ('yes' !== $allowed[$a]['default']) {
                 $sql = '
                 UPDATE
@@ -509,7 +511,8 @@ class DbConnection
 
         try {
             $this->db->execute($query);
-        } catch (Exception $e) {}
+        } catch (Exception $e) {
+        }
     }
 
     /**
@@ -548,11 +551,14 @@ class DbConnection
         LEFT JOIN
             ' . _DB_PREFIX_ . 'orders o ON o.`id_customer` = cu.`id_customer`
         LEFT JOIN
-            ' . _DB_PREFIX_ . 'order_detail od ON (od.`id_order` = o.`id_order` AND o.`id_shop` = ' . (int) $this->id_shop . ')
+            ' . _DB_PREFIX_ . 'order_detail od ON (od.`id_order` = o.`id_order` 
+            AND o.`id_shop` = ' . (int) $this->id_shop . ')
         LEFT JOIN
-            ' . _DB_PREFIX_ . 'category_product cp ON (cp.`id_product` = od.`product_id` AND od.`id_shop` = ' . (int) $this->id_shop . ')
+            ' . _DB_PREFIX_ . 'category_product cp ON (cp.`id_product` = od.`product_id` 
+            AND od.`id_shop` = ' . (int) $this->id_shop . ')
         LEFT JOIN
-            ' . _DB_PREFIX_ . 'category_lang cl ON (cl.`id_category` = cp.`id_category` AND cl.`id_shop` = ' .
+            ' . _DB_PREFIX_ . 'category_lang cl ON (cl.`id_category` = cp.`id_category` 
+            AND cl.`id_shop` = ' .
             (int) $this->id_shop . ' AND cl.`id_lang` = cu.`id_lang`)
         WHERE
             cu.`newsletter` = 1

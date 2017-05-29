@@ -1,8 +1,12 @@
 <?php
-
 /**
  * Class GetResponseAPI3
+ *
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 class GetResponseAPI3
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
@@ -313,17 +317,12 @@ class GetResponseAPI3
      * @param string $http_method
      * @param array $params
      * @return mixed
-     * @throws Exception
+     * @throws GrApiException
      */
     private function call($api_method, $http_method = 'GET', $params = array())
     {
         if (empty($api_method)) {
-            return (object)array(
-                'httpStatus' => '400',
-                'code' => '1010',
-                'codeDescription' => 'Error in external resources',
-                'message' => 'Invalid api method'
-            );
+            throw GrApiException::createForEmptyApiMethod();
         }
 
         $params = Tools::jsonEncode($params);
@@ -360,9 +359,16 @@ class GetResponseAPI3
         $curl = curl_init();
         curl_setopt_array($curl, $options);
 
-        $response = Tools::jsonDecode(curl_exec($curl));
+        $result = curl_exec($curl);
+
+        if (false === $result) {
+            throw GrApiException::createForInvalidCurlResponse(curl_error($curl));
+        }
+
+        $response = Tools::jsonDecode($result);
+
         curl_close($curl);
-        return (object)$response;
+        return (object) $response;
     }
 
     /**
