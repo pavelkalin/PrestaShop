@@ -199,6 +199,11 @@ class GrApi
         }
     }
 
+    public function getAccounts()
+    {
+        return $this->api->accounts();
+    }
+
     /**
      * @return array
      */
@@ -270,7 +275,7 @@ class GrApi
             $params['name'] = $name;
         }
 
-        if (!empty($cycle_day)) {
+        if (is_numeric($cycle_day)) {
             $params['dayOfCycle'] = $cycle_day;
         }
 
@@ -402,6 +407,136 @@ class GrApi
     public function createCampaign($params)
     {
         return $this->api->createCampaign($params);
+    }
+
+    /**
+     * @param string $shopName
+     * @param string $locale
+     * @param string $currency
+     *
+     * @return mixed
+     */
+    public function createShop($shopName, $locale, $currency)
+    {
+        return $this->api->createShop($shopName, $locale, $currency);
+    }
+
+    /**
+     * @param string $shopName
+     * @param string $locale
+     * @param string $currency
+     *
+     * @return mixed
+     */
+    public function deleteShop($shopId)
+    {
+        return $this->api->deleteShop($shopId);
+    }
+
+    /**
+     * @return array
+     */
+    public function getShops()
+    {
+        $shops = $this->api->getShops();
+
+        return empty((array)$shops) ? array() : $shops;
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $cartId
+     * @param array $params
+     * @return mixed
+     */
+    public function updateCart($shopId, $cartId, $params)
+    {
+        return $this->api->updateCart($shopId, $cartId, $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $cartId
+     * @return mixed
+     */
+    public function deleteCart($shopId, $cartId)
+    {
+        return $this->api->deleteCart($shopId, $cartId);
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return mixed
+     */
+    public function addProduct($shopId, $params)
+    {
+        return $this->api->addProduct($shopId, $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return array
+     */
+    public function addCart($shopId, $params)
+    {
+        return $this->api->addCart($shopId, $params);
+    }
+
+    /**
+     * @param string $email
+     * @param string $campaignId
+     * @return array
+     */
+    public function getContactByEmail($email, $campaignId)
+    {
+        $params = array('query' =>
+            array('email' => $email, 'campaignId' => $campaignId)
+        );
+
+        $response = (array) $this->api->getContacts($params);
+
+        return array_pop($response);
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return array
+     */
+    public function createOrder($shopId, $params)
+    {
+        return $this->api->createOrder($shopId, $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $orderId
+     * @param array $params
+     * @return array
+     */
+    public function updateOrder($shopId, $orderId, $params)
+    {
+        return $this->api->updateOrder($shopId, $orderId, $params);
+    }
+
+    /**
+     * Return features list
+     * @return mixed
+     */
+    public function getFeatures()
+    {
+        return $this->api->getFeatures();
+    }
+
+    /**
+     * Return features list
+     * @return mixed
+     */
+    public function getTrackingCode()
+    {
+        return $this->api->getTrackingCode();
     }
 
     /**

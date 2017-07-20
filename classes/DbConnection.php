@@ -37,6 +37,8 @@ class DbConnection
             `api_key`,
             `active_subscription`,
             `active_newsletter_subscription`,
+            `active_tracking`,
+            `tracking_snippet`,
             `update_address`,
             `campaign_id`,
             `cycle_day`,
@@ -76,6 +78,51 @@ class DbConnection
         }
 
         return array();
+    }
+
+    /**
+     * @param string $email
+     * @param string $id_campaign
+     * @return bool|string
+     */
+    public function getGrSubscriberId($email, $id_campaign)
+    {
+        $sql = '
+        SELECT
+            `gr_id_user`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_subscribers
+        WHERE
+            `email` = "' . pSQL($email) . '"
+            AND `id_campaign` = "' . pSQL($id_campaign) . '"';
+
+
+        if ($results = $this->db->ExecuteS($sql)) {
+            if (isset($results[0]['gr_id_user'])) {
+                return $results[0]['gr_id_user'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $email
+     * @param string $id_campaign
+     * @param string $gr_id_user
+     */
+    public function setGrSubscriberId($email, $id_campaign, $gr_id_user)
+    {
+        $query = '
+            INSERT IGNORE INTO 
+                ' . _DB_PREFIX_ . 'getresponse_subscribers
+            SET
+                `email` = "' . pSQL($email) . '",
+                `id_campaign` = "' . pSQL($id_campaign) . '",
+                `gr_id_user` = "' . pSQL($gr_id_user) . '"
+        ';
+
+        $this->db->execute($query);
     }
 
     /**
@@ -163,8 +210,8 @@ class DbConnection
                     cu.newsletter = 1
                 AND
                     cu.id_shop = ' . (int) $this->id_shop . '
-                ' . $ng_where . '
-                ';
+                    GROUP BY cu.email
+                ' . $ng_where;
 
         $contacts = $this->db->ExecuteS($sql);
 
@@ -331,6 +378,24 @@ class DbConnection
     }
 
     /**
+     * @param $active_tracking
+     * @param $snippet
+     */
+    public function updateTracking($active_tracking, $snippet)
+    {
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_settings
+        SET
+            `active_tracking` = "' . pSQL($active_tracking) . '",
+            `tracking_snippet` = "' . pSQL($snippet, true) . '"
+        WHERE
+            `id_shop` = ' . (int) $this->id_shop;
+
+        $this->db->execute($query);
+    }
+
+    /**
      * @param string $active_subscription
      * @param string $campaign_id
      * @param string $update_address
@@ -368,6 +433,192 @@ class DbConnection
             `id_shop` = ' . (int) $this->id_shop;
 
         $this->db->execute($query);
+    }
+
+
+    /**
+     * @param string $active_ecommerce
+     */
+    public function updateEcommerceSubscription($active_ecommerce)
+    {
+        if ($active_ecommerce === 'yes') {
+            $query = '
+                INSERT INTO 
+                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+                SET
+                    `id_shop` = ' . (int) $this->id_shop . '
+            ';
+        } else {
+            $query = '
+                DELETE FROM
+                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop;
+        }
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function getEcommerceSettings()
+    {
+        $sql = 'SELECT * FROM
+                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop;
+
+        return $this->db->getRow($sql);
+    }
+
+    /**
+     * @param string $shopId
+     */
+    public function updateEcommerceShopId($shopId)
+    {
+        $query = '
+            UPDATE
+                ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+            SET
+                `gr_id_shop` = "' . $shopId . '"
+            WHERE
+                `id_shop` = ' . (int) $this->id_shop;
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @param $cart_id
+     * @return string
+     */
+    public function getGetResponseCartMD5($cart_id)
+    {
+        $sql = 'SELECT `cart_hash` FROM
+                    ' . _DB_PREFIX_ . 'cart 
+                WHERE
+                    `id_cart` = ' . (int) $cart_id;
+
+        return $this->db->getValue($sql);
+    }
+
+    /**
+     * @param int $cart_id
+     * @param string $hash
+     * @return bool
+     */
+    public function updateGetResponseCartMD5($cart_id, $hash)
+    {
+        $sql = 'UPDATE ' . _DB_PREFIX_ . 'cart 
+                SET
+                    `cart_hash` = "' . $hash . '"
+                WHERE
+                    `id_cart` = ' . (int) $cart_id;
+
+        return $this->db->execute($sql);
+    }
+
+    /**
+     * @return string
+     */
+    public function getGetResponseShopId()
+    {
+        $sql = 'SELECT `gr_id_shop`
+                FROM
+                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop;
+
+        return $this->db->getValue($sql);
+    }
+
+    /**
+     * @param $cart_id
+     * @return string
+     */
+    public function getGetResponseCartId($cart_id)
+    {
+        $sql = 'SELECT `gr_id_cart` FROM
+                    ' . _DB_PREFIX_ . 'cart 
+                WHERE
+                    `id_cart` = ' . (int) $cart_id;
+
+        return $this->db->getValue($sql);
+    }
+
+    /**
+     * @param string $cart_id
+     * @param int $id
+     * @return bool
+     */
+    public function updateGetResponseCartId($cart_id, $id)
+    {
+        $sql = 'UPDATE ' . _DB_PREFIX_ . 'cart 
+                SET
+                    `gr_id_cart` = "' . $id . '"
+                WHERE
+                    `id_cart` = ' . (int) $cart_id;
+
+        return $this->db->execute($sql);
+    }
+
+    /**
+     * @param int $order_id
+     * @return string
+     */
+    public function getGetResponseOrderId($order_id)
+    {
+        $sql = 'SELECT `gr_id_order` FROM
+                    ' . _DB_PREFIX_ . 'orders 
+                WHERE
+                    `id_order` = ' . (int) $order_id;
+
+        return $this->db->getValue($sql);
+    }
+
+    /**
+     * @param int $order_id
+     * @param string $id
+     * @return bool
+     */
+    public function updateGetResponseOrderId($order_id, $id)
+    {
+        $sql = 'UPDATE ' . _DB_PREFIX_ . 'orders
+                SET
+                    `gr_id_order` = "' . $id . '"
+                WHERE
+                    `id_order` = ' . (int) $order_id;
+
+        return $this->db->execute($sql);
+    }
+
+    /**
+     * @param int $id_product
+     * @return string
+     */
+    public function getGetResponseProductId($id_product)
+    {
+        $sql = 'SELECT `gr_id_product` FROM
+                    ' . _DB_PREFIX_ . 'getresponse_products 
+                WHERE
+                    `id_product` = ' . (int) $id_product;
+
+        return $this->db->getValue($sql);
+    }
+
+    /**
+     * @param int $id_product
+     * @param string $gr_id_product
+     * @return bool
+     */
+    public function updateGetResponseProductId($id_product, $gr_id_product)
+    {
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_products 
+                SET
+                    `gr_id_product` = "' . $gr_id_product . '",
+                    `id_product` = ' . (int) $id_product;
+
+        return $this->db->execute($sql);
     }
 
     /**
@@ -415,6 +666,20 @@ class DbConnection
                 $this->db->Execute($sql);
             }
         }
+    }
+
+    public function updateCustom($custom)
+    {
+        $sql = '
+                UPDATE
+                    ' . _DB_PREFIX_ . 'getresponse_customs
+                SET
+                    `custom_name` = "' . pSQL($custom['name']) . '",
+                    `active_custom` = "' . pSQL($custom['active']) . '"
+                WHERE
+                    `id_shop` = ' . (int) $this->id_shop . '
+                    AND `id_custom` = "' . pSQL($custom['id']) . '"';
+        $this->db->Execute($sql);
     }
 
     public function disableCustoms()
@@ -541,7 +806,7 @@ class DbConnection
     {
         $sql = '
         SELECT
-            group_concat(DISTINCT cp.`id_category separator` ", ") as category
+            group_concat(DISTINCT cp.`id_category` separator ", ") as category
         FROM
             ' . _DB_PREFIX_ . 'customer as cu
         LEFT JOIN
@@ -583,6 +848,8 @@ class DbConnection
 			`api_key` char(32) NOT NULL,
 			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_tracking` enum(\'yes\',\'no\', \'disabled\') NOT NULL DEFAULT \'disabled\',
+			`tracking_snippet` text,
 			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`campaign_id` char(5) NOT NULL,
 			`cycle_day` char(5) NOT NULL,
@@ -625,6 +892,31 @@ class DbConnection
 			UNIQUE KEY `id_shop` (`id_shop`,`category_id`,`campaign_id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce` (
+            `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `id_shop` int(11) DEFAULT NULL,
+            `gr_id_shop` varchar(16) DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_products` (
+            `id_product` int(11) unsigned NOT NULL,
+            `gr_id_product` varchar(32) DEFAULT NULL,
+            UNIQUE KEY (`id_product`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers` (
+            `id_user` int(11) unsigned NOT NULL,
+            `id_campaign` varchar(16) DEFAULT NULL,
+            `gr_id_user` varchar(16) DEFAULT NULL,           
+            `email` varchar(128) DEFAULT NULL,
+            UNIQUE KEY `id_user` (`id_user`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `cart_hash` varchar(32);';
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `gr_id_cart` varchar(32);';
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `gr_id_order` varchar(32);';
+
         //multistore
         if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
@@ -648,8 +940,9 @@ class DbConnection
 
         //Install SQL
         foreach ($sql as $s) {
-            if (!Db::getInstance()->Execute($s)) {
-                return;
+            try {
+                Db::getInstance()->Execute($s);
+            } catch (Exception $e) {
             }
         }
     }
@@ -667,6 +960,8 @@ class DbConnection
             `api_key` ,
             `active_subscription` ,
             `active_newsletter_subscription` ,
+            `active_tracking` ,
+            `tracking_snippet`,
             `update_address` ,
             `campaign_id` ,
             `cycle_day` ,
@@ -674,7 +969,7 @@ class DbConnection
             `crypto`
         )
         VALUES (
-            ' . (int) $store_id . ',  \'\',  \'no\', \'no\',  \'no\',  \'0\',  \' \',  \'gr\',  \'\'
+            ' . (int) $store_id . ', \'\', \'no\', \'no\', \'no\', \'\', \'no\', \'0\', \' \', \'gr\', \'\'
         )
         ON DUPLICATE KEY UPDATE `id` = `id`;';
     }
@@ -735,5 +1030,8 @@ class DbConnection
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers`;');
     }
 }

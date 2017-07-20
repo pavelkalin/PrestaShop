@@ -17,17 +17,33 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
 
 class Getresponse extends Module
 {
     /** @var DbConnection */
     private $db;
 
+    private $used_hooks = array(
+        'newOrder',
+        'createAccount',
+        'leftColumn',
+        'rightColumn',
+        'header',
+        'footer',
+        'top',
+        'home',
+        'cart',
+        'postUpdateOrderStatus',
+        'hookOrderConfirmation',
+        'displayBackOfficeHeader'
+    );
+
     public function __construct()
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.1.1';
+        $this->version                = '16.2.0';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -60,23 +76,84 @@ class Getresponse extends Module
         }
     }
 
+    public function hookDisplayBackOfficeHeader()
+    {
+        $this->context->controller->addCss($this->_path . 'views/css/tab.css');
+    }
+
     /******************************************************************/
     /** Install Methods ***********************************************/
     /******************************************************************/
 
     public function installTab()
     {
+        new TabCore();
         $tab             = new Tab();
         $tab->active     = 1;
-        $tab->class_name = 'AdminGetresponse';
+        $tab->class_name = 'Getresponse';
         $tab->name       = array();
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'GetResponse';
         }
-        $tab->id_parent = (int) Tab::getIdFromClassName('AdminAdmin');
+        
+        if (substr(_PS_VERSION_, 0, 3) === '1.6') {
+            $tab->id_parent = 0;
+        } else {
+            $tab->id_parent = (int) Tab::getIdFromClassName('AdminAdmin');
+        }
         $tab->module    = $this->name;
 
-        return $tab->add();
+        $tab->add();
+
+        $this->createSubTabs($tab->id);
+
+        return true;
+    }
+
+    public function createSubTabs($tabId) {
+        $langs = Language::getLanguages();
+        $tabvalue = array(
+            array(
+                'class_name' => 'AdminGetresponseAccount',
+                'name' => 'GetResponse Account',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseExport',
+                'name' => 'Export Customer Data',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseSubscribeRegistration',
+                'name' => 'Subscribe via Registration',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseSubscribeForm',
+                'name' => 'Subscribe via Forms',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseContactList',
+                'name' => 'Contact List Rules',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseWebTracking',
+                'name' => 'Web Event Tracking',
+            ),
+            array(
+                'class_name' => 'AdminGetresponseEcommerce',
+                'name' => 'GetResponse Ecommerce',
+            ),
+        );
+        foreach ($tabvalue as $tab) {
+            $newtab = new Tab();
+            $newtab->class_name = $tab['class_name'];
+            $newtab->id_parent = $tabId;
+            $newtab->module = $this->name;
+            $newtab->position = 0;
+            foreach ($langs as $l) {
+                $newtab->name[$l['id_lang']] = $this->l($tab['name']);
+            }
+            $newtab->add();
+        }
+        return true;
     }
 
     /**
@@ -84,13 +161,14 @@ class Getresponse extends Module
      */
     public function install()
     {
-        if (!parent::install() ||!$this->installTab() ||!$this->registerHook('newOrder') ||
-            !$this->registerHook('createAccount') || $this->registerHook('leftColumn') == false ||
-            $this->registerHook('rightColumn') == false || $this->registerHook('header') == false ||
-            $this->registerHook('footer') == false || $this->registerHook('top') == false ||
-            $this->registerHook('home') == false
-        ) {
+        if (!parent::install() ||!$this->installTab()) {
             return false;
+        }
+
+        foreach ($this->used_hooks as $hook) {
+            if (!$this->registerHook($hook)) {
+                return false;
+            }
         }
 
         //Update Version Number
@@ -108,17 +186,34 @@ class Getresponse extends Module
 
     public function uninstallTab()
     {
-        $id_tab = (int) Tab::getIdFromClassName('AdminGetresponse');
-        if (false === $id_tab) {
-            return false;
+        $classes = array(
+            'AdminGetresponseExport',
+            'AdminGetresponseSubscribeRegistration',
+            'AdminGetresponseSubscribeForm',
+            'AdminGetresponseContactList',
+            'AdminGetresponseWebTracking',
+            'AdminGetresponseEcommerce',
+            'AdminGetresponseAccount',
+            'AdminGetresponse',
+            'Getresponse'
+        );
+
+        $result = true;
+        foreach ($classes as $class) {
+            $id_tab = (int) Tab::getIdFromClassName($class);
+            if (false === $id_tab) {
+                return false;
+            }
+            $tab = new Tab($id_tab);
+            $result = $tab->delete() && $result;
         }
-        $tab = new Tab($id_tab);
-        return $tab->delete();
+
+        return $result;
     }
 
     public function getContent()
     {
-        Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
     }
 
     /**
@@ -126,12 +221,14 @@ class Getresponse extends Module
      */
     public function uninstall()
     {
-        if (!parent::uninstall() || !$this->uninstallTab() || !$this->unregisterHook('newOrder') ||
-            !$this->registerHook('createAccount') || !$this->registerHook('leftColumn') ||
-            !$this->registerHook('rightColumn') || !$this->registerHook('header') ||
-            !$this->registerHook('footer') || !$this->registerHook('top') || !$this->registerHook('home')
-        ) {
+        if (!parent::uninstall() ||!$this->uninstallTab()) {
             return false;
+        }
+
+        foreach ($this->used_hooks as $hook) {
+            if (!$this->unregisterHook($hook)) {
+                return false;
+            }
         }
 
         //Delete Version Entry
@@ -150,9 +247,106 @@ class Getresponse extends Module
     /**
      * @param array $params
      */
+    public function hookCart($params)
+    {
+        $gr_id_shop = $this->db->getGetResponseShopId();
+        if (empty($gr_id_shop)) {
+            return; // E-commerce is disabled
+        }
+
+        /** @var CartCore $cart */
+        $cart = $params['cart'];
+        if (empty($cart) || 0 === (int)$cart->id_customer) {
+            return;
+        }
+
+        $customer = new Customer($cart->id_customer);
+        $settings = $this->db->getSettings();
+        $ecommerce = new GrEcommerce($this->db);
+        $id_subscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
+
+        if (empty($id_subscriber)) {
+            return;
+        }
+
+        $products = $cart->getProducts(true);
+        $md5 = md5(json_encode($products));
+
+        // Cart didn't change
+        if ($this->db->getGetResponseCartMD5($cart->id) === $md5) {
+            return;
+        }
+
+        $gr_id_cart = $this->db->getGetResponseCartId($cart->id);
+
+        if (count($products) === 0) {
+            $ecommerce->removeCart($cart->id, $gr_id_cart, $gr_id_shop);
+        } else {
+            $ecommerce->sendCartDataToGR($cart, $gr_id_shop, $gr_id_cart, $id_subscriber);
+        }
+
+        $this->db->updateGetResponseCartMD5($cart->id, $md5);
+    }
+
+    /**
+     * @param array $params
+     */
     public function hookNewOrder($params)
     {
         $this->addSubscriberForOrder($params);
+        $this->convertCartToOrder($params);
+    }
+
+    /**
+     * @param array $params
+     */
+    public function hookHookOrderConfirmation($params)
+    {
+        $this->convertCartToOrder($params);
+    }
+
+    /**
+     * @param array $params
+     */
+    public function hookPostUpdateOrderStatus($params)
+    {
+        $gr_id_shop = $this->db->getGetResponseShopId();
+        if (empty($gr_id_shop)) {
+            return; // E-commerce is disabled
+        }
+
+        if (isset($params['id_order']) && !empty($params['id_order'])) {
+            $params['order'] = new Order($params['id_order']);
+            $this->convertCartToOrder($params);
+        }
+    }
+
+    /**
+     * @param array $params
+     */
+    private function convertCartToOrder($params)
+    {
+        /** @var OrderCore $order */
+        $order = $params['order'];
+        $gr_id_shop = $this->db->getGetResponseShopId();
+
+        if (empty($gr_id_shop) || empty($order) || 0 === (int)$order->id_customer) {
+            return;
+        }
+
+        /** @var CustomerCore $customer */
+        $customer = new Customer($order->id_customer);
+        $settings = $this->db->getSettings();
+        $ecommerce = new GrEcommerce($this->db);
+        $gr_id_contact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
+
+        if (empty($gr_id_contact)) {
+            return;
+        }
+
+        $id_order = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
+        $gr_order = $ecommerce->createOrderObject($params, $gr_id_contact, $gr_id_shop);
+        $ecommerce->sendOrderDataToGR($gr_id_shop, $gr_order, $id_order);
     }
 
     /**
@@ -165,7 +359,6 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     *
      */
     public function createSubscriber($params)
     {
@@ -198,6 +391,9 @@ class Getresponse extends Module
                     $settings['cycle_day'],
                     $customs
                 );
+
+                $ecommerce = new GrEcommerce($this->db);
+                $ecommerce->getSubscriberId($params[$prefix]->email, $settings['campaign_id'], true);
             }
         }
     }
@@ -318,7 +514,14 @@ class Getresponse extends Module
      */
     public function hookDisplayHeader()
     {
-        return $this->displayWebForm('header');
+        $settings = $this->db->getSettings();
+
+        if (isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes') {
+            $this->smarty->assign(array('gr_tracking_snippet' => $settings['tracking_snippet']));
+            return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
+        }
+
+        return '';
     }
 
     /**
@@ -334,12 +537,13 @@ class Getresponse extends Module
      */
     public function hookDisplayFooter()
     {
+        $email = false;
+        $settings = $this->db->getSettings();
+
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
         ) {
-            $settings = $this->db->getSettings();
-
             if (isset($settings['active_newsletter_subscription'])
                 && $settings['active_newsletter_subscription'] == 'yes'
             ) {
@@ -356,7 +560,14 @@ class Getresponse extends Module
             }
         }
 
-        return $this->displayWebForm('footer');
+        if (
+            isset($this->context->customer) && !empty($this->context->customer->email) &&
+            isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes'
+        ) {
+            $email = $this->context->customer->email;
+        }
+
+        return $this->displayWebForm('footer') . $this->displayMailTracker($email);
     }
 
     /**
@@ -369,29 +580,37 @@ class Getresponse extends Module
 
     /**
      * @param string $position
-     *
-     * @return string
+     * @return mixed
      */
     private function displayWebForm($position)
     {
-        if (empty($position)) {
-            return '';
+        if (!empty($position)) {
+            $webform_settings = $this->db->getWebformSettings();
+
+            if (!empty($webform_settings) && $webform_settings['active_subscription'] == 'yes' && $webform_settings['sidebar'] == $position) {
+                $set_style = null;
+                if (!empty($webform_settings['style']) && $webform_settings['style'] == 'prestashop') {
+                    $set_style = '&css=1';
+                }
+                $this->smarty->assign(array('webform_url' => $webform_settings['url'], 'style' => $set_style));
+                return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
+            }
         }
 
-        $webform_settings = $this->db->getWebformSettings();
-        if (empty($webform_settings) ||
-            $webform_settings['active_subscription'] != 'yes' ||
-            $webform_settings['sidebar'] != $position
-        ) {
-            return '';
+        return '';
+    }
+
+    /**
+     * @param string $email
+     * @return mixed
+     */
+    private function displayMailTracker($email)
+    {
+        if (!empty($email)) {
+            $this->smarty->assign(array('tracking_email' => $email));
+            return $this->display(__FILE__, 'views/templates/admin/common/tracking_mail.tpl');
         }
 
-        $set_style = null;
-        if (!empty($webform_settings['style']) && $webform_settings['style'] == 'prestashop') {
-            $set_style = '&css=1';
-        }
-
-        $this->smarty->assign(array('webform_url' => $webform_settings['url'], 'style' => $set_style));
-        return $this->display(__FILE__, 'views/templates/admin/getresponse/helpers/view/webform.tpl');
+        return '';
     }
 }

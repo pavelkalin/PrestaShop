@@ -6,11 +6,6 @@
 
 <link href='http://fonts.googleapis.com/css?family=Ubuntu+Condensed|Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
 
-<script type="text/javascript">
-	APP.files.js.templateBuilder = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/templateBuilder.src-verified.async.js';
-	APP.files.js.lightbox = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/lightbox.src-verified.async.js';
-</script>
-
 {if !empty($flash_message)}
 	<div class="bootstrap">
 		<div class="module_confirmation conf confirm alert alert-{$flash_message['status']|escape:'htmlall':'UTF-8'}">
@@ -23,39 +18,39 @@
 <div id="getresponse" class="gr-wrapper">
 	<div id="module">
 		<div class="row">
-			<div class="col-md-3">
-				{if isset($selected_tab) && $selected_tab == 'automation' && isset($edit_automation) && ($edit_automation == 'new' || $edit_automation > '0')}
-				{else}
-					{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/menu.tpl"}
-				{/if}
-			</div>
-			<div class="col-md-9">
+			<div class="col-lg-12">
 				{if $selected_tab}
 					{if $selected_tab == 'api'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/api.tpl"}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/api.tpl"}
 					{/if}
 					{if $selected_tab == 'export_customers'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/exportcustomers.tpl"}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/exportcustomers.tpl"}
 					{/if}
 					{if $selected_tab == 'subscribe_via_registration'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/subscribe_via_registration.tpl"}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/subscribe_via_registration.tpl"}
 					{/if}
 					{if $selected_tab == 'subscribe_via_form'}
-						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/subscribe_via_form.tpl"}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/subscribe_via_form.tpl"}
+					{/if}
+					{if $selected_tab == 'ecommerce'}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/ecommerce.tpl"}
+					{/if}
+					{if $selected_tab == 'tracking'}
+						{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/tracking.tpl"}
 					{/if}
 					{if $selected_tab == 'automation'}
 						{if $edit_automation}
 							{if $edit_automation == 'new'}
-								{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/new_automation.tpl"}
+								{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/new_automation.tpl"}
 							{else}
-								{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/edit_automation.tpl"}
+								{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/edit_automation.tpl"}
 							{/if}
 						{else}
-							{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/automation.tpl"}
+							{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/automation.tpl"}
 						{/if}
 					{/if}
 				{else}
-					{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}getresponse/helpers/view/api.tpl"}
+					{include file="{$gr_tpl_path|escape:'htmlall':'UTF-8'}common/api.tpl"}
 				{/if}
 			</div>
 		</div>

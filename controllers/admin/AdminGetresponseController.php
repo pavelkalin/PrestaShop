@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class AdminGetresponseController
  *
@@ -10,7 +11,7 @@
 class AdminGetresponseController extends ModuleAdminController
 {
     /** @var DbConnection */
-    private $db;
+    public $db;
 
     public function __construct()
     {
@@ -21,18 +22,25 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         $this->bootstrap  = true;
-        $this->display    = 'view';
         $this->meta_title = $this->l('GetResponse Integration');
 
         $this->identifier  = 'api_key';
 
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
-            'action_url' => $this->context->link->getAdminLink('AdminGetresponse'),
+            'action_url' => $this->context->link->getAdminLink('AdminGetresponseAccount'),
             'base_url', __PS_BASE_URI__
         ));
 
         $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+
+
+        $settings = $this->db->getSettings();
+        $isConnected = !empty($settings['api_key']) ? true : false;
+
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && false === $isConnected) {
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
+        }
     }
 
     /**
@@ -42,18 +50,7 @@ class AdminGetresponseController extends ModuleAdminController
     public function setMedia($isNewTheme = false)
     {
         $this->context->controller->addJquery();
-
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/normalize.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/grid.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/form.css'));
-        $this->addCSS(array(_MODULE_DIR_ . $this->module->name . '/views/css/style.css'));
-
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/app.src-verified.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/fullSelect.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/lightbox.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/growler.src-verified.async.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/getresponse-custom-field.src-verified.js');
-        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr_main.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-account.js');
 
         parent::setMedia($isNewTheme);
     }
@@ -72,7 +69,7 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function initPageHeaderToolbar()
     {
-        if (Tools::getValue('action') != 'automation' || Tools::getValue('edit_id') != 'new') {
+        if (Tools::getValue('edit_id') != 'new') {
             parent::initPageHeaderToolbar();
         }
 
@@ -86,56 +83,135 @@ class AdminGetresponseController extends ModuleAdminController
     public function renderView()
     {
         $settings = $this->db->getSettings();
-
         $isConnected = !empty($settings['api_key']) ? true : false;
 
-        $this->context->smarty->assign(array('is_connected' => $isConnected));
-
-        if (false === $isConnected) {
-            $this->apiView();
-            return parent::renderView();
-        }
+        $this->context->smarty->assign(array(
+            'is_connected' => $isConnected,
+            'active_tracking' => $settings['active_tracking']
+        ));
 
         switch (Tools::getValue('action')) {
             case 'api':
                 $this->apiView();
                 break;
-            case 'export_customers_show':
-                $this->exportView();
-                break;
-            case 'export_customers_save':
-                $this->performExport();
-                break;
-            case 'subscribe_via_registration_show':
-                $this->subscribeViaRegistrationView();
-                break;
-
-            case 'subscribe_via_registration_ajax':
-                $this->subscribeViaRegistrationAjax();
-                break;
-
-            case 'subscribe_via_registration_send':
-                $this->performSubscribeViaRegistration();
-                break;
-            case 'subscribe_via_form':
-                $this->subscribeViaFormView();
-                break;
-
-            case 'subscribe_via_form_ajax':
-                $this->subscribeViaFormAjax();
-                break;
-            case 'subscribe_via_form_send':
-                $this->performSubscribeViaForm();
-                break;
-            case 'automation':
-                $this->automationView();
-                break;
             default:
-                $this->apiView();
+                break;
         }
 
         return parent::renderView();
     }
+
+    /**
+     * API key settings
+     */
+    public function apiView()
+    {
+        $settings = $this->db->getSettings();
+
+        if (!empty($settings['api_key'])) {
+            $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+            $data = $api->getAccounts();
+
+            $this->context->smarty->assign(array(
+                'gr_acc_name' => $data->firstName . ' ' . $data->lastName,
+                'gr_acc_email' => $data->email,
+                'gr_acc_company' => $data->companyName,
+                'gr_acc_phone' => $data->phone,
+                'gr_acc_address' => $data->city . ' ' . $data->street . ' ' . $data->zipCode,
+            ));
+        }
+
+        $this->context->smarty->assign(array(
+            'api_key' => $this->hideApiKey($settings['api_key']),
+            'is_connected' => !empty($settings['api_key']) ? true : false,
+            'form' => $this->renderApiForm()
+        ));
+    }
+
+    public function renderApiForm()
+    {
+        $this->fields_form = array(
+            'legend' => array(
+                'title' => $this->l('Connect your site and GetResponse'),
+                'icon' => 'icon-gears'
+            ),
+            'input' => array(
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('API key'),
+                    'name' => 'api_key',
+                    'desc' => $this->l('Your API key is part of the settings of your GetResponse account. Log in to GetResponse and go to <strong>My profile > Integration & API > API</strong> to find the key', false, false, false),
+                    'empty_message' => $this->l('You need to enter API key. This field can\'t be empty.'),
+                    'required' => true
+                ),
+                array(
+                    'type'      => 'switch',
+                    'label'     => $this->l('Enterprise package'),
+                    'name'      => 'is_enterprise',
+                    'required'  => false,
+                    'class'     => 't',
+                    'is_bool'   => true,
+                    'values'    => array(
+                      array(
+                          'id'    => 'active_on',
+                          'value' => 1,
+                          'label' => $this->l('Enabled')
+                      ),
+                      array(
+                          'id'    => 'active_off',
+                          'value' => 0,
+                          'label' => $this->l('Disabled')
+                      )
+                    ),
+                ),
+                array(
+                    'type' => 'radio',
+                    'label' => $this->l('Account type'),
+                    'name' => 'account_type',
+                    'required' => false,
+                    'values' =>  array(
+                        array(
+                            'id' => 'account_pl',
+                            'value' => '360pl',
+                            'label' => $this->l('GetResponse 360 PL')
+                        ),
+                        array(
+                            'id' => 'account_en',
+                            'value' => '360en',
+                            'label' => $this->l('GetResponse 360 COM')
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Your domain'),
+                    'name' => 'domain',
+                    'required' => false,
+                    'id' => 'domain',
+                    'desc' => $this->l('Enter your domain without protocol (https://) eg: "example.com"'),
+                ),
+                array(
+                    'type' => 'hidden',
+                    'name' => 'action',
+                    'values' => 'api',
+                    'default' => 'api'
+                )
+            ),
+            'submit' => array(
+                'title' => $this->l('Connect'),
+                'name' => 'connectToGetResponse',
+                'icon' => 'icon-getresponse icon-link'
+            )
+        );
+
+        //hack for setting default value of form input
+        if (empty($_POST['action'])) {
+            $_POST['action'] = 'api';
+        }
+
+        return parent::renderForm();
+    }
+
 
     /**
      * Process Refresh Data
@@ -147,524 +223,12 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * API key settings
-     */
-    public function apiView()
-    {
-        if (Tools::isSubmit('connectToGetResponse')) {
-            $this->connectToGetResponse();
-        } elseif (Tools::isSubmit('disconnectFromGetResponse')) {
-            $this->disconnectFromGetResponse();
-        }
-
-        $settings = $this->db->getSettings();
-
-        $this->context->smarty->assign(array(
-            'selected_tab' => 'api',
-            'api_key' => $this->hideApiKey($settings['api_key']),
-            'is_connected' => !empty($settings['api_key']) ? true : false
-        ));
-    }
-
-    private function disconnectFromGetResponse()
-    {
-        $this->db->updateApiSettings(null, null, null);
-        $this->addSuccessMessage('You have been disconnected.');
-    }
-
-    private function connectToGetResponse()
-    {
-        $api_key = Tools::getValue('api_key');
-        $is_enterprise = (bool) Tools::getValue('is_enterprise');
-        $account_type = Tools::getValue('account_type');
-        $domain = Tools::getValue('domain');
-
-        $account_type = $is_enterprise ? $account_type : 'gr';
-
-        if (false === $this->validateConnectionFormParams($api_key, $is_enterprise, $account_type, $domain)) {
-            return;
-        }
-
-        $api = new GrApi($api_key, $account_type, $domain);
-
-        try {
-            if (true === $api->checkConnection()) {
-                $this->db->updateApiSettings($api_key, $account_type, $domain);
-                $this->addSuccessMessage('You have been connected.');
-            } else {
-                $this->addErrorMessage($account_type !== 'gr' ? 'Wrong API key or domain' : 'Wrong API Key');
-            }
-        } catch (GrApiException $e) {
-            $this->addErrorMessage($e->getMessage());
-        }
-    }
-
-    /**
-     * @param string $api_key
-     * @param bool $is_enterprise
-     * @param string $account_type
-     * @param string $domain
-     *
-     * @return bool
-     */
-    private function validateConnectionFormParams($api_key, $is_enterprise, $account_type, $domain)
-    {
-        if (empty($api_key)) {
-            $this->addErrorMessage('Api Key field can not be empty');
-            return false;
-        }
-
-        if (false === $is_enterprise) {
-            return true;
-        }
-
-        if (empty($account_type)) {
-            $this->addErrorMessage('Invalid account type');
-            return false;
-        }
-
-        if (empty($domain)) {
-            $this->addErrorMessage('Domain field can not be empty');
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Export customers
-     */
-    public function exportView()
-    {
-        $this->redirectIfNotAuthorized();
-
-        $api = $this->getGrAPI();
-
-        $this->context->smarty->assign(array(
-            'selected_tab' => 'export_customers',
-            'campaigns' => $api->getCampaigns(),
-            'fromfields' => $api->getFromFields(),
-            'subscriptionConfirmationsSubject' => $api->getSubscriptionConfirmationsSubject(),
-            'subscriptionConfirmationsBody' => $api->getSubscriptionConfirmationsBody(),
-            'cycle_days' => $api->getAutoResponders(),
-            'custom_fields' => $this->db->getCustoms(),
-            'token' => $this->getToken()
-        ));
-    }
-
-    public function performExport()
-    {
-        $this->redirectIfNotAuthorized();
-
-        if (empty(Tools::getValue('export_subscribers'))) {
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
-        }
-
-        $campaign = Tools::getValue('campaign');
-        $ng = Tools::getValue('newsletter_guests');
-        $cycle_day = Tools::getValue('cycle_day');
-        $posted_customs = Tools::getValue('custom_field');
-        $add_to_cycle = Tools::getValue('add_to_cycle');
-        $cycle_day    = 'yes' === $add_to_cycle ? $cycle_day : null;
-
-        if (empty($campaign[0]) || $campaign[0] == '0') {
-            $this->addErrorMessage('No campaign selected');
-            $this->exportView();
-            return;
-        }
-
-        $errors = $this->validateCustoms($posted_customs);
-
-        if (!empty($errors)) {
-            $this->addErrorMessage(implode(',', $errors));
-            $this->exportView();
-            return;
-        }
-
-        $errorMessages = array();
-        $api = $this->getGrAPI();
-
-        // get contacts
-        $contacts = $this->db->getContacts(!empty($ng) ? true : false);
-
-        if (empty($contacts)) {
-            $this->addErrorMessage('No contacts to export');
-            $this->exportView();
-            return;
-        }
-
-        foreach ($contacts as $contact) {
-            $customs = $api->mapCustoms($contact, $_POST, $this->db->getCustoms(), 'export');
-
-            if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
-                $this->addErrorMessage('Incorrect field name: ' . $customs['custom_message']);
-                return;
-            }
-
-            $r = $api->addContact(
-                $campaign[0],
-                $contact['firstname'],
-                $contact['lastname'],
-                $contact['email'],
-                $cycle_day,
-                $customs
-            );
-
-            if (isset($r->httpStatus) && $r->httpStatus >= 400) {
-                $errorMessages[] = '[' . $r->code . '] ' . $r->message;
-            }
-        }
-
-        if (0 == count($errorMessages)) {
-            $this->addSuccessMessage('Export completed');
-        } elseif (1 == count($errorMessages)) {
-            $message = 'Export completed. One contact hasn\'t been exported due to error :';
-            $this->addSuccessMessage($message . ' ' . $errorMessages[0]);
-        } else {
-            $message = 'contacts haven\'t been exported due to various reasons';
-            $this->addSuccessMessage('Export completed. ' . count($errorMessages) . ' ' . $message);
-        }
-
-        $this->exportView();
-    }
-
-    public function subscribeViaRegistrationAjax()
-    {
-        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
-            die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
-        }
-
-        // ajax - update subscription
-        $subscription = Tools::getValue('subscription');
-
-        if (!in_array($subscription, array('yes', 'no'))) {
-            die(Tools::jsonEncode(array('error' => 'Incorrect subscription type.')));
-        }
-
-        $this->db->updateSettingsSubscription($subscription);
-        die(Tools::jsonEncode(array('success' => 'Settings updated.')));
-    }
-
-    /**
-     * Subscription via registration page
-     */
-    public function subscribeViaRegistrationView()
-    {
-        $this->redirectIfNotAuthorized();
-
-        // ajax - update subscription
-        $subscription = Tools::getValue('subscription');
-
-        if ($subscription) {
-            $this->db->updateSettingsSubscription($subscription);
-        }
-
-        $settings = $this->db->getSettings();
-        $api = $this->getGrAPI();
-
-        $this->context->smarty->assign(array(
-            'selected_tab' => 'subscribe_via_registration',
-            'fromfields' => $api->getFromFields(),
-            'campaigns' => $api->getCampaigns(),
-            'subscriptionConfirmationsSubject' => $api->getSubscriptionConfirmationsSubject(),
-            'subscriptionConfirmationsBody' => $api->getSubscriptionConfirmationsBody(),
-            'cycle_days' => $api->getAutoResponders(),
-            'custom_fields' => $this->db->getCustoms(),
-            'token' => $this->getToken(),
-            'status' => $settings['active_subscription'],
-            'selected_campaign' => $settings['campaign_id'],
-            'update_address' => $settings['update_address'],
-            'active_newsletter_subscription' => $settings['active_newsletter_subscription']
-        ));
-    }
-
-    public function performSubscribeViaRegistration()
-    {
-        $this->redirectIfNotAuthorized();
-
-        if (empty(Tools::getValue('subscribe_via_registration'))) {
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
-        }
-
-        $status         = Tools::getValue('status');
-        $campaign       = Tools::getValue('campaign');
-        $add_to_cycle   = Tools::getValue('add_to_cycle');
-        $cycle_day      = Tools::getValue('cycle_day');
-        $update_address = Tools::getValue('update_address');
-        $newsletter     = Tools::getValue('newsletter');
-        $posted_customs = Tools::getValue('custom_field');
-
-        // check subscription settings
-        if (!empty($campaign[0]) && $campaign[0] != '0' && !empty($status)) {
-            $update_address = empty($update_address) ? 'no' : $update_address;
-            $newsletter = empty($newsletter) ? 'no' : $newsletter;
-            $cycle_day = 'yes' === $add_to_cycle ? $cycle_day : null;
-
-            $errors = $this->validateCustoms($posted_customs);
-            if (!empty($errors)) {
-                $this->context->smarty->assign(implode(',', $errors));
-            } else {
-                $this->db->updateSettings($status, $campaign[0], $update_address, $cycle_day, $newsletter);
-                if (!empty($posted_customs)) {
-                    $this->db->updateCustomsWithPostedData($posted_customs);
-                } else {
-                    $this->db->disableCustoms();
-                }
-
-                $this->addSuccessMessage('Settings update successful');
-            }
-        } elseif (!empty($campaign[0]) && $campaign[0] == '0') {
-            $this->addErrorMessage('No campaign selected');
-        }
-
-        $this->subscribeViaRegistrationView();
-    }
-
-    public function subscribeViaFormAjax()
-    {
-        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
-            die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
-        }
-
-        // ajax - update subscription
-        $subscription = Tools::getValue('subscription');
-
-        if (!in_array($subscription, array('yes', 'no'))) {
-            die(Tools::jsonEncode(array('error' => 'Incorrect subscription type.')));
-        }
-
-        $this->db->updateWebformSubscription($subscription);
-        die(Tools::jsonEncode(array('success' => 'Settings updated.')));
-    }
-
-
-    /**
-     * Subscription via webform
-     */
-    public function subscribeViaFormView()
-    {
-        $this->redirectIfNotAuthorized();
-
-        $api = $this->getGrAPI();
-        $this->context->smarty->assign(array('selected_tab' => 'subscribe_via_form'));
-
-        $campaigns = $api->getCampaigns();
-
-        if (!empty($campaigns)) {
-            $campaign_id = array();
-            foreach ($campaigns as $campaign) {
-                $campaign_id[$campaign['id']] = $campaign['name'];
-            }
-
-            $this->context->smarty->assign(array('campaigns' => $campaign_id));
-        }
-
-        // get old webforms
-        $webforms = $api->getWebForms();
-        if (!empty($webforms)) {
-            $this->context->smarty->assign(array('webforms' => $webforms));
-        }
-
-        // get new forms
-        $forms = $api->getForms();
-        if (!empty($forms)) {
-            $this->context->smarty->assign(array('forms' => $forms));
-        }
-
-        $webformSettings = $this->db->getWebformSettings();
-        if (!empty($webformSettings)) {
-            $this->context->smarty->assign(array('webform_id' => $webformSettings['webform_id']));
-            $this->context->smarty->assign(array('webform_sidebar' => $webformSettings['sidebar']));
-            $this->context->smarty->assign(array('webform_style' => $webformSettings['style']));
-            $this->context->smarty->assign(array('webform_status' => $webformSettings['active_subscription']));
-        }
-    }
-
-    public function performSubscribeViaForm()
-    {
-        $this->redirectIfNotAuthorized();
-
-        if (empty(Tools::getValue('subscribe_via_form'))) {
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
-        }
-
-        // check _POST
-        $web_form_id      = Tools::getValue('webform_id');
-        $web_form_sidebar = Tools::getValue('webform_sidebar');
-        $web_form_style   = Tools::getValue('webform_style');
-        $web_form_status  = Tools::getValue('webform_status');
-
-        if (is_array($web_form_id) && empty($web_form_id[0])) {
-            $this->addErrorMessage('You have to select a WebForm');
-            return;
-        }
-
-        $api = $this->getGrAPI();
-
-        $web_forms = array_merge($api->getWebForms(), $api->getForms());
-        $merged_web_forms = array();
-
-        foreach ($web_forms as $form) {
-            $merged_web_forms[$form->webformId] = $form->scriptUrl;
-        }
-
-        // set web form info to DB
-        $this->db->updateWebformSettings(
-            $web_form_id[0],
-            $web_form_status,
-            $web_form_sidebar[0],
-            $web_form_style[0],
-            $merged_web_forms[$web_form_id[0]]
-        );
-        $this->addSuccessMessage('Settings update successful');
-        $this->subscribeViaFormView();
-    }
-
-    /**
-     * Automation
-     */
-    public function automationView()
-    {
-        $this->redirectIfNotAuthorized();
-
-        $api = $this->getGrAPI();
-
-        $this->context->smarty->assign(array('selected_tab' => 'automation'));
-
-        $categories = Category::getCategories(1, true, false);
-
-        if ($categories) {
-            $this->context->smarty->assign(array('categories' => $categories));
-        }
-
-        $this->context->smarty->assign(array('campaigns' => $api->getCampaigns()));
-        $this->context->smarty->assign(array('cycle_days' => $api->getAutoResponders()));
-
-        // add new automation
-        $is_submit = Tools::isSubmit('NewAutomationConfiguration');
-
-        if ($is_submit) {
-            // check _POST
-            $category  = Tools::getValue('category');
-            $campaign  = Tools::getValue('campaign');
-            $action    = Tools::getValue('a_action');
-            $cycle_day = Tools::getValue('cycle_day');
-
-            if (empty($category[0])) {
-                $this->addErrorMessage('Category can not be empty');
-            } elseif (empty($campaign[0])) {
-                $this->addErrorMessage('Campaign can not be empty');
-            } elseif (empty($action[0])) {
-                $this->addErrorMessage('Action can not be empty');
-            } else {
-                $add_to_cycle = Tools::getValue('add_to_cycle');
-                $cycle_day    = 'yes' === $add_to_cycle ? $cycle_day : null;
-                // set automation info to DB
-                $this->db->insertAutomationSettings($category[0], $campaign[0], $action[0], $cycle_day);
-                $this->addSuccessMessage('Automatic segmentation created');
-            }
-        }
-
-        // edit automation
-        $is_submit          = Tools::isSubmit('EditAutomationConfiguration');
-        $automation_id = Tools::getValue('update_id');
-        if ($is_submit && $automation_id) {
-            $category  = Tools::getValue('category');
-            $campaign  = Tools::getValue('campaign');
-            $action    = Tools::getValue('a_action');
-            $cycle_day = Tools::getValue('cycle_day');
-
-            if (empty($campaign)) {
-                $this->addErrorMessage('Campaign can not be empty');
-            } elseif (empty($action)) {
-                $this->addErrorMessage('Action can not be empty');
-            } else {
-                $add_to_cycle = Tools::getValue('add_to_cycle');
-                $cycle_day    =!empty($add_to_cycle) ? $cycle_day : null;
-                // set automation info to DB
-                $this->db->updateAutomationSettings($category, $automation_id, $campaign, $action, $cycle_day);
-                $this->addSuccessMessage('Automatic segmentation updated');
-            }
-        }
-
-        // delete automation
-        $delete_id = Tools::getValue('delete_id');
-        if ($delete_id) {
-            $this->db->deleteAutomationSettings($delete_id);
-            $this->addSuccessMessage('Automatic segmentation removed');
-        }
-
-        $update_status = Tools::getValue('update_status');
-        $update_id     = Tools::getValue('update_id');
-
-        // update automation status
-        if ($update_status && $update_id) {
-            $this->db->updateAutomationStatus($update_status, $update_id);
-        }
-
-        // default params
-        $selected_category  = '';
-        $selected_campaign  = '';
-        $selected_action    = '';
-        $selected_cycle_day = '';
-        $show_box           = 0;
-
-        // get automations
-        $automation_settings = $this->db->getAutomationSettings();
-        $edit_automation     = Tools::getValue('edit_id');
-        $this->context->smarty->assign(array('edit_automation' => $edit_automation));
-        if (!empty($automation_settings)) {
-            $this->context->smarty->assign(array('automation_settings' => $automation_settings));
-
-            if ($edit_automation) {
-                foreach ($automation_settings as $as) {
-                    if ($as['id'] == $edit_automation) {
-                        $selected_category  = $as['category_id'];
-                        $selected_campaign  = $as['campaign_id'];
-                        $selected_action    = $as['action'];
-                        $selected_cycle_day = $as['cycle_day'];
-                        $show_box           = $edit_automation;
-
-                        $this->context->smarty->assign(array('selected_id' => $as['id']));
-                    }
-                }
-            }
-        } else {
-            $this->context->smarty->assign(array('no_automation' => 'yes'));
-        }
-
-        // set categroies for edit automation view
-        if ($categories) {
-            foreach ($categories as $id => $category) {
-                if ($automation_settings) {
-                    foreach ($automation_settings as $automation) {
-                        // unset category if already is set automation for this option
-                        if ($automation['category_id'] == $category['id_category']) {
-                            unset($categories[$id]);
-                        }
-                    }
-                }
-            }
-
-            $this->context->smarty->assign(array('d_categories' => $categories));
-        }
-
-        $this->context->smarty->assign(array('selected_category' => $selected_category));
-        $this->context->smarty->assign(array('selected_campaign' => $selected_campaign));
-        $this->context->smarty->assign(array('selected_action' => $selected_action));
-        $this->context->smarty->assign(array('selected_cycle_day' => $selected_cycle_day));
-        $this->context->smarty->assign(array('show_box' => $show_box));
-    }
-
-    /**
      * Get Admin Token
      * @return bool|string
      */
     public function getToken()
     {
-        return Tools::getAdminTokenLite(Tab::getIdFromClassName('AdminGetresponse'));
+        return Tools::getAdminTokenLite('AdminGetresponse');
     }
 
     /**
@@ -674,7 +238,7 @@ class AdminGetresponseController extends ModuleAdminController
      *
      * @return array
      */
-    private function validateCustoms($customs)
+    public function validateCustoms($customs)
     {
         $errors = array();
         if (!is_array($customs)) {
@@ -688,120 +252,10 @@ class AdminGetresponseController extends ModuleAdminController
         return $errors;
     }
 
-    /**
-     * Ajax for add cycle
-     * &ajax&action=getmessages
-     */
-    public function displayAjaxGetMessages()
+    public function validateCustom($custom)
     {
-        $settings = $this->db->getSettings();
-
-        if (empty($settings['api_key'])) {
-            die(Tools::jsonEncode(array('error' => 'Wrong API Key', 'table' => '')));
-        }
-
-        $api = $this->getGrAPI();
-
-        $campaign_id   = Tools::getValue('campaign_id');
-        $campaign_name = Tools::getValue('campaign_name');
-
-        if (empty($campaign_id)) {
-            die(Tools::jsonEncode(array('error' => 'Campaign id can\'t be empty.', 'table' => '')));
-        }
-
-        try {
-            $messages = (array) $api->getAutoresponders();
-        } catch (Exception $e) {
-            $messages = array();
-        }
-
-        $table = array();
-        $counter = 1;
-
-        foreach ($messages as $message) {
-            $message_info                          = array();
-            $message_info['id']                    = $message->autoresponderId;
-            $message_info['on_day']                = $message->triggerSettings->dayOfCycle;
-            $message_info['triggers_name']         = $message->name;
-            $message_info['messages_id']           = $message->autoresponderId;
-            $message_info['messages_name']         = $message->name;
-            $message_info['messages_subject']      = $message->subject;
-            $message_info['messages_campaigns_id'] = $message->triggerSettings->selectedCampaigns;
-            $message_info['status']                = 'active';
-            $message_info['campaigns_name']        = $campaign_name;
-
-            $table[] = $message_info;
-            $counter ++;
-        }
-
-        $return = array('error' => '', 'table' => $table);
-        die(Tools::jsonEncode($return));
-    }
-
-    /**
-     * Ajax add campaign
-     * &ajax&action=addcampaign
-     */
-    public function displayAjaxAddCampaign()
-    {
-        $settings = $this->db->getSettings();
-
-        if (empty($settings['api_key'])) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Wrong API Key')));
-        }
-
-        $campaign_name        = Tools::getValue('campaign_name');
-        $from_field           = Tools::getValue('from_field');
-        $reply_to_field       = Tools::getValue('reply_to_field');
-        $confirmation_subject = Tools::getValue('confirmation_subject');
-        $confirmation_body    = Tools::getValue('confirmation_body');
-
-        if (empty($campaign_name)) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name can\'t be empty.')));
-        }
-
-        if (empty($from_field)) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'From field can\'t be empty.')));
-        }
-
-        if (empty($reply_to_field)) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Reply field can\'t be empty.')));
-        }
-
-        if (empty($confirmation_subject)) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation subject can\'t be empty.')));
-        }
-
-        if (empty($confirmation_body)) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Confirmation body can\'t be empty.')));
-        }
-
-        $campaign_name = Tools::strtolower($campaign_name);
-
-        if (preg_match('/^[\w\-]+$/', $campaign_name) == false) {
-            die(Tools::jsonEncode(array('type' => 'error', 'msg' => 'Campaign name contains invalid characters.')));
-        }
-
-        try {
-            // add new campaign to GR
-            $this->addCampaignToGR(
-                $campaign_name,
-                $from_field,
-                $reply_to_field,
-                $confirmation_subject,
-                $confirmation_body
-            );
-
-            die(Tools::jsonEncode(array(
-                'type' => 'success',
-                'msg'  => 'Campaign "' . $campaign_name . '" sucessfully created.',
-                'c'    => $campaign_name
-            )));
-        } catch (GrApiException $e) {
-            die(Tools::jsonEncode(array(
-                'type' => 'error',
-                'msg'  => $e->getMessage()
-            )));
+        if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
+            return $this->l('Custom field contains invalid characters!');
         }
     }
 
@@ -815,7 +269,7 @@ class AdminGetresponseController extends ModuleAdminController
      * @param $confirmation_body
      * @throws GrApiException
      */
-    private function addCampaignToGR(
+    public function addCampaignToGR(
         $campaign_name,
         $from_field,
         $reply_to_field,
@@ -855,7 +309,7 @@ class AdminGetresponseController extends ModuleAdminController
     /**
      * @param string $message
      */
-    private function addSuccessMessage($message)
+    public function addSuccessMessage($message)
     {
         $this->context->smarty->assign(array('flash_message' => array(
             'message' => $this->l($message),
@@ -866,11 +320,22 @@ class AdminGetresponseController extends ModuleAdminController
     /**
      * @param string $message
      */
-    private function addErrorMessage($message)
+    public function addErrorMessage($message)
     {
         $this->context->smarty->assign(array('flash_message' => array(
             'message' => $this->l($message),
             'status' => 'danger'
+        )));
+    }
+
+    /**
+     * @param string $message
+     */
+    public function addWarningMessage($message)
+    {
+        $this->context->smarty->assign(array('flash_message' => array(
+            'message' => $this->l($message),
+            'status' => 'warning'
         )));
     }
 
@@ -888,7 +353,7 @@ class AdminGetresponseController extends ModuleAdminController
         return $api_key;
     }
 
-    private function redirectIfNotAuthorized()
+    public function redirectIfNotAuthorized()
     {
         $settings = $this->db->getSettings();
 
@@ -897,9 +362,203 @@ class AdminGetresponseController extends ModuleAdminController
         }
     }
 
-    private function getGrAPI()
+    public function getGrAPI()
     {
         $settings = $this->db->getSettings();
         return new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+    }
+
+    public function getCampaignDays($autoresponders)
+    {
+        $campaignDays = array();
+        if ( !empty($autoresponders) && is_object($autoresponders)) {
+            foreach ($autoresponders as $autoresponder) {
+                if ($autoresponder->triggerSettings->dayOfCycle == null) {
+                    continue;
+                }
+                $campaignDays[$autoresponder->triggerSettings->subscribedCampaign->campaignId][$autoresponder->triggerSettings->dayOfCycle] =
+                    array('day' => $autoresponder->triggerSettings->dayOfCycle,
+                          'name' => $autoresponder->subject,
+                          'status' => $autoresponder->status,
+                          'full_name' => '(' . $this->l('Day') . ': ' . $autoresponder->triggerSettings->dayOfCycle . ') ' . $autoresponder->name . ' (' . $this->l('Subject') . ': ' . $autoresponder->subject . ')'
+                    );
+            }
+        }
+        return $campaignDays;
+    }
+
+    public function renderAddCampaignForm($fromFields, $replyTo, $confirmSub, $confirmBody)
+    {
+        $fields_form = array(
+            'legend' => array(
+                'title' => $this->l('Add new contact list'),
+                'icon' => 'icon-gears'
+            ),
+            'input' => array(
+                'contact_list' => array(
+                    'label' => $this->l('List name'),
+                    'name' => 'campaign_name',
+                    'hint' => $this->l('You need to enter a name that\'s at least 3 characters long'),
+                    'type' => 'text',
+                    'required' => true
+                ),
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('From field'),
+                    'name' => 'from_field',
+                    'required' => true,
+                    'options' => array(
+                        'query' => $fromFields,
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    )
+                ),
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('Reply-to'),
+                    'name' => 'replyto',
+                    'required' => true,
+                    'options' => array(
+                        'query' => $replyTo,
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    )
+                ),
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('Confirmation subject'),
+                    'name' => 'subject',
+                    'required' => true,
+                    'options' => array(
+                        'query' => $confirmSub,
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    )
+                ),
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('Confirmation body'),
+                    'name' => 'body',
+                    'required' => true,
+                    'desc' => $this->l('The confirmation message body and subject depend on System >> Configuration >> General >> Locale Options.') . '<br>' . $this->l('By default all lists you create in Prestashop have double opt-in enabled. You can change this later in your list settings.'),
+                    'options' => array(
+                        'query' => $confirmBody,
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    )
+                ),
+            ),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'name' => 'addCampaignForm',
+                'icon' => 'process-icon-save'
+            )
+        );
+
+        /** @var HelperFormCore $helper */
+        $helper = new HelperForm();
+        $helper->currentIndex = AdminController::$currentIndex . '&token=' . $this->getToken();
+        $helper->fields_value = array(
+            'campaign_name' => false,
+            'from_field' => false,
+            'replyto' => false,
+            'subject' => false,
+            'body' => false,
+        );
+
+        return $helper->generateForm(array(array('form' => $fields_form)));
+    }
+
+    /**
+     * Converts campaigns to display array
+     *
+     * @param $campaigns
+     *
+     * @return array
+     */
+    public function convertCampaignsToDisplayArray($campaigns)
+    {
+        $options = array(
+            array(
+                'id_option' => 0,
+                'name' => $this->l('Select a list')
+            )
+        );
+        foreach ($campaigns as $campaign)
+        {
+            $options[] = array(
+                'id_option' => $campaign['id'],
+                'name' => $campaign['name']
+            );
+        }
+
+        return $options;
+    }
+
+    /**
+     * Saves customs
+     */
+    public function saveCustom()
+    {
+        $custom = array(
+            'id' => Tools::getValue('id'),
+            'value' => Tools::getValue('customer_detail'),
+            'name' => Tools::getValue('gr_custom'),
+            'active' => Tools::getValue('mapping_on') == 1 ? 'yes' : 'no'
+        );
+
+        if (Tools::getValue('default') == 1) {
+            $this->errors[] = $this->l('Default mappings cannot be changed!');
+            return;
+        }
+
+        $error = $this->validateCustom($custom['name']);
+
+        if (empty($error)) {
+            $this->db->updateCustom($custom);
+            $this->confirmations[] = $this->l('Custom sucessfuly edited');
+        } else {
+            $this->erors[] = $this->l($error);
+        }
+
+    }
+
+    /**
+     * Saves campaign
+     */
+    public function saveCampaign()
+    {
+        $name = Tools::getValue('campaign_name');
+        $from = Tools::getValue('from_field');
+        $to = Tools::getValue('replyto');
+        $confirmSubject = Tools::getValue('subject');
+        $confirmBody = Tools::getValue('body');
+
+        if (strlen($name) < 4) {
+            $this->errors[] = $this->l('The "list name" field is invalid');
+        }
+        if (strlen($from) < 4) {
+            $this->errors[] = $this->l('The "from" field is required');
+        }
+        if (strlen($to) < 4) {
+            $this->errors[] = $this->l('The "reply-to" field is required');
+        }
+        if (strlen($confirmSubject) < 4) {
+            $this->errors[] = $this->l('The "confirmation subject" field is required');
+        }
+        if (strlen($confirmBody) < 4) {
+            $this->errors[] = $this->l('The "confirmation body" field is required');
+        }
+
+        if (!empty($this->errors)) {
+            return;
+        }
+
+        try {
+            $this->addCampaignToGR($name, $from, $to, $confirmSubject, $confirmBody);
+            $this->confirmations[] = $this->l('List created');
+        } catch (GrApiException $e) {
+            $this->errors[] = $this->l('Contact list could not be added! (' . $e->getMessage() . ')');
+        }
     }
 }
