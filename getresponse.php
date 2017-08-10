@@ -23,11 +23,17 @@ class Getresponse extends Module
     /** @var DbConnection */
     private $db;
 
+    /** @var GrApi */
+    private $api = null;
+
+    /** @var array */
+    private $settings = null;
+
     public function __construct()
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '4.1.1';
+        $this->version                = '16.1.3';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -143,6 +149,37 @@ class Getresponse extends Module
         return true;
     }
 
+    /**
+     * @return GrApi
+     * @throws Exception
+     */
+    private function getApi()
+    {
+        if ($this->api === null) {
+            $settings = $this->getSettings();
+            $this->api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+        }
+
+        return $this->api;
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    private function getSettings()
+    {
+        if ($this->settings === null) {
+            $this->settings = $this->db->getSettings();
+        }
+
+        if (empty($this->settings['api_key'])) {
+            throw new Exception('Not connected');
+        }
+
+        return $this->settings;
+    }
+
     /******************************************************************/
     /** Hook Methods **************************************************/
     /******************************************************************/
@@ -152,7 +189,11 @@ class Getresponse extends Module
      */
     public function hookNewOrder($params)
     {
-        $this->addSubscriberForOrder($params);
+        try {
+            $this->addSubscriberForOrder($params);
+        } catch (Exception $e) {
+            return;
+        }
     }
 
     /**
@@ -160,23 +201,19 @@ class Getresponse extends Module
      */
     public function hookCreateAccount($params)
     {
-        $this->createSubscriber($params);
+        try {
+            $this->createSubscriber($params);
+        } catch (Exception $e) {
+            return;
+        }
     }
 
     /**
      * @param array $params
-     *
      */
     public function createSubscriber($params)
     {
-        $settings = $this->db->getSettings();
-
-        if (empty($settings['api_key'])) {
-            return;
-        }
-
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
-
+        $settings = $this->getSettings();
         if (isset($settings['active_subscription'])
             && $settings['active_subscription'] == 'yes'
             && !empty($settings['campaign_id'])
@@ -187,38 +224,23 @@ class Getresponse extends Module
                 $prefix  = 'newCustomer';
             }
 
-            $customs = $api->mapCustoms((array)$params[$prefix], null, $this->db->getCustoms(), 'create');
-
-            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $api->addContact(
-                    $settings['campaign_id'],
-                    $params[$prefix]->firstname,
-                    $params[$prefix]->lastname,
-                    $params[$prefix]->email,
-                    $settings['cycle_day'],
-                    $customs
-                );
-            }
+            $customs = $this->getApi()->mapCustoms((array)$params[$prefix], null, $this->db->getCustoms(), 'create');
+            $this->addContact($params[$prefix], $customs);
         }
     }
 
     /**
      * @param array $params
+     *
+     * @throws Exception
      */
     public function addSubscriberForOrder($params)
     {
         $prefix = 'customer';
-        $settings = $this->db->getSettings();
-
-        if (empty($settings['api_key'])) {
-            return;
-        }
-
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
 
         //update_contact
         $contact = $this->db->getContactByEmail($params[$prefix]->email);
-        $customs = $api->mapCustoms((array) $contact, $_POST, $this->db->getCustoms(), 'order');
+        $customs = $this->getApi()->mapCustoms((array) $contact, $_POST, $this->db->getCustoms(), 'order');
 
         // automation
         if (!empty($params['order']->product_list)) {
@@ -232,12 +254,13 @@ class Getresponse extends Module
 
             $automations = $this->db->getAutomationSettings(true);
             if (!empty($automations)) {
-                $default = false;
+                $default = true;
                 foreach ($automations as $automation) {
                     if (in_array($automation['category_id'], $categories)) {
                         // do automation
                         if ($automation['action'] == 'move') {
-                            $api->moveContactToGr(
+                            $settings = $this->getSettings();
+                            $this->getApi()->moveContactToGr(
                                 $automation['campaign_id'],
                                 $params[$prefix]->firstname,
                                 $params[$prefix]->lastname,
@@ -246,55 +269,21 @@ class Getresponse extends Module
                                 $settings['cycle_day']
                             );
                         } elseif ($automation['action'] == 'copy') {
-                            $api->addContact(
-                                $automation['campaign_id'],
-                                $params[$prefix]->firstname,
-                                $params[$prefix]->lastname,
-                                $params[$prefix]->email,
-                                $settings['cycle_day'],
-                                $customs
-                            );
+                            $this->addContact($params[$prefix], $customs);
                         }
-                    } else {
-                        $default = true;
+                        $default = false;
                     }
                 }
 
-                if ($default === true && isset($params[$prefix]->newsletter) &&
-                    $params[$prefix]->newsletter == 1) {
-                    $api->addContact(
-                        $settings['campaign_id'],
-                        $params[$prefix]->firstname,
-                        $params[$prefix]->lastname,
-                        $params[$prefix]->email,
-                        $settings['cycle_day'],
-                        $customs
-                    );
+                if ($default) {
+                    $this->addContact($params[$prefix], $customs);
                 }
-            } else {
-                if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                    $api->addContact(
-                        $settings['campaign_id'],
-                        $params[$prefix]->firstname,
-                        $params[$prefix]->lastname,
-                        $params[$prefix]->email,
-                        $settings['cycle_day'],
-                        $customs
-                    );
-                }
-            }
-        } else {
-            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $api->addContact(
-                    $settings['campaign_id'],
-                    $params[$prefix]->firstname,
-                    $params[$prefix]->lastname,
-                    $params[$prefix]->email,
-                    $settings['cycle_day'],
-                    $customs
-                );
+                return; //return so we do not hit standard case
             }
         }
+
+        // standard case
+        $this->addContact($params[$prefix], $customs);
     }
 
     /**
@@ -393,5 +382,26 @@ class Getresponse extends Module
 
         $this->smarty->assign(array('webform_url' => $webform_settings['url'], 'style' => $set_style));
         return $this->display(__FILE__, 'views/templates/admin/getresponse/helpers/view/webform.tpl');
+    }
+
+    /**
+     * @param object $contact
+     * @param array $customs
+     *
+     * @throws Exception
+     */
+    private function addContact($contact, $customs)
+    {
+        $settings = $this->getSettings();
+        if (isset($contact->newsletter) && $contact->newsletter == 1) {
+            $this->getApi()->addContact(
+                $settings['campaign_id'],
+                $contact->firstname,
+                $contact->lastname,
+                $contact->email,
+                $settings['cycle_day'],
+                $customs
+            );
+        }
     }
 }
