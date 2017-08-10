@@ -255,8 +255,8 @@ class AdminGetresponseController extends ModuleAdminController
     public function performExport()
     {
         $this->redirectIfNotAuthorized();
-
-        if (empty(Tools::getValue('export_subscribers'))) {
+        $exportSubscribers = Tools::getValue('export_subscribers');
+        if (empty($exportSubscribers)) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
         }
 
@@ -330,11 +330,6 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaRegistrationAjax()
     {
-        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
-            die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
-        }
-
         // ajax - update subscription
         $subscription = Tools::getValue('subscription');
 
@@ -382,8 +377,8 @@ class AdminGetresponseController extends ModuleAdminController
     public function performSubscribeViaRegistration()
     {
         $this->redirectIfNotAuthorized();
-
-        if (empty(Tools::getValue('subscribe_via_registration'))) {
+        $subscribeViaRegister = Tools::getValue('subscribe_via_registration');
+        if (empty($subscribeViaRegister)) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
         }
 
@@ -423,11 +418,6 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaFormAjax()
     {
-        if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            || Tools::strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
-            die(Tools::jsonEncode(array('error' => 'Incorrect action.', 'table' => '')));
-        }
-
         // ajax - update subscription
         $subscription = Tools::getValue('subscription');
 
@@ -486,7 +476,8 @@ class AdminGetresponseController extends ModuleAdminController
     {
         $this->redirectIfNotAuthorized();
 
-        if (empty(Tools::getValue('subscribe_via_form'))) {
+        $subscribeViaForm = Tools::getValue('subscribe_via_form');
+        if (empty($subscribeViaForm)) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
         }
 
