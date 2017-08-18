@@ -7,8 +7,8 @@
 <link href='http://fonts.googleapis.com/css?family=Ubuntu+Condensed|Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript">
-	APP.files.js.templateBuilder = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/templateBuilder.src-verified.async.js';
-	APP.files.js.lightbox = '{$base_url|escape:'htmlall':'UTF-8'}modules/getresponse/views/js/lightbox.src-verified.async.js';
+	APP.files.js.templateBuilder = '{$gr_base_url|escape:'htmlall':'UTF-8'}/modules/getresponse/views/js/templateBuilder.src-verified.async.js';
+	APP.files.js.lightbox = '{$gr_base_url|escape:'htmlall':'UTF-8'}/modules/getresponse/views/js/lightbox.src-verified.async.js';
 </script>
 
 {if !empty($flash_message)}
