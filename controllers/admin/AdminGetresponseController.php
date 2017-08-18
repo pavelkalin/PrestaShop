@@ -86,10 +86,12 @@ class AdminGetresponseController extends ModuleAdminController
     public function renderView()
     {
         $settings = $this->db->getSettings();
-
         $isConnected = !empty($settings['api_key']) ? true : false;
 
-        $this->context->smarty->assign(array('is_connected' => $isConnected));
+        $this->context->smarty->assign(array(
+            'is_connected' => $isConnected,
+            'gr_base_url' => Tools::getHttpHost(true)
+        ));
 
         if (false === $isConnected) {
             $this->apiView();
@@ -330,6 +332,8 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaRegistrationAjax()
     {
+        header('Content-Type: application/json');
+
         // ajax - update subscription
         $subscription = Tools::getValue('subscription');
 
@@ -418,6 +422,8 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function subscribeViaFormAjax()
     {
+        header('Content-Type: application/json');
+
         // ajax - update subscription
         $subscription = Tools::getValue('subscription');
 
@@ -685,6 +691,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function displayAjaxGetMessages()
     {
+        header('Content-Type: application/json');
+
         $settings = $this->db->getSettings();
 
         if (empty($settings['api_key'])) {
@@ -735,6 +743,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function displayAjaxAddCampaign()
     {
+        header('Content-Type: application/json');
+
         $settings = $this->db->getSettings();
 
         if (empty($settings['api_key'])) {
