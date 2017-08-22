@@ -541,7 +541,7 @@ class DbConnection
     {
         $sql = '
         SELECT
-            group_concat(DISTINCT cp.`id_category separator` ", ") as category
+            group_concat(DISTINCT cp.`id_category` separator ", ") as category
         FROM
             ' . _DB_PREFIX_ . 'customer as cu
         LEFT JOIN
