@@ -271,7 +271,9 @@ class GrApi
             'ipAddress'  => $_SERVER['REMOTE_ADDR'],
         );
 
-        if (!empty(trim($name))) {
+        $trimmedName = trim($name);
+
+        if (!empty($trimmedName)) {
             $params['name'] = $name;
         }
 

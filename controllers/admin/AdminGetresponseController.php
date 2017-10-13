@@ -212,7 +212,6 @@ class AdminGetresponseController extends ModuleAdminController
         return parent::renderForm();
     }
 
-
     /**
      * Process Refresh Data
      * @return mixed
