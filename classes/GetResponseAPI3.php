@@ -311,6 +311,120 @@ class GetResponseAPI3
     }
 
     /**
+     * @param string $shopName
+     * @param string $locale
+     * @param string $currency
+     *
+     * @return mixed
+     */
+    public function createShop($shopName, $locale, $currency)
+    {
+        $params = array(
+            'name' => $shopName,
+            'locale' => $locale,
+            'currency' => $currency
+        );
+        return $this->call('shops', 'POST', $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @return mixed
+     */
+    public function deleteShop($shopId)
+    {
+        return $this->call('shops/' . $shopId, 'DELETE');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getShops()
+    {
+        return $this->call('shops');
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $cartId
+     * @param array $params
+     * @return mixed
+     */
+    public function updateCart($shopId, $cartId, $params)
+    {
+        return $this->call('shops/' . $shopId . '/carts/' . $cartId, 'POST', $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $cartId
+     * @return mixed
+     */
+    public function deleteCart($shopId, $cartId)
+    {
+        return $this->call('shops/' . $shopId . '/carts/'.$cartId, 'DELETE');
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return mixed
+     */
+    public function addProduct($shopId, $params)
+    {
+        return $this->call('shops/'.$shopId.'/products', 'POST', $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return mixed
+     */
+    public function addCart($shopId, $params)
+    {
+        return $this->call('shops/'.$shopId.'/carts', 'POST', $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param array $params
+     * @return mixed
+     */
+    public function createOrder($shopId, $params)
+    {
+        return $this->call('shops/'.$shopId.'/orders', 'POST', $params);
+    }
+
+    /**
+     * @param string $shopId
+     * @param string $orderId
+     * @param array $params
+     * @return mixed
+     */
+    public function updateOrder($shopId, $orderId, $params)
+    {
+        return $this->call('shops/'.$shopId.'/orders/'.$orderId, 'POST', $params);
+    }
+
+    /**
+     * Return features list
+     * @return mixed
+     */
+    public function getFeatures()
+    {
+        return $this->call('accounts/features');
+    }
+
+    /**
+     * Return features list
+     * @return mixed
+     */
+    public function getTrackingCode()
+    {
+        return $this->call('tracking');
+    }
+
+    /**
      * Curl run request
      *
      * @param null $api_method
@@ -329,6 +443,7 @@ class GetResponseAPI3
         $url = $this->api_url  . '/' .  $api_method;
 
         $headers = array(
+            'User-Agent: ' . 'PrestaShop/' . _PS_VERSION_,
             'X-APP-ID: ' . self::X_APP_ID,
             'X-Auth-Token: api-key ' . $this->api_key,
             'Content-Type: application/json'
