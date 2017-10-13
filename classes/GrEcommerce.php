@@ -53,6 +53,7 @@ class GrEcommerce
             'url' => Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=product&id_product=' . $ps_product->id,
             'type' => $ps_product->getWsType(),
             'vendor' => $ps_product->getWsManufacturerName(),
+            'externalId' => $product['id_product'],
             'categories' => array(),
             'variants' => array(
                 array(
