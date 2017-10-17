@@ -1,4 +1,5 @@
-function ecommerceDisplay() {
+function ecommerceDisplay()
+{
     if ($('#ecommerce_on').is(':checked')) {
         $('#shop').parent().parent().show();
         $('#form-GREcommerce').show();
@@ -8,13 +9,13 @@ function ecommerceDisplay() {
     }
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     $('.prestashop-switch').click(function () {
         ecommerceDisplay();
     }).trigger('click');
 
 
-    $('button[type="reset"]').click(function(e) {
+    $('button[type="reset"]').click(function (e) {
         e.preventDefault();
         window.history.back();
     });

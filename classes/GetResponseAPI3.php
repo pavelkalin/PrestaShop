@@ -12,10 +12,10 @@ class GetResponseAPI3
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
 
     /** @var string */
-    private $api_key;
+    private $apiKey;
 
     /** @var string */
-    private $api_url;
+    private $apiUrl;
 
     /** @var int */
     private $timeout = 8;
@@ -24,14 +24,14 @@ class GetResponseAPI3
     private $domain;
 
     /**
-     * @param string $api_key
-     * @param string $api_url
+     * @param string $apiKey
+     * @param string $apiUrl
      * @param string $domain
      */
-    public function __construct($api_key, $api_url, $domain)
+    public function __construct($apiKey, $apiUrl, $domain)
     {
-        $this->api_key = $api_key;
-        $this->api_url = $api_url;
+        $this->apiKey = $apiKey;
+        $this->apiUrl = $apiUrl;
         $this->domain = $domain;
     }
 
@@ -64,12 +64,12 @@ class GetResponseAPI3
 
     /**
      * get single campaign
-     * @param string $campaign_id retrieved using API
+     * @param string $campaignId retrieved using API
      * @return mixed
      */
-    public function getCampaign($campaign_id)
+    public function getCampaign($campaignId)
     {
-        return $this->call('campaigns/' . $campaign_id);
+        return $this->call('campaigns/' . $campaignId);
     }
 
     /**
@@ -143,21 +143,21 @@ class GetResponseAPI3
     /**
      * retrieving contact by id
      *
-     * @param string $contact_id - contact id obtained by API
+     * @param string $contactId - contact id obtained by API
      * @return mixed
      */
-    public function getContact($contact_id)
+    public function getContact($contactId)
     {
-        return $this->call('contacts/' . $contact_id);
+        return $this->call('contacts/' . $contactId);
     }
 
     /**
      * get contact activities
-     * @param $contact_id
+     * @param $contactId
      */
-    public function getContactActivities($contact_id)
+    public function getContactActivities($contactId)
     {
-        $this->call('contacts/' . $contact_id . '/activities');
+        $this->call('contacts/' . $contactId . '/activities');
     }
 
     /**
@@ -173,25 +173,25 @@ class GetResponseAPI3
 
     /**
      * updating any fields of your subscriber (without email of course)
-     * @param       $contact_id
+     * @param       $contactId
      * @param array $params
      *
      * @return mixed
      */
-    public function updateContact($contact_id, $params = array())
+    public function updateContact($contactId, $params = array())
     {
-        return $this->call('contacts/' . $contact_id, 'POST', $params);
+        return $this->call('contacts/' . $contactId, 'POST', $params);
     }
 
     /**
      * drop single user by ID
      *
-     * @param string $contact_id - obtained by API
+     * @param string $contactId - obtained by API
      * @return mixed
      */
-    public function deleteContact($contact_id)
+    public function deleteContact($contactId)
     {
-        return $this->call('contacts/' . $contact_id, 'DELETE');
+        return $this->call('contacts/' . $contactId, 'DELETE');
     }
 
     /**
@@ -248,12 +248,12 @@ class GetResponseAPI3
     }
 
     /**
-     * @param $custom_id
+     * @param $customId
      * @return mixed
      */
-    public function getCustomField($custom_id)
+    public function getCustomField($customId)
     {
-        return $this->call('custom-fields/' . $custom_id, 'GET');
+        return $this->call('custom-fields/' . $customId, 'GET');
     }
 
     /**
@@ -269,12 +269,12 @@ class GetResponseAPI3
     /**
      * get single web form
      *
-     * @param int $w_id
+     * @param int $wId
      * @return mixed
      */
-    public function getWebForm($w_id)
+    public function getWebForm($wId)
     {
-        return $this->call('webforms/' . $w_id);
+        return $this->call('webforms/' . $wId);
     }
 
     /**
@@ -291,12 +291,12 @@ class GetResponseAPI3
     /**
      * get single form
      *
-     * @param int $form_id
+     * @param int $formId
      * @return mixed
      */
-    public function getForm($form_id)
+    public function getForm($formId)
     {
-        return $this->call('forms/' . $form_id);
+        return $this->call('forms/' . $formId);
     }
 
     /**
@@ -427,25 +427,25 @@ class GetResponseAPI3
     /**
      * Curl run request
      *
-     * @param null $api_method
-     * @param string $http_method
+     * @param null $apiMethod
+     * @param string $httpMethod
      * @param array $params
      * @return mixed
      * @throws GrApiException
      */
-    private function call($api_method, $http_method = 'GET', $params = array())
+    private function call($apiMethod, $httpMethod = 'GET', $params = array())
     {
-        if (empty($api_method)) {
+        if (empty($apiMethod)) {
             throw GrApiException::createForEmptyApiMethod();
         }
 
         $params = Tools::jsonEncode($params);
-        $url = $this->api_url  . '/' .  $api_method;
+        $url = $this->apiUrl  . '/' .  $apiMethod;
 
         $headers = array(
             'User-Agent: ' . 'PrestaShop/' . _PS_VERSION_,
             'X-APP-ID: ' . self::X_APP_ID,
-            'X-Auth-Token: api-key ' . $this->api_key,
+            'X-Auth-Token: api-key ' . $this->apiKey,
             'Content-Type: application/json'
         );
 
@@ -464,10 +464,10 @@ class GetResponseAPI3
             CURLOPT_HTTPHEADER => $headers
         );
 
-        if ($http_method == 'POST') {
+        if ($httpMethod == 'POST') {
             $options[CURLOPT_POST] = 1;
             $options[CURLOPT_POSTFIELDS] = $params;
-        } elseif ($http_method == 'DELETE') {
+        } elseif ($httpMethod == 'DELETE') {
             $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
         }
 
@@ -505,7 +505,7 @@ class GetResponseAPI3
     /**
      * @param string $name
      *
-     * @return null
+     * @return null|stdClass
      */
     public function searchCustomFieldByName($name)
     {

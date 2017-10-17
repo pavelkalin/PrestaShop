@@ -1,8 +1,22 @@
 <?php
-
 /**
  * Class AdminGetresponseController
- *
+ * @static $currentIndex
+ * @property $display
+ * @property $confirmations
+ * @property $errors
+ * @property $context
+ * @property $toolbar_title
+ * @property $module
+ * @property $page_header_toolbar_btn
+ * @property $bootstrap
+ * @property $meta_title
+ * @property $identifier
+ * @property $show_form_cancel_button
+ * @method string l() l($string, $class = null, $addslashes = false, $htmlentities = true)
+ * @method void addJs() addJs($path)
+ * @method void addJquery()
+ * @method null initContent()
  * @author Getresponse <grintegrations@getresponse.com>
  * @copyright GetResponse
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
@@ -128,90 +142,6 @@ class AdminGetresponseController extends ModuleAdminController
         ));
     }
 
-    public function renderApiForm()
-    {
-        $this->fields_form = array(
-            'legend' => array(
-                'title' => $this->l('Connect your site and GetResponse'),
-                'icon' => 'icon-gears'
-            ),
-            'input' => array(
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('API key'),
-                    'name' => 'api_key',
-                    'desc' => $this->l('Your API key is part of the settings of your GetResponse account. Log in to GetResponse and go to <strong>My profile > Integration & API > API</strong> to find the key', false, false, false),
-                    'empty_message' => $this->l('You need to enter API key. This field can\'t be empty.'),
-                    'required' => true
-                ),
-                array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Enterprise package'),
-                    'name'      => 'is_enterprise',
-                    'required'  => false,
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
-                      array(
-                          'id'    => 'active_on',
-                          'value' => 1,
-                          'label' => $this->l('Enabled')
-                      ),
-                      array(
-                          'id'    => 'active_off',
-                          'value' => 0,
-                          'label' => $this->l('Disabled')
-                      )
-                    ),
-                ),
-                array(
-                    'type' => 'radio',
-                    'label' => $this->l('Account type'),
-                    'name' => 'account_type',
-                    'required' => false,
-                    'values' =>  array(
-                        array(
-                            'id' => 'account_pl',
-                            'value' => '360pl',
-                            'label' => $this->l('GetResponse 360 PL')
-                        ),
-                        array(
-                            'id' => 'account_en',
-                            'value' => '360en',
-                            'label' => $this->l('GetResponse 360 COM')
-                        )
-                    ),
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Your domain'),
-                    'name' => 'domain',
-                    'required' => false,
-                    'id' => 'domain',
-                    'desc' => $this->l('Enter your domain without protocol (https://) eg: "example.com"'),
-                ),
-                array(
-                    'type' => 'hidden',
-                    'name' => 'action',
-                    'values' => 'api',
-                    'default' => 'api'
-                )
-            ),
-            'submit' => array(
-                'title' => $this->l('Connect'),
-                'name' => 'connectToGetResponse',
-                'icon' => 'icon-getresponse icon-link'
-            )
-        );
-
-        //hack for setting default value of form input
-        if (empty($_POST['action'])) {
-            $_POST['action'] = 'api';
-        }
-
-        return parent::renderForm();
-    }
-
     /**
      * Process Refresh Data
      * @return mixed
@@ -251,6 +181,10 @@ class AdminGetresponseController extends ModuleAdminController
         return $errors;
     }
 
+    /**
+     * @param string $custom
+     * @return string
+     */
     public function validateCustom($custom)
     {
         if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
@@ -260,20 +194,19 @@ class AdminGetresponseController extends ModuleAdminController
 
     /**
      * Add camapaign to GetResponse via API
-     *
-     * @param $campaign_name
-     * @param $from_field
-     * @param $reply_to_field
-     * @param $confirmation_subject
-     * @param $confirmation_body
+     * @param string $campaignName
+     * @param string $fromField
+     * @param string $replyToField
+     * @param string $confirmationSubject
+     * @param string $confirmationBody
      * @throws GrApiException
      */
     public function addCampaignToGR(
-        $campaign_name,
-        $from_field,
-        $reply_to_field,
-        $confirmation_subject,
-        $confirmation_body
+        $campaignName,
+        $fromField,
+        $replyToField,
+        $confirmationSubject,
+        $confirmationBody
     ) {
         $settings = $this->db->getSettings();
         // required params
@@ -285,12 +218,12 @@ class AdminGetresponseController extends ModuleAdminController
 
         try {
             $params = array(
-                'name'                 => $campaign_name,
+                'name'                 => $campaignName,
                 'confirmation'         => array(
-                    'fromField' => array('fromFieldId'  => $from_field),
-                    'replyTo'   => array('fromFieldId'  => $reply_to_field),
-                    'subscriptionConfirmationBodyId'    => $confirmation_body,
-                    'subscriptionConfirmationSubjectId' => $confirmation_subject
+                    'fromField' => array('fromFieldId'  => $fromField),
+                    'replyTo'   => array('fromFieldId'  => $replyToField),
+                    'subscriptionConfirmationBodyId'    => $confirmationBody,
+                    'subscriptionConfirmationSubjectId' => $confirmationSubject
                     ),
                 'languageCode'         => 'EN'
             );
@@ -306,50 +239,17 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * @param string $message
-     */
-    public function addSuccessMessage($message)
-    {
-        $this->context->smarty->assign(array('flash_message' => array(
-            'message' => $this->l($message),
-            'status' => 'success'
-        )));
-    }
-
-    /**
-     * @param string $message
-     */
-    public function addErrorMessage($message)
-    {
-        $this->context->smarty->assign(array('flash_message' => array(
-            'message' => $this->l($message),
-            'status' => 'danger'
-        )));
-    }
-
-    /**
-     * @param string $message
-     */
-    public function addWarningMessage($message)
-    {
-        $this->context->smarty->assign(array('flash_message' => array(
-            'message' => $this->l($message),
-            'status' => 'warning'
-        )));
-    }
-
-    /**
-     * @param string $api_key
+     * @param string $apiKey
      *
      * @return string
      */
-    private function hideApiKey($api_key)
+    private function hideApiKey($apiKey)
     {
-        if (Tools::strlen($api_key) > 0) {
-            return str_repeat("*", Tools::strlen($api_key) - 6) . Tools::substr($api_key, -6);
+        if (Tools::strlen($apiKey) > 0) {
+            return str_repeat("*", Tools::strlen($apiKey) - 6) . Tools::substr($apiKey, -6);
         }
 
-        return $api_key;
+        return $apiKey;
     }
 
     public function redirectIfNotAuthorized()
@@ -367,19 +267,29 @@ class AdminGetresponseController extends ModuleAdminController
         return new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
     }
 
+    /**
+     * @param array $autoresponders
+     * @return array
+     */
     public function getCampaignDays($autoresponders)
     {
         $campaignDays = array();
-        if ( !empty($autoresponders) && is_object($autoresponders)) {
+        if (!empty($autoresponders) && is_object($autoresponders)) {
             foreach ($autoresponders as $autoresponder) {
                 if ($autoresponder->triggerSettings->dayOfCycle == null) {
                     continue;
                 }
-                $campaignDays[$autoresponder->triggerSettings->subscribedCampaign->campaignId][$autoresponder->triggerSettings->dayOfCycle] =
+
+                $cycleDay = $autoresponder->triggerSettings->dayOfCycle;
+                $campaignId = $autoresponder->triggerSettings->dayOfCycle;
+
+                $campaignDays[$campaignId][$cycleDay] =
                     array('day' => $autoresponder->triggerSettings->dayOfCycle,
                           'name' => $autoresponder->subject,
                           'status' => $autoresponder->status,
-                          'full_name' => '(' . $this->l('Day') . ': ' . $autoresponder->triggerSettings->dayOfCycle . ') ' . $autoresponder->name . ' (' . $this->l('Subject') . ': ' . $autoresponder->subject . ')'
+                          'full_name' => '(' . $this->l('Day') . ': ' .
+                              $cycleDay . ') ' . $autoresponder->name .
+                              ' (' . $this->l('Subject') . ': ' . $autoresponder->subject . ')'
                     );
             }
         }
@@ -388,7 +298,7 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function renderAddCampaignForm($fromFields, $replyTo, $confirmSub, $confirmBody)
     {
-        $fields_form = array(
+        $fieldsForm = array(
             'legend' => array(
                 'title' => $this->l('Add new contact list'),
                 'icon' => 'icon-gears'
@@ -439,7 +349,16 @@ class AdminGetresponseController extends ModuleAdminController
                     'label' => $this->l('Confirmation body'),
                     'name' => 'body',
                     'required' => true,
-                    'desc' => $this->l('The confirmation message body and subject depend on System >> Configuration >> General >> Locale Options.') . '<br>' . $this->l('By default all lists you create in Prestashop have double opt-in enabled. You can change this later in your list settings.'),
+                    'desc' =>
+                        $this->l(
+                            'The confirmation message body and subject depend on System >> 
+                            Configuration >> General >> Locale Options.'
+                        ) .
+                        '<br>' .
+                        $this->l(
+                            'By default all lists you create in Prestashop have double opt-in enabled.
+                            You can change this later in your list settings.'
+                        ),
                     'options' => array(
                         'query' => $confirmBody,
                         'id' => 'id_option',
@@ -465,7 +384,7 @@ class AdminGetresponseController extends ModuleAdminController
             'body' => false,
         );
 
-        return $helper->generateForm(array(array('form' => $fields_form)));
+        return $helper->generateForm(array(array('form' => $fieldsForm)));
     }
 
     /**
@@ -483,8 +402,8 @@ class AdminGetresponseController extends ModuleAdminController
                 'name' => $this->l('Select a list')
             )
         );
-        foreach ($campaigns as $campaign)
-        {
+
+        foreach ($campaigns as $campaign) {
             $options[] = array(
                 'id_option' => $campaign['id'],
                 'name' => $campaign['name']
@@ -519,7 +438,16 @@ class AdminGetresponseController extends ModuleAdminController
         } else {
             $this->erors[] = $this->l($error);
         }
+    }
 
+    /**
+     * @param string $name
+     * @param array $list
+     * @return array
+     */
+    public function prependOptionList($name, $list)
+    {
+        return array(array('id_option' => '', 'name' => $this->l($name))) + $list;
     }
 
     /**
@@ -559,5 +487,69 @@ class AdminGetresponseController extends ModuleAdminController
         } catch (GrApiException $e) {
             $this->errors[] = $this->l('Contact list could not be added! (' . $e->getMessage() . ')');
         }
+    }
+
+    /**
+     * Renders custom list
+     * @return mixed
+     */
+    public function renderCustomList()
+    {
+        $fieldsList = array(
+            'customer_detail' => array(
+                'title' => $this->l('Customer detail'),
+                'type' => 'text',
+            ),
+            'gr_custom' => array(
+                'title' => $this->l('Custom fields in GetResponse'),
+                'type' => 'text',
+            ),
+            'on' => array(
+                'title' => $this->l('Active'),
+                'type' => 'bool',
+                'icon' => array(
+                    0 => 'disabled.gif',
+                    1 => 'enabled.gif',
+                    'default' => 'disabled.gif'
+                ),
+                'align' => 'center'
+            )
+        );
+
+        /** @var HelperListCore $helper */
+        $helper = new HelperList();
+        $helper->shopLinkType = '';
+        $helper->simple_header = true;
+        $helper->identifier = 'id';
+        $helper->actions = array('edit');
+        $helper->show_toolbar = true;
+
+        $helper->title = $this->l('Contacts info');
+        $helper->table = $this->name;
+        $helper->token = $this->getToken();
+        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+
+        return $helper->generateList($this->getCustomList(), $fieldsList);
+    }
+
+    /**
+     * Returns custom list
+     * @return array
+     */
+    public function getCustomList()
+    {
+        $customs = $this->db->getCustoms();
+        $result = array();
+        foreach ($customs as $custom) {
+            $result[] = array(
+                'id' => $custom['id_custom'],
+                'customer_detail' => $custom['custom_field'],
+                'gr_custom' => $custom['custom_name'],
+                'default' => $custom['default'] == 'yes' ? 1 : 0,
+                'on' => $custom['active_custom'] == 'yes' ? 1 : 0
+            );
+        }
+
+        return $result;
     }
 }

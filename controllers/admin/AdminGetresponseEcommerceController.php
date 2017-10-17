@@ -1,5 +1,4 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
@@ -32,23 +31,25 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         }
 
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
-            $gr_id_shop = Tools::getValue('shop');
-            $is_active = Tools::getValue('ecommerce') == 1 ? 'yes' : 'no';
+            $grIdShop = Tools::getValue('shop');
+            $isActive = Tools::getValue('ecommerce') == 1 ? 'yes' : 'no';
 
-            if ($is_active == 'yes' && empty($gr_id_shop)) {
+            if ($isActive == 'yes' && empty($grIdShop)) {
                 $this->errors[] = $this->l('You need to select shop');
                 return;
             }
 
             if ($settings['active_subscription'] != 'yes') {
-                $this->errors[] = $this->l('You need to enable adding contacts during registrations to enable ecommerce');
+                $this->errors[] = $this->l(
+                    'You need to enable adding contacts during registrations to enable ecommerce'
+                );
                 return;
             }
 
-            $this->db->updateEcommerceSubscription($is_active);
+            $this->db->updateEcommerceSubscription($isActive);
 
-            if ($is_active == 'yes') {
-                $this->db->updateEcommerceShopId($gr_id_shop);
+            if ($isActive == 'yes') {
+                $this->db->updateEcommerceShopId($grIdShop);
             }
 
             $this->confirmations[] = $this->l('Ecommerce settings saved');
@@ -61,14 +62,14 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
             $this->display = 'add';
 
             if (Tools::isSubmit('submit'.$this->name) && Tools::getValue('form_name') == 'add_store') {
-                $shop_name = Tools::getValue('shop_name');
+                $shopName = Tools::getValue('shop_name');
 
-                if (empty($shop_name)) {
+                if (empty($shopName)) {
                     $this->errors[] = $this->l('Store name can not be empty');
                 } else {
                     $this->confirmations[] = $this->l('Store added');
                     $this->api->createShop(
-                        $shop_name,
+                        $shopName,
                         $this->context->language->iso_code,
                         $this->context->currency->iso_code
                     );
@@ -124,14 +125,14 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->token = $this->getToken();
         $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
 
-        $fields_list = array(
+        $fieldsList = array(
             'shopId' => array('title' => $this->l('ID'), 'type' => 'text'),
             'name' => array('title' => $this->l('Shop name'), 'type' => 'text'),
         );
 
         return $helper->generateList(
             json_decode(json_encode($this->api->getShops()), true),
-            $fields_list
+            $fieldsList
         );
     }
 
@@ -152,15 +153,27 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper = new HelperForm();
         $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
 
-        $fields_form = array(
+        $fieldsForm = array(
             'form' => array(
                 'legend' => array(
                     'title' => $this->l((empty($settings) ? 'Enable ' : '') . 'GetResponse Ecommerce')
                 ),
                 'description' =>
-                    $this->l('GetResponse helps you track and collect ecommerce data. You can stay informed about customers’ behaviour and spending habits.') . '<br>' .
-                    $this->l('Use this data to create marketing automation workflows that react to purchases, abandoned carts, or the amounts of money spent.') . '<br>' .
-                    $this->l('Make sure to <u>enable adding contacts during registration</u> to start sending ecommerce data to GetResponse.', false, false, false),
+                    $this->l(
+                        'GetResponse helps you track and collect ecommerce data. 
+                        You can stay informed about customers’ behaviour and spending habits.'
+                    ) . '<br>' .
+                    $this->l(
+                        'Use this data to create marketing automation workflows that react to 
+                        purchases, abandoned carts, or the amounts of money spent.'
+                    ) . '<br>' .
+                    $this->l(
+                        'Make sure to <u>enable adding contacts during registration</u> to 
+                        start sending ecommerce data to GetResponse.',
+                        false,
+                        false,
+                        false
+                    ),
                 'input' => array(
                     array(
                         'label' => $this->l('Send ecommerce data to GetResponse'),
@@ -210,7 +223,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
             $helper->fields_value['shop'] = $settings['gr_id_shop'];
         }
 
-        return $helper->generateForm(array($fields_form));
+        return $helper->generateForm(array($fieldsForm));
     }
 
     /**
@@ -218,7 +231,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     public function renderForm()
     {
-        $fields_form = array(
+        $fieldsForm = array(
             'form' => array(
                 'legend' => array(
                     'title' => $this->l('Add new store'),
@@ -254,6 +267,6 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 
-        return $helper->generateForm(array($fields_form));
+        return $helper->generateForm(array($fieldsForm));
     }
 }

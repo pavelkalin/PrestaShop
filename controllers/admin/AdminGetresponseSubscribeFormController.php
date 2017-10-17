@@ -24,8 +24,10 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         ));
     }
 
-    public function initContent() {
-        $this->display = 'view'; //allways view for this controller
+    public function initContent()
+    {
+        $this->display = 'edit';
+        $this->show_form_cancel_button = false;
 
         parent::initContent();
     }
@@ -39,10 +41,11 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
     /**
      * render main view
-     * @return mixed
+     * @return string
      */
-    public function renderView()
+    public function renderForm()
     {
+        $this->show_form_cancel_button = false;
         $settings = $this->db->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
@@ -62,8 +65,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             $this->performSubscribeViaForm();
         }
 
-        $this->subscribeViaFormView();
-        return parent::renderView();
+        return $this->subscribeViaFormView();
     }
 
     public function renderSubscribeForm($forms = [])
@@ -81,16 +83,8 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                     'class'     => 't',
                     'is_bool'   => true,
                     'values'    => array(
-                      array(
-                          'id'    => 'active_on',
-                          'value' => 1,
-                          'label' => $this->l('Enabled')
-                      ),
-                      array(
-                          'id'    => 'active_off',
-                          'value' => 0,
-                          'label' => $this->l('Disabled')
-                      )
+                        array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
+                        array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
                     ),
                 ),
                 array(
@@ -99,7 +93,9 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                     'name' => 'form',
                     'required' => true,
                     'options' => array(
-                        'query' => array(array('id_option' => '', 'name' => 'Select a form you want to display')) + $forms,
+                        'query' => array(
+                            array('id_option' => '', 'name' => 'Select a form you want to display')
+                            ) + $forms,
                         'id' => 'id_option',
                         'name' => 'name'
                     )
@@ -111,30 +107,12 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                     'required' => true,
                     'options' => array(
                         'query' => array(
-                            array(
-                                'id_option' => '',
-                                'name' => $this->l('Select where to place the form')
-                            ),
-                            array(
-                                'id_option' => 'home',
-                                'name' => $this->l('Homepage')
-                            ),
-                            array(
-                                'id_option' => 'left',
-                                'name' => $this->l('Left sidebar')
-                            ),
-                            array(
-                                'id_option' => 'right',
-                                'name' => $this->l('Right sidebar')
-                            ),
-                            array(
-                                'id_option' => 'top',
-                                'name' => $this->l('Top')
-                            ),
-                            array(
-                                'id_option' => 'footer',
-                                'name' => $this->l('Footer')
-                            ),
+                            array('id_option' => '', 'name' => $this->l('Select where to place the form')),
+                            array('id_option' => 'home', 'name' => $this->l('Homepage')),
+                            array('id_option' => 'left', 'name' => $this->l('Left sidebar')),
+                            array('id_option' => 'right', 'name' => $this->l('Right sidebar')),
+                            array('id_option' => 'top', 'name' => $this->l('Top')),
+                            array('id_option' => 'footer', 'name' => $this->l('Footer')),
                         ),
                         'id' => 'id_option',
                         'name' => 'name'
@@ -147,14 +125,8 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                     'required' => true,
                     'options' => array(
                         'query' => array(
-                            array(
-                                'id_option' => 'webform',
-                                'name' => $this->l('Web Form')
-                            ),
-                            array(
-                                'id_option' => 'prestashop',
-                                'name' => 'Prestashop'
-                            ),
+                            array('id_option' => 'webform', 'name' => $this->l('Web Form')),
+                            array('id_option' => 'prestashop', 'name' => 'Prestashop'),
                         ),
                         'id' => 'id_option',
                         'name' => 'name'
@@ -186,37 +158,34 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     public function performSubscribeViaForm()
     {
         $this->redirectIfNotAuthorized();
-
-        // check _POST
-        $web_form_id      = Tools::getValue('form', null);
-        $web_form_sidebar = Tools::getValue('position', null);
-        $web_form_style = Tools::getValue('style', null);
+        $webFormId      = Tools::getValue('form', null);
+        $webFormSidebar = Tools::getValue('position', null);
+        $webFormStyle = Tools::getValue('style', null);
         $subscription = Tools::getValue('subscription', null);
-
 
         $this->db->updateWebformSubscription($subscription == 1 ? 'yes' : 'no');
 
-        if (empty($web_form_id) || empty($web_form_sidebar)) {
+        if (empty($webFormId) || empty($webFormSidebar)) {
             $this->errors[] = $this->l('You need to select a form and its placement');
             return;
         }
 
         $api = $this->getGrAPI();
 
-        $web_forms = array_merge($api->getWebForms(), $api->getForms());
-        $merged_web_forms = array();
+        $webForms = array_merge($api->getWebForms(), $api->getForms());
+        $mergedWebForms = array();
 
-        foreach ($web_forms as $form) {
-            $merged_web_forms[$form->webformId] = $form->scriptUrl;
+        foreach ($webForms as $form) {
+            $mergedWebForms[$form->webformId] = $form->scriptUrl;
         }
 
         // set web form info to DB
         $this->db->updateWebformSettings(
-            $web_form_id,
+            $webFormId,
             $subscription == 1 ? 'yes' : 'no',
-            $web_form_sidebar,
-            $web_form_style,
-            $merged_web_forms[$web_form_id]
+            $webFormSidebar,
+            $webFormStyle,
+            $mergedWebForms[$webFormId]
         );
         if ($subscription) {
             $this->confirmations[] = $this->l('Form published');
@@ -245,14 +214,13 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
         $options = $this->convertFormsToDisplayArray($webforms, $forms);
 
-        $this->context->smarty->assign(array('form_subscribe_via_form' => $this->renderSubscribeForm($options)));
+        return $this->renderSubscribeForm($options);
     }
 
     public function convertFormsToDisplayArray($webforms, $old)
     {
         $options = array();
-        foreach ($webforms as $form)
-        {
+        foreach ($webforms as $form) {
             $disabled = $form->status != 'enabled' ? $this->l('(DISABLED IN GR)') : '';
             $options[] = array(
                 'id_option' => $form->webformId,
@@ -260,8 +228,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             );
         }
 
-        foreach ($old as $form)
-        {
+        foreach ($old as $form) {
             $disabled = $form->status != 'published' ? $this->l('(DISABLED IN GR)') : '';
             $options[] = array(
                 'id_option' => $form->webformId,

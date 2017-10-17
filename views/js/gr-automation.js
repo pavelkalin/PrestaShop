@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
 
     if ($('table.GRContactList').length > 0) {
         var text = 'Define rules that move or copy contacts between GetResponse lists when people make purchases in the selected product category.';
@@ -12,7 +12,7 @@ $(document).ready(function() {
             defaultNoAutoresponders = autorespondersList.find('option').text(),
             selectedCycleDay = $('#cycle_day_selected').val();
 
-        $('#campaign').change(function() {
+        $('#campaign').change(function () {
             var campaignId = $(this).val();
             autorespondersList.find('option').remove();
             autorespondersList.attr('disabled', 'disabled');
@@ -45,7 +45,7 @@ $(document).ready(function() {
         });
     }
 
-    $('button[type="reset"]').click(function(e) {
+    $('button[type="reset"]').click(function (e) {
         e.preventDefault();
         window.history.back();
     });

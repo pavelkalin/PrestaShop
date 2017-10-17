@@ -1,10 +1,8 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
  * Class AdminGetresponseAccountController
- *
  * @author Getresponse <grintegrations@getresponse.com>
  * @copyright GetResponse
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
@@ -26,10 +24,18 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         ));
 
         $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+
+        if (Tools::isSubmit('connectToGetResponse')) {
+            $this->connectToGetResponse();
+        } elseif (Tools::isSubmit('disconnectFromGetResponse')) {
+            $this->disconnectFromGetResponse();
+        }
     }
 
-    public function initContent() {
-        $this->display = 'view';
+    public function initContent()
+    {
+        $settings = $this->db->getSettings();
+        $this->display = !empty($settings['api_key']) ? 'view' : 'edit';
 
         parent::initContent();
     }
@@ -44,28 +50,10 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     }
 
     /**
-     * Page Header Toolbar
-     */
-    public function initPageHeaderToolbar()
-    {
-        if (Tools::getValue('action') != 'automation' || Tools::getValue('edit_id') != 'new') {
-            parent::initPageHeaderToolbar();
-        }
-
-        unset($this->page_header_toolbar_btn['back']);
-    }
-
-    /**
      * API key settings
      */
     public function apiView()
     {
-        if (Tools::isSubmit('connectToGetResponse')) {
-            $this->connectToGetResponse();
-        } elseif (Tools::isSubmit('disconnectFromGetResponse')) {
-            $this->disconnectFromGetResponse();
-        }
-
         $settings = $this->db->getSettings();
 
         if (!empty($settings['api_key'])) {
@@ -83,8 +71,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
         $this->context->smarty->assign(array(
             'api_key' => $this->hideApiKey($settings['api_key']),
-            'is_connected' => !empty($settings['api_key']) ? true : false,
-            'form' => $this->renderApiForm()
+            'is_connected' => !empty($settings['api_key']) ? true : false
         ));
     }
 
@@ -108,6 +95,98 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         return parent::renderView();
     }
 
+
+    public function renderForm()
+    {
+        $this->fields_form = array(
+            'legend' => array(
+                'title' => $this->l('Connect your site and GetResponse'),
+                'icon' => 'icon-gears'
+            ),
+            'input' => array(
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('API key'),
+                    'name' => 'api_key',
+                    'desc' => $this->l(
+                        $this->l(
+                            'Your API key is part of the settings of your GetResponse account.
+                            Log in to GetResponse and go to'
+                        ) .
+                        '<strong>' . $this->l('My profile > Integration & API > API') . '</strong>' .
+                        $this->l('to find the key')
+                    ),
+                    'empty_message' => $this->l('You need to enter API key. This field can\'t be empty.'),
+                    'required' => true
+                ),
+                array(
+                    'type'      => 'switch',
+                    'label'     => $this->l('Enterprise package'),
+                    'name'      => 'is_enterprise',
+                    'required'  => false,
+                    'class'     => 't',
+                    'is_bool'   => true,
+                    'values'    => array(
+                        array(
+                            'id'    => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'id'    => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'radio',
+                    'label' => $this->l('Account type'),
+                    'name' => 'account_type',
+                    'required' => false,
+                    'values' =>  array(
+                        array(
+                            'id' => 'account_pl',
+                            'value' => '360pl',
+                            'label' => $this->l('GetResponse 360 PL')
+                        ),
+                        array(
+                            'id' => 'account_en',
+                            'value' => '360en',
+                            'label' => $this->l('GetResponse 360 COM')
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Your domain'),
+                    'name' => 'domain',
+                    'required' => false,
+                    'id' => 'domain',
+                    'desc' => $this->l('Enter your domain without protocol (https://) eg: "example.com"'),
+                ),
+                array(
+                    'type' => 'hidden',
+                    'name' => 'action',
+                    'values' => 'api',
+                    'default' => 'api'
+                )
+            ),
+            'submit' => array(
+                'title' => $this->l('Connect'),
+                'name' => 'connectToGetResponse',
+                'icon' => 'icon-getresponse-connect icon-link'
+            )
+        );
+
+        //hack for setting default value of form input
+        if (empty($_POST['action'])) {
+            $_POST['action'] = 'api';
+        }
+
+        return parent::renderForm();
+    }
+
     /**
      * Process Refresh Data
      * @return mixed
@@ -125,30 +204,33 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function connectToGetResponse()
     {
-        $api_key = Tools::getValue('api_key');
-        $is_enterprise = (bool) Tools::getValue('is_enterprise');
-        $account_type = Tools::getValue('account_type');
+        $apiKey = Tools::getValue('api_key');
+        $isEnterprise = (bool) Tools::getValue('is_enterprise');
+        $accountType = Tools::getValue('account_type');
         $domain = Tools::getValue('domain');
+        $accountType = $isEnterprise ? $accountType : 'gr';
 
-        $account_type = $is_enterprise ? $account_type : 'gr';
-
-        if (false === $this->validateConnectionFormParams($api_key, $is_enterprise, $account_type, $domain)) {
+        if (false === $this->validateConnectionFormParams($apiKey, $isEnterprise, $accountType, $domain)) {
             return;
         }
 
-        $api = new GrApi($api_key, $account_type, $domain);
+        $api = new GrApi($apiKey, $accountType, $domain);
 
         try {
             if (true === $api->checkConnection()) {
-                $this->db->updateApiSettings($api_key, $account_type, $domain);
+                $this->db->updateApiSettings($apiKey, $accountType, $domain);
                 $this->confirmations[] = $this->l('GetResponse account connected');
 
                 $this->db->updateTracking(
-                    (false === $api->getFeatures()->feature_tracking) ? 'disabled': 'no', ''
+                    (false === $api->getFeatures()->feature_tracking) ? 'disabled': 'no',
+                    ''
                 );
             } else {
-                $msg = $account_type !== 'gr' ? 'The API key or domain seems incorrect.' : 'The API key seems incorrect.';
-                $msg .= ' Please check if you typed or pasted it correctly. If you recently generated a new key, please make sure you\'re using the right one';
+                $msg = $accountType !== 'gr'
+                    ? 'The API key or domain seems incorrect.'
+                    : 'The API key seems incorrect.';
+                $msg .= ' Please check if you typed or pasted it correctly.
+                    If you recently generated a new key, please make sure you\'re using the right one';
                 $this->errors[] = $this->l($msg);
             }
         } catch (GrApiException $e) {
@@ -157,25 +239,24 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     }
 
     /**
-     * @param string $api_key
-     * @param bool $is_enterprise
-     * @param string $account_type
+     * @param string $apiKey
+     * @param bool $isEnterprise
+     * @param string $accountType
      * @param string $domain
-     *
      * @return bool
      */
-    private function validateConnectionFormParams($api_key, $is_enterprise, $account_type, $domain)
+    private function validateConnectionFormParams($apiKey, $isEnterprise, $accountType, $domain)
     {
-        if (empty($api_key)) {
+        if (empty($apiKey)) {
             $this->errors[] = $this->l('You need to enter API key. This field can\'t be empty.');
             return false;
         }
 
-        if (false === $is_enterprise) {
+        if (false === $isEnterprise) {
             return true;
         }
 
-        if (empty($account_type)) {
+        if (empty($accountType)) {
             $this->errors[] = $this->l('Invalid account type');
             return false;
         }
@@ -190,7 +271,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     /**
      * Get Admin Token
-     * @return bool|string
+     * @return string
      */
     public function getToken()
     {
@@ -198,16 +279,16 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     }
 
     /**
-     * @param string $api_key
+     * @param string $apiKey
      *
      * @return string
      */
-    private function hideApiKey($api_key)
+    private function hideApiKey($apiKey)
     {
-        if (Tools::strlen($api_key) > 0) {
-            return str_repeat("*", Tools::strlen($api_key) - 6) . Tools::substr($api_key, -6);
+        if (Tools::strlen($apiKey) > 0) {
+            return str_repeat("*", Tools::strlen($apiKey) - 6) . Tools::substr($apiKey, -6);
         }
 
-        return $api_key;
+        return $apiKey;
     }
 }
