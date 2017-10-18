@@ -24,7 +24,7 @@ class Getresponse extends Module
     /** @var DbConnection */
     private $db;
 
-    private $used_hooks = array(
+    private $usedHooks = array(
         'newOrder',
         'createAccount',
         'leftColumn',
@@ -43,16 +43,17 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '16.2.0';
+        $this->version                = '16.2.1';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
         $this->displayName            = $this->l('GetResponse');
 
-        $this->description            = $this->l(
-            'Add your Prestashop contacts to GetResponse or manage them via automation rules. Automatically follow-up new subscriptions with engaging email marketing campaigns'
-        );
+        $this->description            = $this->l('
+            Add your Prestashop contacts to GetResponse or manage them via automation rules.
+            Automatically follow-up new subscriptions with engaging email marketing campaigns
+            ');
         $this->confirmUninstall       = $this->l(
             'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
         );
@@ -101,7 +102,7 @@ class Getresponse extends Module
         } else {
             $tab->id_parent = (int) Tab::getIdFromClassName('AdminAdmin');
         }
-        $tab->module    = $this->name;
+        $tab->module = $this->name;
 
         $tab->add();
 
@@ -110,7 +111,12 @@ class Getresponse extends Module
         return true;
     }
 
-    public function createSubTabs($tabId) {
+    /**
+     * @param int $tabId
+     * @return bool
+     */
+    public function createSubTabs($tabId)
+    {
         $langs = Language::getLanguages();
         $tabvalue = array(
             array(
@@ -165,7 +171,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach ($this->used_hooks as $hook) {
+        foreach ($this->usedHooks as $hook) {
             if (!$this->registerHook($hook)) {
                 return false;
             }
@@ -200,11 +206,11 @@ class Getresponse extends Module
 
         $result = true;
         foreach ($classes as $class) {
-            $id_tab = (int) Tab::getIdFromClassName($class);
-            if (false === $id_tab) {
+            $idTab = (int) Tab::getIdFromClassName($class);
+            if (false === $idTab) {
                 return false;
             }
-            $tab = new Tab($id_tab);
+            $tab = new Tab($idTab);
             $result = $tab->delete() && $result;
         }
 
@@ -225,7 +231,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach ($this->used_hooks as $hook) {
+        foreach ($this->usedHooks as $hook) {
             if (!$this->unregisterHook($hook)) {
                 return false;
             }
@@ -280,8 +286,8 @@ class Getresponse extends Module
      */
     public function hookCart($params)
     {
-        $gr_id_shop = $this->db->getGetResponseShopId();
-        if (empty($gr_id_shop)) {
+        $grIdShop = $this->db->getGetResponseShopId();
+        if (empty($grIdShop)) {
             return; // E-commerce is disabled
         }
 
@@ -294,9 +300,9 @@ class Getresponse extends Module
         $customer = new Customer($cart->id_customer);
         $settings = $this->db->getSettings();
         $ecommerce = new GrEcommerce($this->db);
-        $id_subscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
+        $idSubscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
 
-        if (empty($id_subscriber)) {
+        if (empty($idSubscriber)) {
             return;
         }
 
@@ -308,12 +314,12 @@ class Getresponse extends Module
             return;
         }
 
-        $gr_id_cart = $this->db->getGetResponseCartId($cart->id);
+        $grIdCart = $this->db->getGetResponseCartId($cart->id);
 
         if (count($products) === 0) {
-            $ecommerce->removeCart($cart->id, $gr_id_cart, $gr_id_shop);
+            $ecommerce->removeCart($cart->id, $grIdCart, $grIdShop);
         } else {
-            $ecommerce->sendCartDataToGR($cart, $gr_id_shop, $gr_id_cart, $id_subscriber);
+            $ecommerce->sendCartDataToGR($cart, $grIdShop, $grIdCart, $idSubscriber);
         }
 
         $this->db->updateGetResponseCartMD5($cart->id, $md5);
@@ -341,8 +347,8 @@ class Getresponse extends Module
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        $gr_id_shop = $this->db->getGetResponseShopId();
-        if (empty($gr_id_shop)) {
+        $grIdShop = $this->db->getGetResponseShopId();
+        if (empty($grIdShop)) {
             return; // E-commerce is disabled
         }
 
@@ -359,9 +365,9 @@ class Getresponse extends Module
     {
         /** @var OrderCore $order */
         $order = $params['order'];
-        $gr_id_shop = $this->db->getGetResponseShopId();
+        $grIdShop = $this->db->getGetResponseShopId();
 
-        if (empty($gr_id_shop) || empty($order) || 0 === (int)$order->id_customer) {
+        if (empty($grIdShop) || empty($order) || 0 === (int)$order->id_customer) {
             return;
         }
 
@@ -369,15 +375,15 @@ class Getresponse extends Module
         $customer = new Customer($order->id_customer);
         $settings = $this->db->getSettings();
         $ecommerce = new GrEcommerce($this->db);
-        $gr_id_contact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
+        $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
 
-        if (empty($gr_id_contact)) {
+        if (empty($grIdContact)) {
             return;
         }
 
-        $id_order = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
-        $gr_order = $ecommerce->createOrderObject($params, $gr_id_contact, $gr_id_shop);
-        $ecommerce->sendOrderDataToGR($gr_id_shop, $gr_order, $id_order);
+        $idOrder = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
+        $grOrder = $ecommerce->createOrderObject($params, $grIdContact, $grIdShop);
+        $ecommerce->sendOrderDataToGR($grIdShop, $grOrder, $idOrder);
     }
 
     /**
@@ -398,6 +404,8 @@ class Getresponse extends Module
     public function createSubscriber($params)
     {
         $settings = $this->getSettings();
+        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+
         if (isset($settings['active_subscription'])
             && $settings['active_subscription'] == 'yes'
             && !empty($settings['campaign_id'])
@@ -443,8 +451,8 @@ class Getresponse extends Module
         if (!empty($params['order']->product_list)) {
             $categories = array();
             foreach ($params['order']->product_list as $products) {
-                $temp_categories = Product::getProductCategories($products['id_product']);
-                foreach ($temp_categories as $tmp) {
+                $tempCategories = Product::getProductCategories($products['id_product']);
+                foreach ($tempCategories as $tmp) {
                     $categories[$tmp] = $tmp;
                 }
             }
@@ -533,25 +541,22 @@ class Getresponse extends Module
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
+            && isset($settings['active_newsletter_subscription'])
+            && $settings['active_newsletter_subscription'] == 'yes'
         ) {
-            if (isset($settings['active_newsletter_subscription'])
-                && $settings['active_newsletter_subscription'] == 'yes'
-            ) {
-                $client = new stdClass();
-                $client->newsletter = 1;
-                $client->firstname = 'Friend';
-                $client->lastname = '';
-                $client->email = Tools::getValue('email');
+            $client = new stdClass();
+            $client->newsletter = 1;
+            $client->firstname = 'Friend';
+            $client->lastname = '';
+            $client->email = Tools::getValue('email');
 
-                $data = array();
-                $data['newNewsletterContact'] = $client;
+            $data = array();
+            $data['newNewsletterContact'] = $client;
 
-                $this->createSubscriber($data);
-            }
+            $this->createSubscriber($data);
         }
 
-        if (
-            isset($this->context->customer) && !empty($this->context->customer->email) &&
+        if (isset($this->context->customer) && !empty($this->context->customer->email) &&
             isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes'
         ) {
             $email = $this->context->customer->email;
@@ -575,14 +580,16 @@ class Getresponse extends Module
     private function displayWebForm($position)
     {
         if (!empty($position)) {
-            $webform_settings = $this->db->getWebformSettings();
+            $webformSettings = $this->db->getWebformSettings();
 
-            if (!empty($webform_settings) && $webform_settings['active_subscription'] == 'yes' && $webform_settings['sidebar'] == $position) {
-                $set_style = null;
-                if (!empty($webform_settings['style']) && $webform_settings['style'] == 'prestashop') {
-                    $set_style = '&css=1';
+            if (!empty($webformSettings) && $webformSettings['active_subscription'] == 'yes'
+                && $webformSettings['sidebar'] == $position
+            ) {
+                $setStyle = null;
+                if (!empty($webformSettings['style']) && $webformSettings['style'] == 'prestashop') {
+                    $setStyle = '&css=1';
                 }
-                $this->smarty->assign(array('webform_url' => $webform_settings['url'], 'style' => $set_style));
+                $this->smarty->assign(array('webform_url' => $webformSettings['url'], 'style' => $setStyle));
                 return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
             }
         }

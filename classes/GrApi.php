@@ -21,15 +21,15 @@ class GrApi
     private $api;
 
     /**
-     * @param string $api_key
-     * @param string $account_type
+     * @param string $apiKey
+     * @param string $accountType
      * @param string $domain
      */
-    public function __construct($api_key, $account_type, $domain)
+    public function __construct($apiKey, $accountType, $domain)
     {
         $this->api = new GetResponseAPI3(
-            $api_key,
-            $this->getApiUrl($account_type),
+            $apiKey,
+            $this->getApiUrl($accountType),
             $domain
         );
     }
@@ -58,10 +58,7 @@ class GrApi
             }
 
             foreach ($results as $info) {
-                $campaigns[$info->name] = array(
-                    'id'   => $info->campaignId,
-                    'name' => $info->name
-                );
+                $campaigns[$info->name] = array('id'   => $info->campaignId, 'name' => $info->name);
             }
 
             ksort($campaigns);
@@ -161,9 +158,9 @@ class GrApi
 
             foreach ($results as $body) {
                 $bodies[] = array(
-                    'id'            => $body->subscriptionConfirmationBodyId,
-                    'name'          => $body->name,
-                    'contentPlain'  => $body->contentPlain
+                    'id' => $body->subscriptionConfirmationBodyId,
+                    'name' => $body->name,
+                    'contentPlain' => $body->contentPlain
                 );
             }
             return $bodies;
@@ -219,25 +216,25 @@ class GrApi
     /**
      * First delete contact from all campaigns then move contact to new one
      *
-     * @param int $new_campaign_id
-     * @param string $first_name
-     * @param string $last_name
+     * @param int $newCampaignId
+     * @param string $firstName
+     * @param string $lastName
      * @param string $email
      * @param array $customs
-     * @param int $cycle_day
+     * @param int $cycleDay
      * @return bool
      */
-    public function moveContactToGr($new_campaign_id, $first_name, $last_name, $email, $customs, $cycle_day = 0)
+    public function moveContactToGr($newCampaignId, $firstName, $lastName, $email, $customs, $cycleDay = 0)
     {
-        $contacts_id = (array) $this->api->getContacts(array(
+        $contactsId = (array) $this->api->getContacts(array(
             'query' => array('email' => $email)
         ));
 
-        if (empty($contacts_id) || false === isset($contacts_id[0]->contactId)) {
+        if (empty($contactsId) || false === isset($contactsId[0]->contactId)) {
             return false;
         }
 
-        foreach ($contacts_id as $contact) {
+        foreach ($contactsId as $contact) {
             try {
                 $this->api->deleteContact($contact->contactId);
             } catch (Exception $e) {
@@ -245,7 +242,7 @@ class GrApi
             }
         }
 
-        $this->addContact($new_campaign_id, $first_name, $last_name, $email, $cycle_day, $customs);
+        $this->addContact($newCampaignId, $firstName, $lastName, $email, $cycleDay, $customs);
         return true;
     }
 
@@ -253,22 +250,22 @@ class GrApi
      * Add (or update) contact to gr campaign
      *
      * @param string $campaign
-     * @param string $first_name
-     * @param string $last_name
+     * @param string $firstName
+     * @param string $lastName
      * @param string $email
-     * @param int $cycle_day
-     * @param array $user_customs
+     * @param int $cycleDay
+     * @param array $userCustoms
      *
      * @return mixed
      */
-    public function addContact($campaign, $first_name, $last_name, $email, $cycle_day, $user_customs = array())
+    public function addContact($campaign, $firstName, $lastName, $email, $cycleDay, $userCustoms = array())
     {
-        $name = trim($first_name) . ' ' . trim($last_name);
+        $name = trim($firstName) . ' ' . trim($lastName);
 
         $params = array(
-            'email'      => $email,
-            'campaign'   => array('campaignId' => $campaign),
-            'ipAddress'  => $_SERVER['REMOTE_ADDR'],
+            'email' => $email,
+            'campaign' => array('campaignId' => $campaign),
+            'ipAddress' => $_SERVER['REMOTE_ADDR'],
         );
 
         $trimmedName = trim($name);
@@ -277,17 +274,14 @@ class GrApi
             $params['name'] = $name;
         }
 
-        if (is_numeric($cycle_day)) {
-            $params['dayOfCycle'] = $cycle_day;
+        if (is_numeric($cycleDay)) {
+            $params['dayOfCycle'] = $cycleDay;
         }
 
-        $user_customs['origin'] = self::ORIGIN_NAME;
+        $userCustoms['origin'] = self::ORIGIN_NAME;
 
         $results = (array) $this->api->getContacts(array(
-            'query' => array(
-                'email'      => $email,
-                'campaignId' => $campaign
-            ),
+            'query' => array('email' => $email, 'campaignId' => $campaign),
             'additionalFlags' => 'exactMatch'
         ));
 
@@ -297,12 +291,12 @@ class GrApi
         if (!empty($contact) && isset($contact->contactId)) {
             $results = $this->api->getContact($contact->contactId);
             if (!empty($results->customFieldValues)) {
-                $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $user_customs);
+                $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $userCustoms);
             }
             return $this->api->updateContact($contact->contactId, $params);
         } else {
             // @TODO - method setCustoms shouldn't return any values
-            $params['customFieldValues'] = $this->transformCustomToGetResponseFormat($user_customs);
+            $params['customFieldValues'] = $this->transformCustomToGetResponseFormat($userCustoms);
             return $this->api->addContact($params);
         }
     }
@@ -310,58 +304,58 @@ class GrApi
     /**
      * Merge user custom fields selected on WP admin site with those from gr account
      * @param $results
-     * @param $user_customs
+     * @param $userCustoms
      *
      * @return array
      */
-    public function mergeUserCustoms($results, $user_customs)
+    public function mergeUserCustoms($results, $userCustoms)
     {
-        $custom_fields = array();
+        $customFields = array();
 
         if (is_array($results)) {
             foreach ($results as $customs) {
                 $value = $customs->value;
-                if (in_array($customs->name, array_keys($user_customs))) {
-                    $value = array($user_customs[$customs->name]);
-                    unset($user_customs[$customs->name]);
+                if (in_array($customs->name, array_keys($userCustoms))) {
+                    $value = array($userCustoms[$customs->name]);
+                    unset($userCustoms[$customs->name]);
                 }
 
-                $custom_fields[] = array(
+                $customFields[] = array(
                     'customFieldId' => $customs->customFieldId,
-                    'value'         => $value
+                    'value' => $value
                 );
             }
         }
 
-        return array_merge($custom_fields, $this->transformCustomToGetResponseFormat($user_customs));
+        return array_merge($customFields, $this->transformCustomToGetResponseFormat($userCustoms));
     }
 
     /**
      * Set user custom fields
-     * @param $user_customs
+     * @param $userCustoms
      *
      * @TODO - this method shouldn't return any values.
      *
      * @return array
      */
-    public function transformCustomToGetResponseFormat($user_customs)
+    public function transformCustomToGetResponseFormat($userCustoms)
     {
-        $custom_fields = array();
+        $customFields = array();
 
-        if (empty($user_customs)) {
-            return $custom_fields;
+        if (empty($userCustoms)) {
+            return $customFields;
         }
 
-        foreach ($user_customs as $name => $value) {
+        foreach ($userCustoms as $name => $value) {
             if (in_array($name, array('firstname', 'lastname', 'email'))) {
                 continue;
             }
 
-            $gr_custom = $this->api->searchCustomFieldByName($name);
+            $grCustom = $this->api->searchCustomFieldByName($name);
 
-            if (!empty($gr_custom)) {
-                $custom_fields[] = array(
-                    'customFieldId' => $gr_custom->customFieldId,
+            if (!empty($grCustom)) {
+                $customFields[] = array(
+                    'customFieldId' => $grCustom->customFieldId,
                     'value'         => array($value)
                 );
             } else {
@@ -373,7 +367,7 @@ class GrApi
                 ));
 
                 if (!empty($custom) && !empty($custom->customFieldId)) {
-                    $custom_fields[] = array(
+                    $customFields[] = array(
                         'customFieldId' => $custom->customFieldId,
                         'value'         => array($value)
                     );
@@ -381,7 +375,7 @@ class GrApi
             }
         }
 
-        return $custom_fields;
+        return $customFields;
     }
 
     /**
@@ -390,16 +384,16 @@ class GrApi
      */
     public function getCustomFields()
     {
-        $all_customs = array();
-        $results     = $this->api->getCustomFields();
+        $allCustoms = array();
+        $results = $this->api->getCustomFields();
         if (!empty($results)) {
             foreach ($results as $ac) {
                 if (isset($ac->name) && isset($ac->customFieldId)) {
-                    $all_customs[$ac->name] = $ac->customFieldId;
+                    $allCustoms[$ac->name] = $ac->customFieldId;
                 }
             }
         }
-        return $all_customs;
+        return $allCustoms;
     }
 
     /**
@@ -424,10 +418,7 @@ class GrApi
     }
 
     /**
-     * @param string $shopName
-     * @param string $locale
-     * @param string $currency
-     *
+     * @param string $shopId
      * @return mixed
      */
     public function deleteShop($shopId)
@@ -545,25 +536,25 @@ class GrApi
      * Map custom fields from DB and $_POST
      *
      * @param array $customer
-     * @param array $customer_post
-     * @param array $custom_fields
+     * @param array $customerPost
+     * @param array $customFields
      * @param string $type
      * @return mixed
      */
-    public function mapCustoms($customer, $customer_post, $custom_fields, $type)
+    public function mapCustoms($customer, $customerPost, $customFields, $type)
     {
         $fields  = array();
         $customs = array();
-        $address_name = '';
+        $addressName = '';
 
         // make fields array
-        if (!empty($custom_fields)) {
-            foreach ($custom_fields as $cf) {
+        if (!empty($customFields)) {
+            foreach ($customFields as $cf) {
                 if ($type == 'export') {
-                    if (!empty($customer_post['custom_field']) &&
-                        in_array($cf['custom_value'], array_keys($customer_post['custom_field']))
+                    if (!empty($customerPost['custom_field']) &&
+                        in_array($cf['custom_value'], array_keys($customerPost['custom_field']))
                     ) {
-                        $fields[$cf['custom_value']] = $customer_post['custom_field'][$cf['custom_value']];
+                        $fields[$cf['custom_value']] = $customerPost['custom_field'][$cf['custom_value']];
                     }
                 } else {
                     if ($cf['active_custom'] == 'yes') {
@@ -575,41 +566,41 @@ class GrApi
 
         // for fields from DB
         if (!empty($fields)) {
-            foreach ($fields as $field_key => $field_value) {
-                $fv = $field_value;
+            foreach ($fields as $fieldKey => $fieldValue) {
+                $fv = $fieldValue;
                 //compose address custom field
-                if ($field_key == 'address1') {
-                    $address_name = $field_value;
+                if ($fieldKey == 'address1') {
+                    $addressName = $fieldValue;
                 }
 
                 // for POST actions (export or update (order))
-                if (!empty($customer_post)) {
-                    if ($type != 'order' &&!empty($customer_post[$field_key])) {
-                        $fv = $customer_post[$field_key];
+                if (!empty($customerPost)) {
+                    if ($type != 'order' &&!empty($customerPost[$fieldKey])) {
+                        $fv = $customerPost[$fieldKey];
                         //update address custom field
-                        $address_name = !empty($customer_post['address1']) ? $customer_post['address1'] : null;
+                        $addressName = !empty($customerPost['address1']) ? $customerPost['address1'] : null;
                     }
                 }
 
                 // allowed custom and non empty
-                if (in_array($field_key, array_keys($customer)) == true
-                    && (!empty($fv) && !empty($customer[$field_key]))) {
+                if (in_array($fieldKey, array_keys($customer)) == true
+                    && (!empty($fv) && !empty($customer[$fieldKey]))) {
                     // validation for custom field name
                     if (false == preg_match('/^[_a-zA-Z0-9]{2,32}$/m', Tools::stripslashes(($fv)))) {
                         return array('custom_error' => 'true', 'custom_message' => $fv);
                     }
 
-                    if ($field_key == 'birthday' && $customer['birthday'] == '0000-00-00') {
+                    if ($fieldKey == 'birthday' && $customer['birthday'] == '0000-00-00') {
                         continue;
                     }
 
                     // compose address value address+address2
-                    if ($fv == $address_name) {
+                    if ($fv == $addressName) {
                         $address2 = !empty($customer['address2']) ? ' ' . $customer['address2'] : '';
 
-                        $customs[$address_name] = $customer['address1'] . $address2;
+                        $customs[$addressName] = $customer['address1'] . $address2;
                     } else {
-                        $customs[$field_value] = $customer[$field_key];
+                        $customs[$fieldValue] = $customer[$fieldKey];
                     }
                 }
             }

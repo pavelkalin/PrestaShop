@@ -1,5 +1,4 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
@@ -12,7 +11,8 @@ require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseWebTrackingController extends AdminGetresponseController
 {
-    public function initContent() {
+    public function initContent()
+    {
         $this->display = 'edit';
         parent::initContent();
     }
@@ -40,7 +40,10 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                 'legend' => array(
                     'title' => $this->l('Web Event Tracking'),
                 ),
-                'description' => $this->l('Enable event tracking in GetResponse to uncover who is visiting your stores, how often, and why. Analyze and react to customer buying habits.'),
+                'description' => $this->l('
+                    Enable event tracking in GetResponse to uncover who is visiting your stores, 
+                    how often, and why. Analyze and react to customer buying habits.
+                '),
                 'input' => array(
                     array(
                         'type' => 'switch',
@@ -49,16 +52,8 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                         'class' => 't',
                         'is_bool' => true,
                         'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Yes')
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('No')
-                            )
+                            array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Yes')),
+                            array('id' => 'active_off', 'value' => 0, 'label' => $this->l('No'))
                         ),
                     )
                 ),
@@ -74,8 +69,14 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                     'title' => $this->l('Web Event Tracking'),
                 ),
                 'description' =>
-                    $this->l('We can’t start sending data from PrestaShop to GetResponse yet. Make sure you have a Max or Pro account.') . '<br>' .
-                    $this->l('If you have a Max or Pro account, try disconnecting and reconnecting the GetResponse account within the GetResponse module. This should correct the issue.')
+                    $this->l('
+                        We can’t start sending data from PrestaShop to GetResponse yet. 
+                        Make sure you have a Max or Pro account.
+                    ') . '<br>' .
+                    $this->l('
+                        If you have a Max or Pro account, try disconnecting and reconnecting 
+                        the GetResponse account within the GetResponse module. This should correct the issue.
+                    ')
             );
         }
 
@@ -98,7 +99,7 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                 $snippet = $code[0]->snippet;
             }
             $this->confirmations[] = $this->l('Web event traffic tracking enabled');
-        } else if ($tracking == 0) {
+        } elseif ($tracking == 0) {
             $this->confirmations[] = $this->l('Web event traffic tracking disabled');
         }
 
@@ -107,11 +108,10 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
 
     /**
      * Get Admin Token
-     * @return bool|string
+     * @return string
      */
     public function getToken()
     {
         return Tools::getAdminTokenLite('AdminGetresponseWebTracking');
     }
-
 }

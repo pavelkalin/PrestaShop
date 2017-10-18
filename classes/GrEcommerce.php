@@ -26,94 +26,101 @@ class GrEcommerce
     }
 
     /**
-     * @param int $id_cart
-     * @param string $gr_id_cart
-     * @param string $gr_id_shop
+     * @param int $idCart
+     * @param string $grIdCart
+     * @param string $grIdShop
      */
-    public function removeCart($id_cart, $gr_id_cart, $gr_id_shop)
+    public function removeCart($idCart, $grIdCart, $grIdShop)
     {
-        $this->api->deleteCart($gr_id_shop, $gr_id_cart);
-        $this->db->updateGetResponseCartId($id_cart, '');
+        $this->api->deleteCart($grIdShop, $grIdCart);
+        $this->db->updateGetResponseCartId($idCart, '');
     }
 
     /**
      * @param array $product
-     * @param string $gr_id_shop
+     * @param string $grIdShop
      * @return string
      */
-    public function createProductInGr($product, $gr_id_shop)
+    public function createProductInGr($product, $grIdShop)
     {
-        $ps_product = new Product($product['id_product']);
-        $categories = $ps_product->getCategories();
-        $product_name = strip_tags((is_array($ps_product->name) ? array_shift($ps_product->name) : $ps_product->name));
-        $product_description = strip_tags((is_array($ps_product->description_short) ? array_shift($ps_product->description_short) : $ps_product->description_short));
+        $psProduct = new Product($product['id_product']);
+        $categories = $psProduct->getCategories();
+        $productName = strip_tags((is_array($psProduct->name) ? array_shift($psProduct->name) : $psProduct->name));
+        $productDescription = strip_tags(
+            (
+                is_array($psProduct->description_short)
+                ? array_shift($psProduct->description_short)
+                : $psProduct->description_short
+            )
+        );
 
-        $gr_product = array(
-            'name' => $product_name,
-            'url' => Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=product&id_product=' . $ps_product->id,
-            'type' => $ps_product->getWsType(),
-            'vendor' => $ps_product->getWsManufacturerName(),
+        $grProduct = array(
+            'name' => $productName,
+            'url' => Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=product&id_product=' . $psProduct->id,
+            'type' => $psProduct->getWsType(),
+            'vendor' => $psProduct->getWsManufacturerName(),
             'externalId' => $product['id_product'],
             'categories' => array(),
             'variants' => array(
                 array(
-                    'name' => $product_name,
-                    'description' => $product_description,
-                    'price'=> floatval($ps_product->price),
+                    'name' => $productName,
+                    'description' => $productDescription,
+                    'price'=> floatval($psProduct->price),
                     'priceTax' => 0.00,
-                    'sku' => $ps_product->reference
+                    'sku' => $psProduct->reference
                 )
             )
         );
 
-        foreach ($categories as $id_category) {
-            $category = new Category($id_category);
-            $gr_product['categories'][] = array('name' => $category->getName());
+        foreach ($categories as $idCategory) {
+            $category = new Category($idCategory);
+            $grProduct['categories'][] = array('name' => $category->getName());
         }
 
-        $response = $this->api->addProduct($gr_id_shop, $gr_product);
+        $response = $this->api->addProduct($grIdShop, $grProduct);
 
         return $this->handleProductResponse($response);
     }
 
     /**
      * @param array $params
-     * @param string $gr_id_contact
-     * @param string $gr_id_shop
+     * @param string $grIdContact
+     * @param string $grIdShop
      * @return array
      */
-    public function createOrderObject($params, $gr_id_contact, $gr_id_shop)
+    public function createOrderObject($params, $grIdContact, $grIdShop)
     {
         /** @var OrderCore $order */
         $order = $params['order'];
         /** @var CartCore $cart */
         $cart = $params['cart'];
 
-        $order_date = DateTime::createFromFormat('Y-m-d H:i:s', $order->date_add);
+        $orderDate = DateTime::createFromFormat('Y-m-d H:i:s', $order->date_add);
 
-        $gr_order = array(
-            'contactId' => $gr_id_contact,
+        $grOrder = array(
+            'contactId' => $grIdContact,
             'totalPrice' => $order->total_paid_tax_excl,
             'totalPriceTax' => $order->total_paid_tax_incl - $order->total_paid_tax_excl,
             'currency' => $params['currency']->iso_code,
-            'orderUrl' => Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $order->id,
+            'orderUrl' => Tools::getHttpHost(true) . __PS_BASE_URI__ .
+                '?controller=order-detail&id_order=' . $order->id,
             'externalId' => $order->reference,
             "billingAddress" => $this->returnAddressDetails(new Address($order->id_address_invoice)),
             "shippingAddress" => $this->returnAddressDetails(new Address($order->id_address_delivery)),
             "status" => $this->getOrderStatus($order),
             "shippingPrice" => floatval($order->total_shipping),
-            "selectedVariants" => $this->returnOrderedVariantsList($order->getProducts(), $gr_id_shop, false),
+            "selectedVariants" => $this->returnOrderedVariantsList($order->getProducts(), $grIdShop, false),
             "billingStatus" => $this->getOrderStatus($order),
-            "processedAt" => $order_date->format('Y-m-d\TH:i:sO')
+            "processedAt" => $orderDate->format('Y-m-d\TH:i:sO')
         );
 
-        $gr_id_cart = $this->db->getGetResponseCartId($cart->id);
+        $grIdCart = $this->db->getGetResponseCartId($cart->id);
 
-        if (!empty($gr_id_cart)) {
-            $gr_order['cartId'] = $gr_id_cart;
+        if (!empty($grIdCart)) {
+            $grOrder['cartId'] = $grIdCart;
         }
 
-        return $gr_order;
+        return $grOrder;
     }
 
     /**
@@ -139,58 +146,58 @@ class GrEcommerce
 
     /**
      * @param CartCore $cart
-     * @param string $gr_id_shop
-     * @param string $gr_id_cart
-     * @param string $gr_id_customer
+     * @param string $grIdShop
+     * @param string $grIdCart
+     * @param string $grIdCustomer
      */
-    public function sendCartDataToGR($cart, $gr_id_shop, $gr_id_cart, $gr_id_customer)
+    public function sendCartDataToGR($cart, $grIdShop, $grIdCart, $grIdCustomer)
     {
-        $cart_details = $cart->getSummaryDetails();
+        $cartDetails = $cart->getSummaryDetails();
         $products = $cart->getProducts(true);
         $params = array(
-            'contactId' => $gr_id_customer,
+            'contactId' => $grIdCustomer,
             'currency' => (new Currency($cart->id_currency))->iso_code,
-            'totalPrice' => $cart_details['total_price_without_tax'],
-            'selectedVariants' => $this->returnOrderedVariantsList($products, $gr_id_shop),
+            'totalPrice' => $cartDetails['total_price_without_tax'],
+            'selectedVariants' => $this->returnOrderedVariantsList($products, $grIdShop),
             'externalId' => $cart->id,
-            'totalTaxPrice' => $cart_details['total_tax'],
+            'totalTaxPrice' => $cartDetails['total_tax'],
             'cartUrl' => Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order'
         );
 
-        if (empty($gr_id_cart)) {
-            $response = $this->api->addCart($gr_id_shop, $params);
+        if (empty($grIdCart)) {
+            $response = $this->api->addCart($grIdShop, $params);
             $this->db->updateGetResponseCartId($cart->id, $response->cartId);
         } else {
-            $this->api->updateCart($gr_id_shop, $gr_id_cart, $params);
+            $this->api->updateCart($grIdShop, $grIdCart, $params);
         }
     }
 
     /**
-     * @param string $gr_id_shop
-     * @param array $gr_order
-     * @param int $id_order
+     * @param string $grIdShop
+     * @param array $grOrder
+     * @param int $idOrder
      */
-    public function sendOrderDataToGR($gr_id_shop, $gr_order, $id_order)
+    public function sendOrderDataToGR($grIdShop, $grOrder, $idOrder)
     {
-        $gr_order_id = $this->db->getGetResponseOrderId($id_order);
+        $grOrderId = $this->db->getGetResponseOrderId($idOrder);
 
-        if (empty($gr_order_id)) {
-            $response = $this->api->createOrder($gr_id_shop, $gr_order);
+        if (empty($grOrderId)) {
+            $response = $this->api->createOrder($grIdShop, $grOrder);
             if (!empty($response) && !empty($response->orderId)) {
-                $this->db->updateGetResponseOrderId($id_order, $response->orderId);
+                $this->db->updateGetResponseOrderId($idOrder, $response->orderId);
             }
         } else {
-            $this->api->updateOrder($gr_id_shop, $gr_order_id, $gr_order);
+            $this->api->updateOrder($grIdShop, $grOrderId, $grOrder);
         }
     }
 
     /**
      * @param array $products
-     * @param string $gr_id_shop
+     * @param string $grIdShop
      * @param bool $cart
      * @return array
      */
-    private function returnOrderedVariantsList($products, $gr_id_shop, $cart = true)
+    private function returnOrderedVariantsList($products, $grIdShop, $cart = true)
     {
         $variants = [];
 
@@ -206,7 +213,7 @@ class GrEcommerce
             }
 
             $variants[] = array(
-                'variantId' => $this->getVariantId($product, $gr_id_shop),
+                'variantId' => $this->getVariantId($product, $grIdShop),
                 'quantity' => $quantity,
                 'price' => $price,
                 'priceTax' => $tax
@@ -218,43 +225,43 @@ class GrEcommerce
 
     /**
      * @param array $product
-     * @param string $gr_id_shop
+     * @param string $grIdShop
      * @return string
      */
-    private function getVariantId($product, $gr_id_shop)
+    private function getVariantId($product, $grIdShop)
     {
-        $id_variant = $this->db->getGetResponseProductId($product['id_product']);
+        $idVariant = $this->db->getGetResponseProductId($product['id_product']);
 
-        if (empty($id_variant)) {
-            $id_variant = $this->createProductInGr($product, $gr_id_shop);
-            $this->db->updateGetResponseProductId($product['id_product'], $id_variant);
+        if (empty($idVariant)) {
+            $idVariant = $this->createProductInGr($product, $grIdShop);
+            $this->db->updateGetResponseProductId($product['id_product'], $idVariant);
         }
 
-        return $id_variant;
+        return $idVariant;
     }
 
     /**
      * @param string $email
-     * @param string $id_campaign
+     * @param string $idCampaign
      * @param bool $force
      * @return string
      */
-    public function getSubscriberId($email, $id_campaign, $force = false)
+    public function getSubscriberId($email, $idCampaign, $force = false)
     {
-        $gr_id_user = $this->db->getGrSubscriberId($email, $id_campaign);
+        $grIdUser = $this->db->getGrSubscriberId($email, $idCampaign);
 
-        if (empty($gr_id_user) || $force) {
-            $gr_contact = $this->api->getContactByEmail($email, $id_campaign);
+        if (empty($grIdUser) || $force) {
+            $grContact = $this->api->getContactByEmail($email, $idCampaign);
 
-            if (empty($gr_contact) || !isset($gr_contact->contactId)) {
+            if (empty($grContact) || !isset($grContact->contactId)) {
                 return false;
             }
 
-            $this->db->setGrSubscriberId($email, $id_campaign, $gr_contact->contactId);
-            return $gr_contact->contactId;
+            $this->db->setGrSubscriberId($email, $idCampaign, $grContact->contactId);
+            return $grContact->contactId;
         }
 
-        return $gr_id_user;
+        return $grIdUser;
     }
 
     /**
@@ -267,12 +274,12 @@ class GrEcommerce
     }
 
     /**
-     * @param string $country_code Two letters country code
+     * @param string $countryCode Two letters country code
      * @return string|bool Three letters country code
      */
-    function convertCountryCode($country_code)
+    private function convertCountryCode($countryCode)
     {
-        $iso_3166_1 = array(
+        $iso31661 = array(
             'AF' => 'AFG',
             'AX' => 'ALA',
             'AL' => 'ALB',
@@ -525,7 +532,7 @@ class GrEcommerce
             'ZW' => 'ZWE'
         );
 
-        return isset($iso_3166_1[$country_code]) ? $iso_3166_1[$country_code] : false;
+        return isset($iso31661[$countryCode]) ? $iso31661[$countryCode] : false;
     }
 
     /**

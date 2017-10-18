@@ -1,5 +1,4 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
@@ -12,7 +11,7 @@ require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
-    private $name = 'AdminGetresponseExport';
+    public $name = 'AdminGetresponseExport';
 
     public function __construct()
     {
@@ -23,15 +22,15 @@ class AdminGetresponseExportController extends AdminGetresponseController
         if (Tools::isSubmit($this->name)) {
             $this->performExport();
         }
-
     }
+
     /**
      * Renders form for mapping edition
      * @return mixed
      */
     public function renderForm()
     {
-        $fields_form = array(
+        $fieldsForm = array(
             'legend' => array(
                 'title' => $this->l('Update Mapping'),
             ),
@@ -49,7 +48,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 'gr_custom' => array(
                     'label' => $this->l('Getresponse custom field name'),
                     'required'  => true,
-                    'desc' => $this->l('You can use lowercase English alphabet characters, numbers, and underscore ("_"). Maximum 32 characters.'),
+                    'desc' => $this->l('
+                        You can use lowercase English alphabet characters, numbers,
+                        and underscore ("_"). Maximum 32 characters.
+                    '),
                     'type' => 'text',
                     'name' => 'gr_custom'
                 ),
@@ -104,58 +106,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
             }
         }
 
-        return $helper->generateForm(array(array('form' => $fields_form)));
+        return $helper->generateForm(array(array('form' => $fieldsForm)));
     }
 
-    /**
-     * Assigns values to forms
-     *
-     * @param $obj
-     *
-     * @return array
-     */
-    public function getFieldsValue($obj)
+    public function initContent()
     {
-        if (Tools::getValue('action', null) == 'addCampaign') {
-            return array(
-                'campaign_name' => null,
-            );
-        }
-
-        if ($this->display == 'view') {
-
-            return array(
-                'campaign' => Tools::getValue('campaign', null),
-                'autoresponder_day' => Tools::getValue('autoresponder_day', null),
-                'contactInfo' => Tools::getValue('contactInfo', null),
-                'newsletter' => Tools::getValue('newsletter', null)
-            );
-        } else {
-            $customs = $this->db->getCustoms();
-            foreach ($customs as $custom) {
-                if (Tools::getValue('id') == $custom['id_custom']) {
-                    return array(
-                        'id' => $custom['id_custom'],
-                        'customer_detail' => $custom['custom_field'],
-                        'gr_custom' => $custom['custom_name'],
-                        'default' => $custom['default'] == 'yes' ? 1 : 0,
-                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
-                    );
-                }
-            }
-            return array(
-                'id' => 1,
-                'customer_detail' => '',
-                'gr_custom' => '',
-                'default' => 0,
-                'on' => 0
-            );
-        }
-    }
-
-
-    public function initContent() {
-        $this->display = 'view'; //allways view for this controller
+        $this->display = 'view';
 
         if (Tools::isSubmit('update' . $this->name)) {
             $this->display = 'edit';
@@ -185,11 +141,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     /**
      * render main view
-     * @return mixed
+     * @return string
      */
     public function renderView()
     {
-
         $settings = $this->db->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
@@ -206,15 +161,24 @@ class AdminGetresponseExportController extends AdminGetresponseController
         if (Tools::getValue('action', null) == 'addCampaign') {
             $api = $this->getGrAPI();
             $fromFields = $this->normalizeFormFields($api->getFromFields());
-            $confirmSubject = $this->normalizeComplexApiData($api->getSubscriptionConfirmationsSubject(), 'id', 'name');
-            $confirmBody = $this->normalizeComplexApiData($api->getSubscriptionConfirmationsBody(), 'id', 'name', 'contentPlain');
+            $confirmSubject = $this->normalizeComplexApiData(
+                $api->getSubscriptionConfirmationsSubject(),
+                'id',
+                'name'
+            );
+            $confirmBody = $this->normalizeComplexApiData(
+                $api->getSubscriptionConfirmationsBody(),
+                'id',
+                'name',
+                'contentPlain'
+            );
             $this->context->smarty->assign(array(
                 'selected_tab' => 'export_customers',
                 'export_customers_form' => $this->renderAddCampaignForm(
-                    array(array('id_option' => '', 'name' => $this->l('Select from field'))) + $fromFields,
-                    array(array('id_option' => '', 'name' => $this->l('Select reply-to address'))) + $fromFields,
-                    array(array('id_option' => '', 'name' => $this->l('Select confirmation message subject'))) + $confirmSubject,
-                    array(array('id_option' => '', 'name' => $this->l('Select confirmation message body template'))) + $confirmBody
+                    $this->prependOptionList('Select from field', $fromFields),
+                    $this->prependOptionList('Select reply-to address', $fromFields),
+                    $this->prependOptionList('Select confirmation message subject', $confirmSubject),
+                    $this->prependOptionList('Select confirmation message body template', $confirmBody)
                 ),
                 'token' => $this->getToken(),
             ));
@@ -230,16 +194,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
      *
      * @return array
      */
-    public function normalizeFormFields($data)
+    private function normalizeFormFields($data)
     {
-        $options = array(
-            array(
-                'id_option' => 0,
-                'name' => $this->l('Select...')
-            )
-        );
-        foreach ($data as $row)
-        {
+        $options = array();
+
+        foreach ($data as $row) {
             $options[] = array(
                 'id_option' => $row['id'],
                 'name' => $row['name'] . '(' . $row['email'] . ')'
@@ -257,10 +216,9 @@ class AdminGetresponseExportController extends AdminGetresponseController
      * @param array $options
      * @return array
      */
-    public function normalizeComplexApiData($data, $id, $name, $complex = null, $options = array())
+    private function normalizeComplexApiData($data, $id, $name, $complex = null, $options = array())
     {
-        foreach ($data as $row)
-        {
+        foreach ($data as $row) {
             $options[] = array(
                 'id_option' => $row[$id],
                 'name' => $row[$name] . ' ' . ($complex != null ? $row[$complex] : '')
@@ -312,28 +270,24 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $helper = new HelperFormCore();
         $api = $this->getGrAPI();
 
-        $fields_form = array(
+        $fieldsForm = array(
             'form' => array(
                 'legend' => array(
                     'title' => $this->l('Export Your Customer Information From PrestaShop to your GetResponse Account')
                 ),
                 'description' => $this->l('Use this option for one time export of your existing customers.'),
                 'input' => array(
-                    array(
-                        'type' => 'hidden',
-                        'name' => 'autoresponders',
-                    ),
-                    array(
-                        'type' => 'hidden',
-                        'name' => 'cycle_day_selected',
-                    ),
+                    array('type' => 'hidden', 'name' => 'autoresponders'),
+                    array('type' => 'hidden', 'name' => 'cycle_day_selected'),
                     array(
                         'type' => 'select',
                         'name' => 'campaign',
                         'required' => true,
                         'label' => $this->l('Contact list'),
                         'options' => array(
-                            'query' => array(array('id' => '', 'name' => $this->l('Select a list'))) + $api->getCampaigns(),
+                            'query' => array(
+                                array('id' => '', 'name' => $this->l('Select a list'))
+                                ) + $api->getCampaigns(),
                             'id' => 'id',
                             'name' => 'name'
                         )
@@ -344,16 +298,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'type' => 'switch',
                         'is_bool' => true,
                         'values' => array(
-                            array(
-                                'id' => 'newsletter_on',
-                                'value' => 1,
-                                'label' => $this->l('Yes')
-                            ),
-                            array(
-                                'id' => 'newsletter_off',
-                                'value' => 0,
-                                'label' => $this->l('No')
-                            )
+                            array('id' => 'newsletter_on', 'value' => 1, 'label' => $this->l('Yes')),
+                            array('id' => 'newsletter_off', 'value' => 0, 'label' => $this->l('No'))
                         )
                     ),
                     array(
@@ -361,7 +307,9 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'label' => '',
                         'name' => 'addToCycle',
                         'values' => array(
-                            'query' => array(array('id' => 1, 'val' =>1, 'name' => $this->l(' Add to autoresponder cycle'))),
+                            'query' => array(
+                                array('id' => 1, 'val' =>1, 'name' => $this->l(' Add to autoresponder cycle'))
+                            ),
                             'id' => 'id',
                             'name' => 'name',
                         ),
@@ -384,18 +332,16 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'type' => 'switch',
                         'is_bool' => true,
                         'values' => array(
-                            array(
-                                'id' => 'update_on',
-                                'value' => 1,
-                                'label' => $this->l('Yes')
-                            ),
-                            array(
-                                'id' => 'update_off',
-                                'value' => 0,
-                                'label' => $this->l('No')
-                            )
+                            array('id' => 'update_on', 'value' => 1, 'label' => $this->l('Yes')),
+                            array('id' => 'update_off', 'value' => 0, 'label' => $this->l('No'))
                         ),
-                        'desc' => $this->l('Select this option if you want to overwrite contact details that already exist in your GetResponse database. <br />Clear this option to keep existing data intact.', null, false, false)
+                        'desc' =>
+                            $this->l('
+                                Select this option if you want to overwrite contact details that 
+                                already exist in your GetResponse database.
+                            ') .
+                            '<br>' .
+                            $this->l('Clear this option to keep existing data intact.')
                     ),
                 ),
                 'submit' => array(
@@ -415,80 +361,62 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'cycle_day_selected' => 0
         );
 
-        return $helper->generateForm(array($fields_form)) . $this->renderList();
+        return $helper->generateForm(array($fieldsForm)) . $this->renderList();
     }
 
     /**
-     * Renders custom list
-     * @return mixed
-     */
-    public function renderCustomList()
-    {
-        $fields_list = array(
-            'customer_detail' => array(
-                'title' => $this->l('Customer detail'),
-                'type' => 'text',
-            ),
-            'gr_custom' => array(
-                'title' => $this->l('Custom fields in GetResponse'),
-                'type' => 'text',
-            ),
-            'on' => array(
-                'title' => $this->l('Active'),
-                'type' => 'bool',
-                'icon' => array(
-                    0 => 'disabled.gif',
-                    1 => 'enabled.gif',
-                    'default' => 'disabled.gif'
-                ),
-                'align' => 'center'
-            )
-        );
-
-        $helper = new HelperList();
-        $helper->shopLinkType = '';
-        $helper->simple_header = true;
-        $helper->identifier = 'id';
-        $helper->actions = array('edit');
-        $helper->show_toolbar = true;
-
-        $helper->title = $this->l('Contacts info');
-        $helper->table = $this->name;
-        $helper->token = $this->getToken();
-        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-
-        return $helper->generateList($this->getCustomList(), $fields_list);
-    }
-
-    /**
-     * Returns custom list
-     *
+     * Assigns values to forms
+     * @param $obj
      * @return array
      */
-    public function getCustomList()
+    public function getFieldsValue($obj)
     {
-        $customs = $this->db->getCustoms();
-        $result = array();
-        foreach ($customs as $custom) {
-            $result[] = array(
-                'id' => $custom['id_custom'],
-                'customer_detail' => $custom['custom_field'],
-                'gr_custom' => $custom['custom_name'],
-                'default' => $custom['default'] == 'yes' ? 1 : 0,
-                'on' => $custom['active_custom'] == 'yes' ? 1 : 0
+        if (Tools::getValue('action', null) == 'addCampaign') {
+            return array(
+                'campaign_name' => null,
             );
         }
 
-        return $result;
+        if ($this->display == 'view') {
+
+            return array(
+                'campaign' => Tools::getValue('campaign', null),
+                'autoresponder_day' => Tools::getValue('autoresponder_day', null),
+                'contactInfo' => Tools::getValue('contactInfo', null),
+                'newsletter' => Tools::getValue('newsletter', null)
+            );
+        } else {
+            $customs = $this->db->getCustoms();
+
+            foreach ($customs as $custom) {
+                if (Tools::getValue('id') == $custom['id_custom']) {
+                    return array(
+                        'id' => $custom['id_custom'],
+                        'customer_detail' => $custom['custom_field'],
+                        'gr_custom' => $custom['custom_name'],
+                        'default' => $custom['default'] == 'yes' ? 1 : 0,
+                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
+                    );
+                }
+            }
+
+            return array(
+                'id' => 1,
+                'customer_detail' => '',
+                'gr_custom' => '',
+                'default' => 0,
+                'on' => 0
+            );
+        }
     }
 
 
     public function performExport()
     {
         $campaign       = Tools::getValue('campaign');
-        $add_to_cycle   = Tools::getValue('addToCycle_1', 0);
-        $cycle_day      = Tools::getValue('autoresponder_day', null);
-        $update_address = Tools::getValue('contactInfo', 0);
+        $addToCycle   = Tools::getValue('addToCycle_1', 0);
+        $cycleDay      = Tools::getValue('autoresponder_day', null);
+        $updateAddress = Tools::getValue('contactInfo', 0);
         $newsletter = Tools::getValue('newsletter', 0) ==  1 ? true : false;
 
         if (empty($campaign)) {
@@ -516,7 +444,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         }
 
         foreach ($contacts as $contact) {
-            if ($update_address == 1) {
+            if ($updateAddress == 1) {
                 $customs = $api->mapCustoms($contact, $_POST, $this->db->getCustoms(), 'export');
             } else {
                 $customs = array();
@@ -532,7 +460,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 $contact['firstname'],
                 $contact['lastname'],
                 $contact['email'],
-                $add_to_cycle == 1 ? $cycle_day : null,
+                $addToCycle == 1 ? $cycleDay : null,
                 $customs
             );
 

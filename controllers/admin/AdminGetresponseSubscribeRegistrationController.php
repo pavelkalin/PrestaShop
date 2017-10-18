@@ -1,5 +1,4 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
@@ -12,7 +11,7 @@ require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
-    private $name = 'GRSubscribeRegistration';
+    public $name = 'GRSubscribeRegistration';
 
     public function __construct()
     {
@@ -27,8 +26,9 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         ));
     }
 
-    public function initContent() {
-        $this->display = 'view'; //allways view for this controller
+    public function initContent()
+    {
+        $this->display = 'view';
 
         if (Tools::isSubmit('update' . $this->name)) {
             $this->display = 'edit';
@@ -65,7 +65,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         parent::initPageHeaderToolbar();
     }
 
-
     /**
      * render main view
      * @return mixed
@@ -92,15 +91,26 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         if (Tools::getValue('action', null) == 'addCampaign') {
             $api = $this->getGrAPI();
             $fromFields = $this->normalizeFormFields($api->getFromFields());
-            $confirmSubject = $this->normalizeComplexApiData($api->getSubscriptionConfirmationsSubject(), 'id', 'name');
-            $confirmBody = $this->normalizeComplexApiData($api->getSubscriptionConfirmationsBody(), 'id', 'name', 'contentPlain');
+            $confirmSubject = $this->normalizeComplexApiData(
+                $api->getSubscriptionConfirmationsSubject(),
+                'id',
+                'name'
+            );
+
+            $confirmBody = $this->normalizeComplexApiData(
+                $api->getSubscriptionConfirmationsBody(),
+                'id',
+                'name',
+                'contentPlain'
+            );
+
             $this->context->smarty->assign(array(
                 'selected_tab' => 'subscribe_via_registration',
                 'subscribe_via_registration_form' => $this->renderAddCampaignForm(
-                    array_merge(array(array('id_option' => '', 'name' => $this->l('Select from field'))), $fromFields),
-                    array_merge(array(array('id_option' => '', 'name' => $this->l('Select reply-to address'))), $fromFields),
-                    array(array('id_option' => '', 'name' => $this->l('Select confirmation message subject'))) + $confirmSubject,
-                    array(array('id_option' => '', 'name' => $this->l('Select confirmation message body template'))) + $confirmBody
+                    $this->prependOptionList('Select from field', $fromFields),
+                    $this->prependOptionList('Select reply-to address', $fromFields),
+                    $this->prependOptionList('Select confirmation message subject', $confirmSubject),
+                    $this->prependOptionList('Select confirmation message body template', $confirmBody)
                 ),
                 'token' => $this->getToken(),
             ));
@@ -123,12 +133,19 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         return $options;
     }
 
-    public function normalizeComplexApiData($data, $id, $name, $complex = null, $options = array())
+    /**
+     * @param array $data
+     * @param string $identifier
+     * @param string $name
+     * @param null|string $complex
+     * @param array $options
+     * @return array
+     */
+    public function normalizeComplexApiData($data, $identifier, $name, $complex = null, $options = array())
     {
-        foreach ($data as $row)
-        {
+        foreach ($data as $row) {
             $options[] = array(
-                'id_option' => $row[$id],
+                'id_option' => $row[$identifier],
                 'name' => $row[$name] . ' ' . ($complex != null ? $row[$complex] : '')
             );
         }
@@ -143,15 +160,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function renderForm()
     {
-        $fields_form = array(
+        $fieldsForm = array(
             'legend' => array(
                 'title' => $this->l('Update Mapping'),
             ),
             'input' => array(
-                'id' => array(
-                    'type' => 'hidden',
-                    'name' => 'id'
-                ),
+                'id' => array('type' => 'hidden', 'name' => 'id'),
                 'customer_detail' => array(
                     'label' => $this->l('Customer detail'),
                     'name' => 'customer_detail',
@@ -161,7 +175,10 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                 'gr_custom' => array(
                     'label' => $this->l('Getresponse custom field name'),
                     'required'  => true,
-                    'desc' => $this->l('You can use lowercase English alphabet characters, numbers, and underscore ("_"). Maximum 32 characters.'),
+                    'desc' => $this->l('
+                        You can use lowercase English alphabet characters, numbers, 
+                        and underscore ("_"). Maximum 32 characters.
+                    '),
                     'type' => 'text',
                     'name' => 'gr_custom'
                 ),
@@ -178,16 +195,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'class'     => 't',
                     'is_bool'   => true,
                     'values'    => array(
-                        array(
-                            'id'    => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled')
-                        ),
-                        array(
-                            'id'    => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
+                        array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
+                        array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
                     ),
                 ),
             ),
@@ -216,57 +225,21 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             }
         }
 
-        return $helper->generateForm(array(array('form' => $fields_form)));
+        return $helper->generateForm(array(array('form' => $fieldsForm)));
     }
 
     /**
      * Renders custom list
-     *
      * @return mixed
      */
     public function renderList()
     {
-        $fields_list = array(
-            'customer_detail' => array(
-                'title' => $this->l('Customer detail'),
-                'type' => 'text',
-            ),
-            'gr_custom' => array(
-                'title' => $this->l('Custom fields in GetResponse'),
-                'type' => 'text',
-            ),
-            'on' => array(
-                'title' => $this->l('Active'),
-                'type' => 'bool',
-                'icon' => array(
-                    0 => 'disabled.gif',
-                    1 => 'enabled.gif',
-                    'default' => 'disabled.gif'
-                ),
-                'align' => 'center'
-            )
-        );
-
-        $helper = new HelperList();
-        $helper->shopLinkType = '';
-        $helper->simple_header = true;
-        $helper->identifier = 'id';
-        $helper->actions = array('edit');
-        $helper->show_toolbar = true;
-
-        $helper->title = $this->l('Contacts info');
-        $helper->table = $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminGetresponseSubscribeRegistration');
-        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-
-        return $helper->generateList($this->getCustomList(), $fields_list);
+        return $this->renderCustomList();
     }
 
     /**
      * Assigns values to forms
-     *
      * @param $obj
-     *
      * @return array
      */
     public function getFieldsValue($obj)
@@ -305,28 +278,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * Returns custom list
-     *
-     * @return array
-     */
-    public function getCustomList()
-    {
-        $customs = $this->db->getCustoms();
-        $result = array();
-        foreach ($customs as $custom) {
-            $result[] = array(
-                'id' => $custom['id_custom'],
-                'customer_detail' => $custom['custom_field'],
-                'gr_custom' => $custom['custom_name'],
-                'default' => $custom['default'] == 'yes' ? 1 : 0,
-                'on' => $custom['active_custom'] == 'yes' ? 1 : 0
-            );
-        }
-
-        return $result;
-    }
-
-    /**
      * Returns subscribe on register form
      *
      * @param array $campaigns
@@ -349,38 +300,38 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             ),
             'input' => array(
                 array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Add contacts to GetResponse during registration'),
-                    'name'      => 'subscriptionSwitch',
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
+                    'type' => 'switch',
+                    'label' => $this->l('Add contacts to GetResponse during registration'),
+                    'name' => 'subscriptionSwitch',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'values' => array(
                         array(
-                          'id'    => 'active_on',
-                          'value' => 1,
-                          'label' => $this->l('Enabled')
-                        ),
-                        array(
-                          'id'    => 'active_off',
-                          'value' => 0,
-                          'label' => $this->l('Disabled')
-                        )
-                    ),
-                ),
-                array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Include Prestashop newsletter subscribers'),
-                    'name'      => 'newsletter',
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
-                        array(
-                            'id'    => 'newsletter_on',
+                            'id' => 'active_on',
                             'value' => 1,
                             'label' => $this->l('Enabled')
                         ),
                         array(
-                            'id'    => 'newsletter_off',
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'switch',
+                    'label' => $this->l('Include Prestashop newsletter subscribers'),
+                    'name' => 'newsletter',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'id' => 'newsletter_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'id' => 'newsletter_off',
                             'value' => 0,
                             'label' => $this->l('Disabled')
                         )
@@ -391,7 +342,9 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'label' => $this->l('Contact list'),
                     'name' => 'campaign',
                     'required' => true,
-                    'desc' => '<input type="checkbox" id="addToCycle" value="1" name="addToCycle" ' . $addToCycle . '> ' . $this->l('Add to autoresponder cycle'),
+                    'desc' =>
+                        '<input type="checkbox" id="addToCycle" value="1" name="addToCycle" ' .
+                        $addToCycle . '> ' . $this->l('Add to autoresponder cycle'),
                     'options' => array(
                         'query' => $campaigns,
                         'id' => 'id_option',
@@ -409,26 +362,23 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     )
                 ),
                 array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Update contact info'),
-                    'name'      => 'contactInfo',
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'desc' => $this->l('Select this option if you want to overwrite contact details that already exist in your GetResponse database.') . '<br>' . $this->l('Clear this option to keep existing data.'),
-                    'values'    => array(
-                        array(
-                            'id'    => 'contact_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled')
-                        ),
-                        array(
-                            'id'    => 'contact_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
-                    ),
-                ),
-
+                    'type' => 'switch',
+                    'label' => $this->l('Update contact info'),
+                    'name' => 'contactInfo',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'desc' =>
+                        $this->l('
+                            Select this option if you want to overwrite contact details 
+                            that already exist in your GetResponse database.
+                        ') .
+                        '<br>' .
+                        $this->l('Clear this option to keep existing data.'),
+                    'values' => array(
+                        array('id' => 'contact_on', 'value' => 1, 'label' => $this->l('Enabled')),
+                        array('id' => 'contact_off', 'value' => 0, 'label' => $this->l('Disabled'))
+                    )
+                )
             ),
             'submit' =>
                 array(
@@ -474,10 +424,10 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $responders = $api->getAutoResponders();
 
         foreach ($responders as $responder) {
-
             $result[] = array(
                 'id_option' => $responder->triggerSettings->dayOfCycle,
-                'name' => '(' . $this->l('Day') . ': ' . $responder->triggerSettings->dayOfCycle . ') ' . $responder->name . ' (' . $this->l('Subject') . ': ' . $responder->subject . ')'
+                'name' => '(' . $this->l('Day') . ': ' . $responder->triggerSettings->dayOfCycle . ') ' .
+                    $responder->name . ' (' . $this->l('Subject') . ': ' . $responder->subject . ')'
             );
         }
 
@@ -487,30 +437,27 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     public function performSubscribeViaRegistration()
     {
         $this->redirectIfNotAuthorized();
-
-        $subscription   = Tools::getValue('subscriptionSwitch') == 1 ? 'yes' : 'no';
-        $campaign       = Tools::getValue('campaign');
-        $add_to_cycle   = Tools::getValue('addToCycle', 0);
-        $cycle_day      = Tools::getValue('cycledays');
-        $update_address = Tools::getValue('contactInfo', 0) == 1 ? 'yes' : 'no';
-        $newsletter     = Tools::getValue('newsletter', 0) == 1 ? 'yes' : 'no';
+        $subscription = Tools::getValue('subscriptionSwitch') == 1 ? 'yes' : 'no';
+        $campaign = Tools::getValue('campaign');
+        $addToCycle = Tools::getValue('addToCycle', 0);
+        $cycleDay = Tools::getValue('cycledays');
+        $updateAddress = Tools::getValue('contactInfo', 0) == 1 ? 'yes' : 'no';
+        $newsletter = Tools::getValue('newsletter', 0) == 1 ? 'yes' : 'no';
 
         // check subscription settings
         if (!empty($campaign) && $campaign != '0') {
-
-            $cycle_day = 1 == $add_to_cycle ? $cycle_day : null;
-            $this->db->updateSettings($subscription, $campaign, $update_address, $cycle_day, $newsletter);
+            $cycleDay = 1 == $addToCycle ? $cycleDay : null;
+            $this->db->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
 
             $this->confirmations[] = $this->l('Settings saved');
-
-        } elseif (!empty($campaign) && $campaign == '0') {
+        } elseif (empty($campaign) || $campaign == '0') {
             $this->errors[] = $this->l('You need to select list');
         }
     }
 
     /**
      * Get Admin Token
-     * @return bool|string
+     * @return string
      */
     public function getToken()
     {

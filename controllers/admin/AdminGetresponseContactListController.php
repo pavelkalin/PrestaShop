@@ -1,10 +1,8 @@
 <?php
-
 require_once 'AdminGetresponseController.php';
 
 /**
  * Class AdminGetresponseController
- *
  * @author Getresponse <grintegrations@getresponse.com>
  * @copyright GetResponse
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
@@ -56,8 +54,8 @@ class AdminGetresponseContactListController extends AdminGetresponseController
 
         if (Tools::isSubmit('submitBulkdelete'.$this->name)) {
             $selected = (array)Tools::getValue($this->name . 'Box');
-            foreach ($selected as $to_delete) {
-                $this->db->deleteAutomationSettings($to_delete);
+            foreach ($selected as $toDelete) {
+                $this->db->deleteAutomationSettings($toDelete);
             }
             $this->confirmations[] = $this->l('Rules deleted');
         }
@@ -68,7 +66,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             'icon' => 'process-icon-new'
         );
 
-        $fields_list = array(
+        $fieldsList = array(
             'category' => array('title' => $this->l('If customer buys in the category'), 'type' => 'text'),
             'action' => array('title' => $this->l('they are'), 'type' => 'text'),
             'contact_list' => array('title' => $this->l('Into the contact list'), 'type' => 'text'),
@@ -102,7 +100,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             'delete' => array('text' => $this->l('Delete selected'), 'confirm' => $this->l('Delete selected items?'))
         );
 
-        return $helper->generateList($this->getAutomationList(), $fields_list);
+        return $helper->generateList($this->getAutomationList(), $fieldsList);
     }
 
     /**
@@ -112,12 +110,12 @@ class AdminGetresponseContactListController extends AdminGetresponseController
     {
         $api = $this->getGrAPI();
         $automations = array();
-        $automation_settings = $this->db->getAutomationSettings();
+        $automationSettings = $this->db->getAutomationSettings();
         $categories = Category::getCategories(1, true, false);
         $autoresponders = $api->getAutoResponders();
         $campaigns = $api->getCampaigns();
 
-        foreach ($automation_settings as $setting) {
+        foreach ($automationSettings as $setting) {
             $automations[] = array(
                 'id' => $setting['id'],
                 'category' => $this->getCategoryName($categories, $setting['category_id']),
@@ -133,13 +131,13 @@ class AdminGetresponseContactListController extends AdminGetresponseController
 
     /**
      * @param array $campaigns
-     * @param string $campaign_id
+     * @param string $campaignId
      * @return string
      */
-    private function getCampaignName($campaigns, $campaign_id)
+    private function getCampaignName($campaigns, $campaignId)
     {
         foreach ($campaigns as $campaign) {
-            if ($campaign['id'] == $campaign_id) {
+            if ($campaign['id'] == $campaignId) {
                 return $campaign['name'];
             }
         }
@@ -149,13 +147,13 @@ class AdminGetresponseContactListController extends AdminGetresponseController
 
     /**
      * @param array $categories
-     * @param int $category_id
+     * @param int $categoryId
      * @return string
      */
-    private function getCategoryName($categories, $category_id)
+    private function getCategoryName($categories, $categoryId)
     {
         foreach ($categories as $category) {
-            if ($category['id_category'] == $category_id) {
+            if ($category['id_category'] == $categoryId) {
                 return $category['name'];
             }
         }
@@ -165,14 +163,17 @@ class AdminGetresponseContactListController extends AdminGetresponseController
 
     /**
      * @param array $autoresponders
-     * @param int $cycle_day
+     * @param int $cycleDay
      * @return string
      */
-    private function getAutoresponderName($autoresponders, $cycle_day)
+    private function getAutoresponderName($autoresponders, $cycleDay)
     {
         foreach ($autoresponders as $autoresponder) {
-            if ($autoresponder->triggerSettings->dayOfCycle == $cycle_day) {
-                return '(' . $this->l('Day') . ': ' . $autoresponder->triggerSettings->dayOfCycle . ') ' . $autoresponder->name . ' (' . $this->l('Subject') . ': ' . $autoresponder->subject . ')';
+            if ($autoresponder->triggerSettings->dayOfCycle == $cycleDay) {
+                return '(' . $this->l('Day') . ': ' .
+                    $autoresponder->triggerSettings->dayOfCycle . ') ' .
+                    $autoresponder->name . ' (' . $this->l('Subject') .
+                    ': ' . $autoresponder->subject . ')';
             }
         }
 
@@ -221,11 +222,11 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         $id = Tools::getValue('id');
 
         if (Tools::isSubmit('submit'.$this->name)) {
-            $category  = Tools::getValue('category');
-            $campaign  = Tools::getValue('campaign');
-            $action    = Tools::getValue('a_action');
-            $add_to_cycle = Tools::getValue('options_1');
-            $cycle_day = !empty($add_to_cycle) ? Tools::getValue('autoresponder_day') : null;
+            $category = Tools::getValue('category');
+            $campaign = Tools::getValue('campaign');
+            $action = Tools::getValue('a_action');
+            $addToCycle = Tools::getValue('options_1');
+            $cycleDay = !empty($addToCycle) ? Tools::getValue('autoresponder_day') : null;
 
             if (empty($category)) {
                 $this->errors[] = $this->l('The "if customer buys in category field" is invalid');
@@ -237,7 +238,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                 $this->errors[] = $this->l('The "into the contact list" field is required');
             }
 
-            if (!empty($add_to_cycle) && $cycle_day == '') {
+            if (!empty($addToCycle) && $cycleDay == '') {
                 $this->errors[] = $this->l('The "autoresponder" field is required');
             }
 
@@ -248,42 +249,40 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                         $id,
                         $campaign,
                         $action,
-                        $cycle_day
+                        $cycleDay
                     );
-                    Tools::redirectAdmin(AdminController::$currentIndex);
                 } catch (Exception $e) {
-                    //$this->addErrorMessage('Selected category and action are similar to the other one');
+                    $this->errors[] = $this->l('Rule has not been updated. Rule already exist.');
                 }
             } elseif (empty($this->errors)) {
-                $this->db->insertAutomationSettings(
-                    $category,
-                    $campaign,
-                    $action,
-                    $cycle_day
-                );
+                try {
+                    $this->db->insertAutomationSettings(
+                        $category,
+                        $campaign,
+                        $action,
+                        $cycleDay
+                    );
+                } catch (Exception $e) {
+                    $this->errors[] = $this->l('Rule has not been created. Rule already exist.');
+                }
+            }
+
+            if (empty($this->errors)) {
                 Tools::redirectAdmin(AdminController::$currentIndex);
             }
         }
 
         $api = $this->getGrAPI();
-        $fields_form = array(
+        $fieldsForm = array(
             'form' => array(
             'legend' => array(
-                'title' => $this->l('Add new rule'),
+                'title' => $this->l(!empty($id) ? 'Edit rule' : 'Add new rule'),
             ),
             'input' => array(
-                array(
-                    'type' => 'hidden',
-                    'name' => 'automation_id',
-                ),
-                array(
-                    'type' => 'hidden',
-                    'name' => 'autoresponders',
-                ),
-                array(
-                    'type' => 'hidden',
-                    'name' => 'cycle_day_selected',
-                ),
+                array('type' => 'hidden', 'name' => 'automation_id'),
+                array('type' => 'hidden', 'name' => 'autoresponders'),
+                array('type' => 'hidden', 'name' => 'autoresponder_day_selected'),
+                array('type' => 'hidden', 'name' => 'cycle_day_selected'),
                 array(
                     'type' => 'select',
                     'label' => $this->l('If customer buys in category'),
@@ -319,7 +318,10 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                     'name' => 'campaign',
                     'required' => true,
                     'options' => array(
-                        'query' => array_merge(array(array('id' => '', 'name' => $this->l('Select a list'))), $api->getCampaigns()),
+                        'query' => array_merge(
+                            array(array('id' => '', 'name' => $this->l('Select a list'))),
+                            $api->getCampaigns()
+                        ),
                         'id' => 'id',
                         'name' => 'name'
                     )
@@ -368,6 +370,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             'a_action' => false,
             'campaign' => false,
             'autoresponder_day' => false,
+            'autoresponder_day_selected' => false,
             'cycle_day_selected' => false,
             'automation_id' => false,
             'autoresponders' => json_encode($api->getAutoResponders())
@@ -382,6 +385,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                     $helper->fields_value['a_action'] = $automation['action'];
                     $helper->fields_value['campaign'] = $automation['campaign_id'];
                     $helper->fields_value['autoresponder_day'] = $automation['cycle_day'];
+                    $helper->fields_value['autoresponder_day_selected'] = $automation['cycle_day'];
                     $helper->fields_value['cycle_day_selected'] = !empty($automation['cycle_day']);
                     $helper->fields_value['automation_id'] = $id;
                     break;
@@ -392,7 +396,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 
-        return $helper->generateForm(array($fields_form));
+        return $helper->generateForm(array($fieldsForm));
     }
 
     /**

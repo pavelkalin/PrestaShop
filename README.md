@@ -86,4 +86,4 @@ If you have any trouble installing or working the plugin feel free to contact us
 
 ## Contributing
 
-We love feature requests! Bug reports are very welcome as well. You can participate in this project by [reporting an issue](https://github.com/GetResponse/ZenCart/issues) or creating a [pull request](https://github.com/GetResponse/ZenCart/pulls). Please remind that all features and fixes must stick to platform coding standards.
+We love feature requests! Bug reports are very welcome as well. You can participate in this project by [reporting an issue](https://github.com/GetResponse/PrestaShop/issues) or creating a [pull request](https://github.com/GetResponse/PrestaShop/pulls). Please remind that all features and fixes must stick to platform coding standards.

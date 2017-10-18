@@ -5,3 +5,13 @@ a:hover .icon-Getresponse:before,
 li.active .icon-Getresponse:before {
     content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAMCAYAAABvEu28AAAA30lEQVQokaWSMUpDQRRFzxcLCXERdrGIkF4bIa1t0mcJKcTOVdinyAIsQgqtLMQuEEwjugGr8CMSRTgp8oRB/pf85MLAm/vuPc1Mpo6BU6AOfAHfVFMdGGaqYSyBg4qQXzX3YngP8mQLSBt4xrU+VdSu1XQVvVvUZZgnYU43hFxG/toY5rF4intNvfsH8KZeRLYV3g9qnoR6ESDmkfqivqr3aj/ZH6mL6M3/glQ7SbjsnKsfSScvAqkO1GYBoKHeFOTzTM2Bw5KnfQRmgMAxcFaSW6QfciftAw9Aa0fOdAUzqqZxyQrVqQAAAABJRU5ErkJggg==');
 }
+.icon-getresponse-connect {
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+    font-size: 28px;
+    background: transparent;
+    background-size: 26px;
+    background-position: center;
+}

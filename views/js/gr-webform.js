@@ -1,7 +1,7 @@
-$(function() {
+$(function () {
 
     //webform selector
-    $('input[name="subscription"]').on('change', function(e) {
+    $('input[name="subscription"]').on('change', function () {
         if ($('input[name="subscription"]:checked').val() == 1) {
             $('#style').parent().parent().show();
             $('#position').parent().parent().show();
