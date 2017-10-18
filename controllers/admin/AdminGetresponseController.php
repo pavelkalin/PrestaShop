@@ -281,11 +281,12 @@ class AdminGetresponseController extends ModuleAdminController
                 }
 
                 $cycleDay = $autoresponder->triggerSettings->dayOfCycle;
-                $campaignId = $autoresponder->triggerSettings->dayOfCycle;
+                $campaignId = $autoresponder->campaignId;
 
                 $campaignDays[$campaignId][$cycleDay] =
                     array('day' => $autoresponder->triggerSettings->dayOfCycle,
                           'name' => $autoresponder->subject,
+                          'campaign_id' => $autoresponder->campaignId,
                           'status' => $autoresponder->status,
                           'full_name' => '(' . $this->l('Day') . ': ' .
                               $cycleDay . ') ' . $autoresponder->name .
@@ -447,7 +448,7 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function prependOptionList($name, $list)
     {
-        return array(array('id_option' => '', 'name' => $this->l($name))) + $list;
+        return array_merge(array(array('id_option' => '', 'name' => $this->l($name))), $list);
     }
 
     /**
@@ -478,6 +479,7 @@ class AdminGetresponseController extends ModuleAdminController
         }
 
         if (!empty($this->errors)) {
+            $_GET['action'] = 'addCampaign';
             return;
         }
 

@@ -450,7 +450,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             $this->db->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
 
             $this->confirmations[] = $this->l('Settings saved');
-        } elseif (!empty($campaign) && $campaign == '0') {
+        } elseif (empty($campaign) || $campaign == '0') {
             $this->errors[] = $this->l('You need to select list');
         }
     }

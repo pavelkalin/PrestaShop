@@ -222,9 +222,9 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         $id = Tools::getValue('id');
 
         if (Tools::isSubmit('submit'.$this->name)) {
-            $category  = Tools::getValue('category');
-            $campaign  = Tools::getValue('campaign');
-            $action    = Tools::getValue('a_action');
+            $category = Tools::getValue('category');
+            $campaign = Tools::getValue('campaign');
+            $action = Tools::getValue('a_action');
             $addToCycle = Tools::getValue('options_1');
             $cycleDay = !empty($addToCycle) ? Tools::getValue('autoresponder_day') : null;
 
@@ -251,17 +251,23 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                         $action,
                         $cycleDay
                     );
-                    Tools::redirectAdmin(AdminController::$currentIndex);
                 } catch (Exception $e) {
-                    //$this->addErrorMessage('Selected category and action are similar to the other one');
+                    $this->errors[] = $this->l('Rule has not been updated. Rule already exist.');
                 }
             } elseif (empty($this->errors)) {
-                $this->db->insertAutomationSettings(
-                    $category,
-                    $campaign,
-                    $action,
-                    $cycleDay
-                );
+                try {
+                    $this->db->insertAutomationSettings(
+                        $category,
+                        $campaign,
+                        $action,
+                        $cycleDay
+                    );
+                } catch (Exception $e) {
+                    $this->errors[] = $this->l('Rule has not been created. Rule already exist.');
+                }
+            }
+
+            if (empty($this->errors)) {
                 Tools::redirectAdmin(AdminController::$currentIndex);
             }
         }
@@ -270,21 +276,13 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         $fieldsForm = array(
             'form' => array(
             'legend' => array(
-                'title' => $this->l('Add new rule'),
+                'title' => $this->l(!empty($id) ? 'Edit rule' : 'Add new rule'),
             ),
             'input' => array(
-                array(
-                    'type' => 'hidden',
-                    'name' => 'automation_id',
-                ),
-                array(
-                    'type' => 'hidden',
-                    'name' => 'autoresponders',
-                ),
-                array(
-                    'type' => 'hidden',
-                    'name' => 'cycle_day_selected',
-                ),
+                array('type' => 'hidden', 'name' => 'automation_id'),
+                array('type' => 'hidden', 'name' => 'autoresponders'),
+                array('type' => 'hidden', 'name' => 'autoresponder_day_selected'),
+                array('type' => 'hidden', 'name' => 'cycle_day_selected'),
                 array(
                     'type' => 'select',
                     'label' => $this->l('If customer buys in category'),
@@ -372,6 +370,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             'a_action' => false,
             'campaign' => false,
             'autoresponder_day' => false,
+            'autoresponder_day_selected' => false,
             'cycle_day_selected' => false,
             'automation_id' => false,
             'autoresponders' => json_encode($api->getAutoResponders())
@@ -386,6 +385,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                     $helper->fields_value['a_action'] = $automation['action'];
                     $helper->fields_value['campaign'] = $automation['campaign_id'];
                     $helper->fields_value['autoresponder_day'] = $automation['cycle_day'];
+                    $helper->fields_value['autoresponder_day_selected'] = $automation['cycle_day'];
                     $helper->fields_value['cycle_day_selected'] = !empty($automation['cycle_day']);
                     $helper->fields_value['automation_id'] = $id;
                     break;

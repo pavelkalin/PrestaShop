@@ -33,6 +33,16 @@ $(document).ready(function () {
                 autorespondersCheck.parent().addClass('text-muted');
                 autorespondersList.append('<option value="">' + defaultNoAutoresponders + '</option>');
             }
+
+            var autoresponder_start = $('#autoresponder_day_selected');
+
+            if (autoresponder_start.val() != '') {
+                setTimeout(function() {
+                    $('#autoresponder_day').val(autoresponder_start.val());
+                    autoresponder_start.val('');
+                }, 500);
+
+            }
         }).trigger('change');
 
         if (selectedCycleDay != '') {

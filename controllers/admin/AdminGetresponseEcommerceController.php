@@ -116,6 +116,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     {
         /** @var HelperListCore $helper */
         $helper = new HelperList();
+        $helper->no_link = true;
         $helper->shopLinkType = '';
         $helper->simple_header = true;
         $helper->identifier = 'shopId';
@@ -246,6 +247,10 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     array(
                         'type' => 'hidden',
                         'name' => 'form_name'
+                    ),
+                    array(
+                        'type' => 'hidden',
+                        'name' => 'back_url'
                     )
                 ),
                 'submit' => array(
@@ -256,14 +261,18 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     'title' => $this->l('Cancel'),
                     'icon' => 'process-icon-cancel'
                 ),
-                'show_cancel_button' => true,
+                'show_cancel_button' => true
             )
         );
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
 
-        $helper->fields_value = array('shop_name' => '', 'form_name' => 'add_store');
+        $helper->fields_value = array(
+            'shop_name' => '',
+            'form_name' => 'add_store',
+            'back_url' => self::$currentIndex . '&token=' . $this->getToken()
+        );
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 

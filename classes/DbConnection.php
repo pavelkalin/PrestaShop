@@ -774,10 +774,7 @@ class DbConnection
             "yes"
        )';
 
-        try {
-            $this->db->execute($query);
-        } catch (Exception $e) {
-        }
+        $this->db->execute($query);
     }
 
     /**

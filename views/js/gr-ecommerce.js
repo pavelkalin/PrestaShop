@@ -14,9 +14,8 @@ $(document).ready(function () {
         ecommerceDisplay();
     }).trigger('click');
 
-
     $('button[type="reset"]').click(function (e) {
-        e.preventDefault();
-        window.history.back();
+       e.preventDefault();
+       window.location.href = $('#back_url').val();
     });
 });
