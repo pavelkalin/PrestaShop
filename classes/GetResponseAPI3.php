@@ -55,11 +55,12 @@ class GetResponseAPI3
 
     /**
      * Return all campaigns
+     * @param array $params
      * @return mixed
      */
-    public function getCampaigns()
+    public function getCampaigns($params)
     {
-        return $this->call('campaigns');
+        return $this->call('campaigns', 'GET', $params);
     }
 
     /**
@@ -439,7 +440,10 @@ class GetResponseAPI3
             throw GrApiException::createForEmptyApiMethod();
         }
 
-        $params = Tools::jsonEncode($params);
+        if ($httpMethod != 'GET') {
+            $params = Tools::jsonEncode($params);
+        }
+
         $url = $this->apiUrl  . '/' .  $apiMethod;
 
         $headers = array(
@@ -467,6 +471,8 @@ class GetResponseAPI3
         if ($httpMethod == 'POST') {
             $options[CURLOPT_POST] = 1;
             $options[CURLOPT_POSTFIELDS] = $params;
+        } elseif ($httpMethod == 'GET' && !empty($params)) {
+            $options[CURLOPT_URL] .= '?' . http_build_query($params);
         } elseif ($httpMethod == 'DELETE') {
             $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
         }

@@ -108,14 +108,14 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     'type' => 'text',
                     'label' => $this->l('API key'),
                     'name' => 'api_key',
-                    'desc' => $this->l(
+                    'desc' =>
                         $this->l(
                             'Your API key is part of the settings of your GetResponse account.
                             Log in to GetResponse and go to'
                         ) .
-                        '<strong>' . $this->l('My profile > Integration & API > API') . '</strong>' .
+                        ' <strong> ' . $this->l('My profile > Integration & API > API') . ' </strong> ' .
                         $this->l('to find the key')
-                    ),
+                    ,
                     'empty_message' => $this->l('You need to enter API key. This field can\'t be empty.'),
                     'required' => true
                 ),
@@ -199,6 +199,11 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     private function disconnectFromGetResponse()
     {
         $this->db->updateApiSettings(null, null, null);
+
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cache->delete('GetResponse*');
+
         $this->confirmations[] = $this->l('GetResponse account disconnected');
     }
 
