@@ -529,7 +529,12 @@ class GrApi
      */
     public function createCampaign($params)
     {
-        return $this->api->createCampaign($params);
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $response = $this->api->createCampaign($params);
+        $cache->delete('GetResponseCampaigns');
+
+        return $response;
     }
 
     /**
