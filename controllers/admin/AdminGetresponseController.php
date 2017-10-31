@@ -90,7 +90,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->context->smarty->assign(array(
             'is_connected' => $isConnected,
-            'gr_base_url' => Tools::getHttpHost(true)
+            'gr_base_url' => $this->context->shop->getBaseURL(true)
         ));
 
         if (false === $isConnected) {
