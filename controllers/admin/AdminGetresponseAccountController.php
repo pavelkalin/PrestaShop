@@ -36,6 +36,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     {
         $settings = $this->db->getSettings();
         $this->display = !empty($settings['api_key']) ? 'view' : 'edit';
+        $this->show_form_cancel_button = false;
 
         parent::initContent();
     }
