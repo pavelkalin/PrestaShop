@@ -166,7 +166,12 @@ class GrEcommerce
 
         if (empty($grIdCart)) {
             $response = $this->api->addCart($grIdShop, $params);
-            $this->db->updateGetResponseCartId($cart->id, $response->cartId);
+            if (isset($response->cartId)) {
+                $this->db->updateGetResponseCartId(
+                    $cart->id,
+                    $response->cartId
+                );
+            }
         } else {
             $this->api->updateCart($grIdShop, $grIdCart, $params);
         }

@@ -16,6 +16,8 @@ class GrApi
     const SMB_API_URL = 'https://api.getresponse.com/v3';
     const MX_PL_API_URL = 'https://api3.getresponse360.pl/v3';
     const MX_US_API_URL = 'https://api3.getresponse360.com/v3';
+    const CACHE_TTL = 600;
+    const PAGINATION_SIZE = 100;
 
     /** @var GetResponseAPI3 */
     private $api;
@@ -48,20 +50,32 @@ class GrApi
      */
     public function getCampaigns()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseCampaigns';
         $campaigns = array();
 
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
-            $results = $this->api->getCampaigns();
+            for ($i = 1; ; $i++) {
+                $results = (array)$this->api->getCampaigns(array('page' => $i, 'perPage' => self::PAGINATION_SIZE));
 
-            if (empty($results)) {
-                return $campaigns;
-            }
+                foreach ($results as $result) {
+                    $campaigns[$result->name] = array('id' => $result->campaignId, 'name' => $result->name);
+                }
 
-            foreach ($results as $info) {
-                $campaigns[$info->name] = array('id'   => $info->campaignId, 'name' => $info->name);
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
+                }
             }
 
             ksort($campaigns);
+
+            $cache->set($cacheKey, $campaigns, self::CACHE_TTL);
+
             return $campaigns;
         } catch (Exception $e) {
             return array();
@@ -73,18 +87,32 @@ class GrApi
      */
     public function getWebForms()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseWebFormsList';
         $webForms = array();
 
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
-            $results = $this->api->getWebForms();
+            for ($i = 1; ; $i++) {
+                $results = $this->api->getWebForms(array('page' => $i, 'perPage' => self::PAGINATION_SIZE));
 
-            if (empty($results)) {
-                return $webForms;
+                foreach ($results as $id => $info) {
+                    $webForms[$id] = $info;
+                }
+
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
+                }
             }
 
-            foreach ($results as $id => $info) {
-                $webForms[$id] = $info;
-            }
+            ksort($webForms);
+
+            $cache->set($cacheKey, $webForms, self::CACHE_TTL);
+
             return $webForms;
         } catch (Exception $e) {
             return array();
@@ -96,18 +124,32 @@ class GrApi
      */
     public function getForms()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseFormsList';
         $forms = array();
 
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
-            $results = $this->api->getForms();
+            for ($i = 1; ; $i++) {
+                $results = $this->api->getForms(array('page' => $i, 'perPage' => self::PAGINATION_SIZE));
 
-            if (empty($results)) {
-                return $forms;
+                foreach ($results as $id => $info) {
+                    $forms[$id] = $info;
+                }
+
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
+                }
             }
 
-            foreach ($results as $id => $info) {
-                $forms[$id] = $info;
-            }
+            ksort($forms);
+
+            $cache->set($cacheKey, $forms, self::CACHE_TTL);
+
             return $forms;
         } catch (Exception $e) {
             return array();
@@ -120,14 +162,17 @@ class GrApi
      */
     public function getSubscriptionConfirmationsSubject($lang = 'EN')
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseConfirmationsSubject';
         $subjects = array();
 
-        try {
-            $results = $this->api->getSubscriptionConfirmationsSubject($lang);
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
 
-            if (empty($results)) {
-                return array();
-            }
+        try {
+            $results = (array)$this->api->getSubscriptionConfirmationsSubject($lang);
 
             foreach ($results as $subject) {
                 $subjects[] = array(
@@ -135,6 +180,9 @@ class GrApi
                     'name' => $subject->subject
                 );
             }
+
+            $cache->set($cacheKey, $subjects, self::CACHE_TTL);
+
             return $subjects;
         } catch (Exception $e) {
             return array();
@@ -147,14 +195,17 @@ class GrApi
      */
     public function getSubscriptionConfirmationsBody($lang = 'EN')
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseConfirmationsBody';
         $bodies = array();
 
-        try {
-            $results = $this->api->getSubscriptionConfirmationsBody($lang);
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
 
-            if (empty($results)) {
-                return array();
-            }
+        try {
+            $results = (array)$this->api->getSubscriptionConfirmationsBody($lang);
 
             foreach ($results as $body) {
                 $bodies[] = array(
@@ -163,6 +214,9 @@ class GrApi
                     'contentPlain' => $body->contentPlain
                 );
             }
+
+            $cache->set($cacheKey, $bodies, self::CACHE_TTL);
+
             return $bodies;
         } catch (Exception $e) {
             return array();
@@ -174,21 +228,36 @@ class GrApi
      */
     public function getFromFields()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseFromFields';
         $fromFields = array();
 
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
-            $results = $this->api->getAccountFromFields();
-            if (empty($results)) {
-                return array();
+            for ($i = 1; ; $i++) {
+                $results = (array)$this->api->getAccountFromFields(array(
+                    'page' => $i,
+                    'perPage' => self::PAGINATION_SIZE
+                ));
+
+                foreach ($results as $info) {
+                    $fromFields[] = array(
+                        'id' => $info->fromFieldId,
+                        'name' => $info->name,
+                        'email' => $info->email,
+                    );
+                }
+
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
+                }
             }
 
-            foreach ($results as $info) {
-                $fromFields[] = array(
-                    'id'    => $info->fromFieldId,
-                    'name'  => $info->name,
-                    'email' => $info->email,
-                );
-            }
+            $cache->set($cacheKey, $fromFields, self::CACHE_TTL);
 
             return $fromFields;
         } catch (Exception $e) {
@@ -196,9 +265,26 @@ class GrApi
         }
     }
 
+    /**
+     * @return \stdClass
+     */
     public function getAccounts()
     {
-        return $this->api->accounts();
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseAccounts';
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
+        $accounts = $this->api->accounts();
+
+        $cache->set($cacheKey, $accounts, self::CACHE_TTL);
+
+        return $accounts;
+
+
     }
 
     /**
@@ -206,8 +292,34 @@ class GrApi
      */
     public function getAutoResponders()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseAutoresponders';
+        $autoresponders = array();
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
-            return $this->api->getAutoresponders();
+            for ($i = 1; ; $i++) {
+                $results = (array)$this->api->getAutoresponders(array(
+                    'page' => $i,
+                    'perPage' => self::PAGINATION_SIZE
+                ));
+
+                foreach ($results as $info) {
+                    $autoresponders[] = $info;
+                }
+
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
+                }
+            }
+
+            $cache->set($cacheKey, $autoresponders, self::CACHE_TTL);
+
+            return $autoresponders;
         } catch (Exception $e) {
             return array();
         }
@@ -248,14 +360,12 @@ class GrApi
 
     /**
      * Add (or update) contact to gr campaign
-     *
      * @param string $campaign
      * @param string $firstName
      * @param string $lastName
      * @param string $email
      * @param int $cycleDay
      * @param array $userCustoms
-     *
      * @return mixed
      */
     public function addContact($campaign, $firstName, $lastName, $email, $cycleDay, $userCustoms = array())
@@ -295,7 +405,6 @@ class GrApi
             }
             return $this->api->updateContact($contact->contactId, $params);
         } else {
-            // @TODO - method setCustoms shouldn't return any values
             $params['customFieldValues'] = $this->transformCustomToGetResponseFormat($userCustoms);
             return $this->api->addContact($params);
         }
@@ -305,7 +414,6 @@ class GrApi
      * Merge user custom fields selected on WP admin site with those from gr account
      * @param $results
      * @param $userCustoms
-     *
      * @return array
      */
     public function mergeUserCustoms($results, $userCustoms)
@@ -333,9 +441,6 @@ class GrApi
     /**
      * Set user custom fields
      * @param $userCustoms
-     *
-     * @TODO - this method shouldn't return any values.
-     *
      * @return array
      */
     public function transformCustomToGetResponseFormat($userCustoms)
@@ -356,20 +461,20 @@ class GrApi
             if (!empty($grCustom)) {
                 $customFields[] = array(
                     'customFieldId' => $grCustom->customFieldId,
-                    'value'         => array($value)
+                    'value' => array($value)
                 );
             } else {
                 $custom = $this->api->addCustomField(array(
-                    'name'   => $name,
-                    'type'   => "text",
-                    'hidden' => "false",
+                    'name' => $name,
+                    'type' => 'text',
+                    'hidden' => 'false',
                     'values' => array($value),
                 ));
 
                 if (!empty($custom) && !empty($custom->customFieldId)) {
                     $customFields[] = array(
                         'customFieldId' => $custom->customFieldId,
-                        'value'         => array($value)
+                        'value' => array($value)
                     );
                 }
             }
@@ -384,16 +489,38 @@ class GrApi
      */
     public function getCustomFields()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseCustomLists';
         $allCustoms = array();
-        $results = $this->api->getCustomFields();
-        if (!empty($results)) {
-            foreach ($results as $ac) {
-                if (isset($ac->name) && isset($ac->customFieldId)) {
-                    $allCustoms[$ac->name] = $ac->customFieldId;
+
+        if ($cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
+        try {
+            for ($i = 1; ; $i++) {
+                $results = (array)$this->api->getCustomFields(array(
+                    'page' => $i,
+                    'perPage' => self::PAGINATION_SIZE
+                ));
+                foreach ($results as $ac) {
+                    if (isset($ac->name) && isset($ac->customFieldId)) {
+                        $allCustoms[$ac->name] = $ac->customFieldId;
+                    }
+                }
+
+                if (count($results) < self::PAGINATION_SIZE) {
+                    break;
                 }
             }
+
+            $cache->set($cacheKey, $allCustoms, self::CACHE_TTL);
+
+            return $allCustoms;
+        } catch (Exception $e) {
+            return array();
         }
-        return $allCustoms;
     }
 
     /**
@@ -402,7 +529,12 @@ class GrApi
      */
     public function createCampaign($params)
     {
-        return $this->api->createCampaign($params);
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $response = $this->api->createCampaign($params);
+        $cache->delete('GetResponseCampaigns');
+
+        return $response;
     }
 
     /**

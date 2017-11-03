@@ -274,7 +274,7 @@ class AdminGetresponseController extends ModuleAdminController
     public function getCampaignDays($autoresponders)
     {
         $campaignDays = array();
-        if (!empty($autoresponders) && is_object($autoresponders)) {
+        if (!empty($autoresponders)) {
             foreach ($autoresponders as $autoresponder) {
                 if ($autoresponder->triggerSettings->dayOfCycle == null) {
                     continue;

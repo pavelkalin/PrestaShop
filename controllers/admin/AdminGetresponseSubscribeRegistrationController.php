@@ -444,15 +444,15 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $updateAddress = Tools::getValue('contactInfo', 0) == 1 ? 'yes' : 'no';
         $newsletter = Tools::getValue('newsletter', 0) == 1 ? 'yes' : 'no';
 
-        // check subscription settings
-        if (!empty($campaign) && $campaign != '0') {
-            $cycleDay = 1 == $addToCycle ? $cycleDay : null;
-            $this->db->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
-
-            $this->confirmations[] = $this->l('Settings saved');
-        } elseif (empty($campaign) || $campaign == '0') {
+        if ((empty($campaign) || $campaign == '0') && $subscription === 'yes') {
             $this->errors[] = $this->l('You need to select list');
+            return;
         }
+
+        $cycleDay = 1 == $addToCycle ? $cycleDay : null;
+        $this->db->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
+
+        $this->confirmations[] = $this->l('Settings saved');
     }
 
     /**
