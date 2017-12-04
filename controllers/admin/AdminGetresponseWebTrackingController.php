@@ -63,6 +63,8 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                     'icon' => 'process-icon-save'
                 )
             );
+
+            $this->fields_value['tracking'] = ($settings['active_tracking'] == 'yes');
         } else {
             $this->fields_form = array(
                 'legend' => array(
