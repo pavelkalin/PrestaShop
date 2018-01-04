@@ -563,9 +563,9 @@ class GrApi
      */
     public function getShops()
     {
-        $shops = $this->api->getShops();
+        $shops = (array) $this->api->getShops();
 
-        return empty((array)$shops) ? array() : $shops;
+        return empty($shops) ? array() : $shops;
     }
 
     /**
