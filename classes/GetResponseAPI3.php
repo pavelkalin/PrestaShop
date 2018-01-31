@@ -447,7 +447,7 @@ class GetResponseAPI3
         $url = $this->apiUrl  . '/' .  $apiMethod;
 
         $headers = array(
-            'User-Agent: ' . 'PrestaShop/' . _PS_VERSION_,
+            'User-Agent: ' . 'PrestaShop/' . _PS_VERSION_ . '/' . (new Getresponse())->version,
             'X-APP-ID: ' . self::X_APP_ID,
             'X-Auth-Token: api-key ' . $this->apiKey,
             'Content-Type: application/json'
