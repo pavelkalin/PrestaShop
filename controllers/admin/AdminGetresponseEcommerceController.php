@@ -56,6 +56,18 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         }
     }
 
+    public function initPageHeaderToolbar()
+    {
+        if (!in_array($this->display, array('edit', 'add'))) {
+            $this->page_header_toolbar_btn['new_shop'] = array(
+                'href' => self::$currentIndex.'&action=add&token='.$this->getToken(),
+                'desc' => $this->l('Add new shop', null, null, false),
+                'icon' => 'process-icon-new'
+            );
+        }
+        parent::initPageHeaderToolbar();
+    }
+
     public function initProcess()
     {
         if (Tools::getValue('action') == 'add') {
@@ -100,12 +112,6 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     public function renderList()
     {
-        $this->page_header_toolbar_btn['new_shop'] = array(
-            'href' => self::$currentIndex.'&action=add&token='.$this->getToken(),
-            'desc' => $this->l('Add new shop', null, null, false),
-            'icon' => 'process-icon-new'
-        );
-
         return $this->generateForm() . $this->generateList();
     }
 

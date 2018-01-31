@@ -403,6 +403,11 @@ class GrApi
             if (!empty($results->customFieldValues)) {
                 $params['customFieldValues'] = $this->mergeUserCustoms($results->customFieldValues, $userCustoms);
             }
+
+            if (isset($params['dayOfCycle'])) {
+                unset($params['dayOfCycle']);
+            }
+
             return $this->api->updateContact($contact->contactId, $params);
         } else {
             $params['customFieldValues'] = $this->transformCustomToGetResponseFormat($userCustoms);
