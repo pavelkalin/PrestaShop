@@ -24,6 +24,12 @@ class Getresponse extends Module
     /** @var DbConnection */
     private $db;
 
+    /** @var GrApi */
+    private $api;
+
+    /** @var array */
+    private $settings;
+
     private $usedHooks = array(
         'newOrder',
         'createAccount',
@@ -43,7 +49,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '16.2.5';
+        $this->version                = '16.2.6';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -96,7 +102,7 @@ class Getresponse extends Module
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'GetResponse';
         }
-        
+
         if (substr(_PS_VERSION_, 0, 3) === '1.6') {
             $tab->id_parent = 0;
         } else {
@@ -252,7 +258,7 @@ class Getresponse extends Module
      */
     private function getApi()
     {
-        if ($this->api === null) {
+        if (empty($this->api)) {
             $settings = $this->getSettings();
             $this->api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
         }
@@ -266,7 +272,7 @@ class Getresponse extends Module
      */
     private function getSettings()
     {
-        if ($this->settings === null) {
+        if (empty($this->settings)) {
             $this->settings = $this->db->getSettings();
         }
 
