@@ -26,6 +26,18 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         ));
     }
 
+    public function initPageHeaderToolbar()
+    {
+        if (!in_array($this->display, array('edit', 'add'))) {
+            $this->page_header_toolbar_btn['new_rule'] = array(
+                'href' => self::$currentIndex.'&create' . $this->name . '&token='.$this->getToken(),
+                'desc' => $this->l('Add new rule', null, null, false),
+                'icon' => 'process-icon-new'
+            );
+        }
+        parent::initPageHeaderToolbar();
+    }
+
     public function initProcess()
     {
         if (Tools::isSubmit('update' . $this->name)) {
@@ -59,12 +71,6 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             }
             $this->confirmations[] = $this->l('Rules deleted');
         }
-
-        $this->page_header_toolbar_btn['new_rule'] = array(
-            'href' => self::$currentIndex.'&create' . $this->name . '&token='.$this->getToken(),
-            'desc' => $this->l('Add new rule', null, null, false),
-            'icon' => 'process-icon-new'
-        );
 
         $fieldsList = array(
             'category' => array('title' => $this->l('If customer buys in the category'), 'type' => 'text'),
