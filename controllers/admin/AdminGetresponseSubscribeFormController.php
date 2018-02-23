@@ -93,9 +93,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                     'name' => 'form',
                     'required' => true,
                     'options' => array(
-                        'query' => array(
-                            array('id_option' => '', 'name' => 'Select a form you want to display')
-                            ) + $forms,
+                        'query' => $forms,
                         'id' => 'id_option',
                         'name' => 'name'
                     )
@@ -219,7 +217,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
     public function convertFormsToDisplayArray($webforms, $old)
     {
-        $options = array();
+        $options = array(array('id_option' => '', 'name' => 'Select a form you want to display'));
         foreach ($webforms as $form) {
             $disabled = $form->status != 'enabled' ? $this->l('(DISABLED IN GR)') : '';
             $options[] = array(
