@@ -49,7 +49,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '16.2.6';
+        $this->version                = '16.2.7';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -595,7 +595,11 @@ class Getresponse extends Module
                 if (!empty($webformSettings['style']) && $webformSettings['style'] == 'prestashop') {
                     $setStyle = '&css=1';
                 }
-                $this->smarty->assign(array('webform_url' => $webformSettings['url'], 'style' => $setStyle));
+                $this->smarty->assign(array(
+                    'webform_url' => $webformSettings['url'],
+                    'style' => $setStyle,
+                    'position' => $position
+                ));
                 return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
             }
         }
