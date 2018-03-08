@@ -18,6 +18,8 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
 class Getresponse extends Module
 {
@@ -254,7 +256,7 @@ class Getresponse extends Module
 
     /**
      * @return GrApi
-     * @throws Exception
+     * @throws GrConfigurationNotFoundException
      */
     private function getApi()
     {
@@ -268,7 +270,7 @@ class Getresponse extends Module
 
     /**
      * @return array
-     * @throws Exception
+     * @throws GrConfigurationNotFoundException
      */
     private function getSettings()
     {
@@ -277,10 +279,23 @@ class Getresponse extends Module
         }
 
         if (empty($this->settings['api_key'])) {
-            throw new Exception('Not connected');
+            throw new GrConfigurationNotFoundException();
         }
 
         return $this->settings;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPluginEnabled()
+    {
+        try {
+            $this->getSettings();
+        } catch (GrConfigurationNotFoundException $e) {
+            return false;
+        }
+        return true;
     }
 
     /******************************************************************/
@@ -336,8 +351,10 @@ class Getresponse extends Module
      */
     public function hookNewOrder($params)
     {
-        $this->addSubscriberForOrder($params);
-        $this->convertCartToOrder($params);
+        if ($this->isPluginEnabled()) {
+            $this->addSubscriberForOrder($params);
+            $this->convertCartToOrder($params);
+        }
     }
 
     /**
@@ -397,10 +414,8 @@ class Getresponse extends Module
      */
     public function hookCreateAccount($params)
     {
-        try {
+        if ($this->isPluginEnabled()) {
             $this->createSubscriber($params);
-        } catch (Exception $e) {
-            return;
         }
     }
 
@@ -447,10 +462,10 @@ class Getresponse extends Module
      */
     public function addSubscriberForOrder($params)
     {
-        $prefix = 'customer';
+        $customerPostData = $params['customer'];
 
         //update_contact
-        $contact = $this->db->getContactByEmail($params[$prefix]->email);
+        $contact = $this->db->getContactByEmail($customerPostData->email);
         $customs = $this->getApi()->mapCustoms((array) $contact, $_POST, $this->db->getCustoms(), 'order');
 
         // automation
@@ -464,37 +479,51 @@ class Getresponse extends Module
             }
 
             $automations = $this->db->getAutomationSettings(true);
+
             if (!empty($automations)) {
-                $default = true;
+
+                $automationRulesApplied = false;
+
                 foreach ($automations as $automation) {
+
                     if (in_array($automation['category_id'], $categories)) {
                         // do automation
                         if ($automation['action'] == 'move') {
-                            $settings = $this->getSettings();
+
                             $this->getApi()->moveContactToGr(
                                 $automation['campaign_id'],
-                                $params[$prefix]->firstname,
-                                $params[$prefix]->lastname,
-                                $params[$prefix]->email,
+                                $customerPostData->firstname,
+                                $customerPostData->lastname,
+                                $customerPostData->email,
                                 $customs,
-                                $settings['cycle_day']
+                                $automation['cycle_day']
                             );
+
                         } elseif ($automation['action'] == 'copy') {
-                            $this->addContact($params[$prefix], $customs);
+
+                            $this->getApi()->addContact(
+                                $automation['campaign_id'],
+                                $customerPostData->firstname,
+                                $customerPostData->lastname,
+                                $customerPostData->email,
+                                $automation['cycle_day'],
+                                $customs
+                            );
+                            
                         }
-                        $default = false;
+                        $automationRulesApplied = true;
                     }
                 }
 
-                if ($default) {
-                    $this->addContact($params[$prefix], $customs);
+                if (!$automationRulesApplied) {
+                    $this->addContact($customerPostData, $customs);
                 }
                 return; //return so we do not hit standard case
             }
         }
 
         // standard case
-        $this->addContact($params[$prefix], $customs);
+        $this->addContact($customerPostData, $customs);
     }
 
     /**
