@@ -87,14 +87,7 @@ class GrApi
      */
     public function getWebForms()
     {
-        /** @var CacheCore $cache */
-        $cache = Cache::getInstance();
-        $cacheKey = 'GetResponseWebFormsList';
         $webForms = array();
-
-        if ($cache->exists($cacheKey)) {
-            return $cache->get($cacheKey);
-        }
 
         try {
             for ($i = 1; ; $i++) {
@@ -111,8 +104,6 @@ class GrApi
 
             ksort($webForms);
 
-            $cache->set($cacheKey, $webForms, self::CACHE_TTL);
-
             return $webForms;
         } catch (Exception $e) {
             return array();
@@ -124,14 +115,7 @@ class GrApi
      */
     public function getForms()
     {
-        /** @var CacheCore $cache */
-        $cache = Cache::getInstance();
-        $cacheKey = 'GetResponseFormsList';
         $forms = array();
-
-        if ($cache->exists($cacheKey)) {
-            return $cache->get($cacheKey);
-        }
 
         try {
             for ($i = 1; ; $i++) {
@@ -147,8 +131,6 @@ class GrApi
             }
 
             ksort($forms);
-
-            $cache->set($cacheKey, $forms, self::CACHE_TTL);
 
             return $forms;
         } catch (Exception $e) {
