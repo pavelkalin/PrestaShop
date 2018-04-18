@@ -1,5 +1,11 @@
 # Changelog
 
+## 16.2.10
+*(2018-04-18)*
+
+#### Bug fixes
+* readd again cache in webforms with isCacheEnabled flag
+
 ## 16.2.9
 *(2018-03-20)*
 
