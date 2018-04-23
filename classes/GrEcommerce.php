@@ -9,6 +9,8 @@
 
 class GrEcommerce
 {
+    const VARIANT_DESC_MAX_LENGTH = 1000;
+
     /** @var GrApi $api */
     private $api;
 
