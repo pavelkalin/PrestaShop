@@ -209,7 +209,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex . '&token=' . $this->getToken();
+        $helper->currentIndex = AdminController::$currentIndex;
+        $helper->token = $this->getToken();
         $helper->fields_value = array('mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false);
 
         $customs = $this->db->getCustoms();

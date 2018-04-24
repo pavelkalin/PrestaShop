@@ -199,7 +199,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function disconnectFromGetResponse()
     {
-        $this->db->updateApiSettings(null, null, null);
+        $this->db->updateApiSettings(null, 'gr', null);
 
         /** @var CacheCore $cache */
         $cache = Cache::getInstance();
