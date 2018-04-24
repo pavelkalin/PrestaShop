@@ -9,6 +9,8 @@
 
 class GrEcommerce
 {
+    const VARIANT_DESC_MAX_LENGTH = 1000;
+
     /** @var GrApi $api */
     private $api;
 
@@ -46,13 +48,13 @@ class GrEcommerce
         $psProduct = new Product($product['id_product']);
         $categories = $psProduct->getCategories();
         $productName = strip_tags((is_array($psProduct->name) ? array_shift($psProduct->name) : $psProduct->name));
-        $productDescription = strip_tags(
+        $productDescription = substr(strip_tags(
             (
                 is_array($psProduct->description_short)
                 ? array_shift($psProduct->description_short)
                 : $psProduct->description_short
             )
-        );
+        ), self::VARIANT_DESC_MAX_LENGTH);
 
         $grProduct = array(
             'name' => $productName,
