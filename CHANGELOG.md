@@ -4,8 +4,8 @@
 *(2018-04-24)*
 
 #### Bug fixes
-* readd cache in webforms with isCacheEnabled flag
-* adjust admin forms to old prestashop versions
+* re-added cache in webforms with isCacheEnabled flag
+* adjusted admin forms to old PrestaShop versions
 * added length limitation for product variant description
 
 ## 16.2.9
