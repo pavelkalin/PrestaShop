@@ -12,16 +12,18 @@
     {$export_customers_list}
 {/if}
 
-<script>
-    (function($) {
-        var available_cycles = $.parseJSON('{$campaign_days}');
+{if isset($campaign_days)}
+    <script>
+        (function ($) {
+            var available_cycles = $.parseJSON('{$campaign_days}');
 
-        var cycles1 = cycles.init(
-            available_cycles,
-            $('#campaign'),
-            $('#autoresponder_day'),
-            $('#addToCycle_1'),
-			{$cycle_day}
-        );
-    })(jQuery);
-</script>
+            var cycles1 = cycles.init(
+                available_cycles,
+                $('#campaign'),
+                $('#autoresponder_day'),
+                $('#addToCycle_1'),
+                {$cycle_day}
+            );
+        })(jQuery);
+    </script>
+{/if}

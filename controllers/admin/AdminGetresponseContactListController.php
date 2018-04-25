@@ -43,7 +43,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         if (Tools::isSubmit('update' . $this->name)) {
             $this->display = 'edit';
         }
-        if (Tools::isSubmit('create' . $this->name)) {
+        if (Tools::isSubmit('create' . $this->name) || Tools::isSubmit('submit' . $this->name)) {
             $this->display = 'add';
         }
     }
@@ -274,7 +274,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             }
 
             if (empty($this->errors)) {
-                Tools::redirectAdmin(AdminController::$currentIndex);
+                Tools::redirectAdmin(AdminController::$currentIndex . '&token=' . $this->getToken());
             }
         }
 
@@ -399,6 +399,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             }
         }
 
+        $helper->currentIndex = AdminController::$currentIndex;
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 
