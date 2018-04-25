@@ -277,8 +277,9 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->fields_value = array(
             'shop_name' => '',
             'form_name' => 'add_store',
-            'back_url' => self::$currentIndex . '&token=' . $this->getToken()
+            'back_url' => self::$currentIndex . '&token=' . $this->getToken(),
         );
+        $helper->currentIndex = AdminController::$currentIndex . '&action=add';
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 

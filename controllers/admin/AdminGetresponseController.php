@@ -377,7 +377,8 @@ class AdminGetresponseController extends ModuleAdminController
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex . '&token=' . $this->getToken();
+        $helper->currentIndex = AdminController::$currentIndex;
+        $helper->token = $this->getToken();
         $helper->fields_value = array(
             'campaign_name' => false,
             'from_field' => false,

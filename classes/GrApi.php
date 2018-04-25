@@ -22,6 +22,9 @@ class GrApi
     /** @var GetResponseAPI3 */
     private $api;
 
+    /** @var bool */
+    private $isCacheEnabled;
+
     /**
      * @param string $apiKey
      * @param string $accountType
@@ -29,11 +32,8 @@ class GrApi
      */
     public function __construct($apiKey, $accountType, $domain)
     {
-        $this->api = new GetResponseAPI3(
-            $apiKey,
-            $this->getApiUrl($accountType),
-            $domain
-        );
+        $this->api = new GetResponseAPI3($apiKey, $this->getApiUrl($accountType), $domain);
+        $this->isCacheEnabled = defined('_PS_CACHE_ENABLED_') ? _PS_CACHE_ENABLED_ : false;
     }
 
     /**
@@ -55,7 +55,7 @@ class GrApi
         $cacheKey = 'GetResponseCampaigns';
         $campaigns = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -87,7 +87,14 @@ class GrApi
      */
     public function getWebForms()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseWebFormsList';
         $webForms = array();
+
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
 
         try {
             for ($i = 1; ; $i++) {
@@ -104,6 +111,8 @@ class GrApi
 
             ksort($webForms);
 
+            $cache->set($cacheKey, $webForms, self::CACHE_TTL);
+
             return $webForms;
         } catch (Exception $e) {
             return array();
@@ -115,7 +124,14 @@ class GrApi
      */
     public function getForms()
     {
+        /** @var CacheCore $cache */
+        $cache = Cache::getInstance();
+        $cacheKey = 'GetResponseFormsList';
         $forms = array();
+
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
 
         try {
             for ($i = 1; ; $i++) {
@@ -131,6 +147,8 @@ class GrApi
             }
 
             ksort($forms);
+
+            $cache->set($cacheKey, $forms, self::CACHE_TTL);
 
             return $forms;
         } catch (Exception $e) {
@@ -149,7 +167,7 @@ class GrApi
         $cacheKey = 'GetResponseConfirmationsSubject';
         $subjects = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -182,7 +200,7 @@ class GrApi
         $cacheKey = 'GetResponseConfirmationsBody';
         $bodies = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -215,7 +233,7 @@ class GrApi
         $cacheKey = 'GetResponseFromFields';
         $fromFields = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -256,7 +274,7 @@ class GrApi
         $cache = Cache::getInstance();
         $cacheKey = 'GetResponseAccounts';
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -279,7 +297,7 @@ class GrApi
         $cacheKey = 'GetResponseAutoresponders';
         $autoresponders = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 
@@ -481,7 +499,7 @@ class GrApi
         $cacheKey = 'GetResponseCustomLists';
         $allCustoms = array();
 
-        if ($cache->exists($cacheKey)) {
+        if ($this->isCacheEnabled && $cache->exists($cacheKey)) {
             return $cache->get($cacheKey);
         }
 

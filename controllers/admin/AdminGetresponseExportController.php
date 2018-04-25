@@ -90,7 +90,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex . '&mapping=1&token=' . $this->getToken();
+        $helper->currentIndex = AdminController::$currentIndex . '&mapping=1';
+        $helper->token = $this->getToken();
         $helper->fields_value = array('mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false);
 
         $customs = $this->db->getCustoms();
@@ -266,8 +267,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     public function renderExportForm()
     {
-        /** @var HelperFormCore $helper */
-        $helper = new HelperFormCore();
         $api = $this->getGrAPI();
 
         $fieldsForm = array(
@@ -352,6 +351,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
             )
         );
 
+        /** @var HelperFormCore $helper */
+        $helper = new HelperFormCore();
+        $helper->currentIndex = AdminController::$currentIndex;
+        $helper->token = $this->getToken();
         $helper->fields_value = array(
             'campaign' => false,
             'autoresponder_day' => false,
