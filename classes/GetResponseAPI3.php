@@ -18,7 +18,7 @@ class GetResponseAPI3
     private $apiUrl;
 
     /** @var int */
-    private $timeout = 8;
+    private $timeout = 40;
 
     /** @var string */
     private $domain;
