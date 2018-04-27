@@ -1,11 +1,5 @@
 # Changelog
 
-## 16.2.10_forked
-*(2018-04-27)*
-
-#### Bug fixes
-* change curl timeout from 8 seconds to 40 seconds
-
 ## 16.2.10
 *(2018-04-24)*
 
